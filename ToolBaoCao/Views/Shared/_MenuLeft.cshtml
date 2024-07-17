@@ -1,0 +1,56 @@
+﻿@{
+    var linkHome = Url.Action("Index", "Home", new { area = "" });
+}
+<!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <li class="nav-item">
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@Html.Raw(linkHome)">
+            <div class="sidebar-brand-icon"><img src="~/images/logo.png" /></div>
+            <div class="sidebar-brand-text mx-3">@AppHelper.getConfig("App.Title")</div>
+        </a>
+    </li>
+    <li class="nav-item">
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block" />
+    </li>
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item">
+        <a class="nav-link" href="@Url.Action("Index", "TaiKhoan", new { area = "" })"> <i class="fas fa-fw fa-tachometer-alt"></i> <span>Tài khoản</span> </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="@Url.Action("Index", "Menu", new { area = "" })"> <i class="fas fa-fw fa-tachometer-alt"></i> <span>Menu</span> </a>
+    </li>
+
+    <li class="nav-item">
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block" />
+    </li>
+
+    <li class="nav-item">
+        <!-- Heading -->
+        <div class="sidebar-heading"> Chức năng </div>
+    </li>
+    <!-- Nav Item - Chức năng Collapse Menu -->
+    <li class="nav-item">
+        <!-- Nav Item - Quản lý tiến trình thao tác -->
+        <a class="nav-link" href="@Url.Action("Index", "Task", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Tiến trình</span> </a>
+    </li>
+    <li class="nav-item">
+        <!-- Nav Item - Quản lý nhập Excel -->
+        <a class="nav-link" href="@Url.Action("Index", "ImportExcel", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Nhập từ Excel</span> </a>
+    </li>
+    <li class="nav-item">
+        <!-- Nav Item - Quản lý nhập SQLite -->
+        <a class="nav-link" href="@Url.Action("Index", "ImportSQLite", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Nhập từ bản sao dữ liệu</span> </a>
+    </li>
+    <li class="nav-item">
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block" />
+    </li>
+    <li class="nav-item text-center">
+        <!-- Sidebar Toggler (Sidebar) -->
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </li>
+</ul>
+<!-- End of Sidebar -->

@@ -1,0 +1,76 @@
+﻿@{ 
+    var items = new System.Data.DataTable();
+    if(ViewBag.Data != null) { items = ViewBag.Data as System.Data.DataTable; }
+    var idForm = $"frm{DateTime.Now.toTimestamp()}";
+
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Thông tin</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <form method="post" enctype="multipart/form-data" name="@idForm" id="@idForm">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td style="width: 150px;" class="text-right">Chọn biểu nhập</td>
+                            <td>
+                                <select name="bieu">
+                                    <option value="b02">B02. Thống kê KCB (tháng)</option>
+                                    <option value="b04">B04. Thống kê chi bình quân (tháng)</option>
+                                    <option value="b26">B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">Chọn tập tin</td>
+                            <td>
+                                <input type="file" name="file" id="inputfile" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <a href="javascript:importexecl();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="alert alert-warning">
+    <table class="table table-hover">
+        <tbody>
+            <tr>
+                <td>Ghi chú</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    function importexecl() {
+        if ($('#inputfile').val() == "") {
+            messageBox("<i class=\"fa fa-warning\"></i> Thông báo lỗi", "<div class=\"alert alert-warning\">Bạn chưa chọn tập tin</div>");
+            return;
+        }
+        /** Kiểu tra định dạng mở rộng tập tin */
+        var ext = getFileExtension($('#inputfile').val()).toLowerCase();
+        if (ext != "xls" && ext != "xlsx") {
+            messageBox("<i class=\"fa fa-warning\"></i> Thông báo lỗi", "<div class=\"alert alert-warning\">Hệ thống không hỗ trợ tập tin có đuôi mở rộng " + ext + "</div>");
+            return;
+        }
+        messageBox("Thông báo", "<div class=\"alert alert-info\">Vui lòng đợi hệ thống đẩy tập tin và xử lý tập tin <img alert=\"\" title=\"\" src=\"/images/loader.gif\"></img> </div>");
+        var idFrom = "#@idForm";
+    }
+    @{ 
+        if(ViewBag.Error != null)
+        {
+            Html.Raw($"messageBox('<div class=\"alert alert-warning\">{ViewBag.Error}</div>', 'Thông báo lỗi');");
+        }
+    }
+</script>

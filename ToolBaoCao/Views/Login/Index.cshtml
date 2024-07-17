@@ -1,0 +1,77 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Đăng nhập - Trắc nghiệm</title>
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="~/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-primary">
+    <div class="container">
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-4 d-none d-lg-block text-center" style="padding-top: 90px; padding-left: 50px;">
+                                <div><img src="~/images/bg-logo.png" alt="" class="w-100" /></div>                                
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4"><b>Chào bạn đến với Công cụ hỗ trợ báo cáo</b></h1>
+                                    </div>
+                                    <form id="frmLogin" method="post">
+                                        <input type="hidden" name="mode" value="login" />
+                                        <div class="form-group">
+                                            <input type="text" name="username" id="username" value="@Request.getValue("username")" class="form-control" placeholder="Tên đăng nhập" />
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" name="password" class="form-control" placeholder="Mật khẩu" />
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                <input type="checkbox" class="custom-control-input" value="1" id="customCheck" name="remember">
+                                                <label class="custom-control-label" for="customCheck"> Ghi nhớ </label>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block"> <i class="fa fa-sign-in"></i> Đăng nhập </button>
+                                    </form>
+                                    @if (ViewBag.Error != null)
+                                    {
+                                        <hr />
+                                        <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+                                    }
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="@Url.Action("quenmatkhau")">Quên mật khẩu?</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.min.js"></script>
+</body>
+</html>

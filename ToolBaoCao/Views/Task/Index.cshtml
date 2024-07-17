@@ -1,0 +1,73 @@
+﻿@{ 
+    var items = new System.Data.DataTable();
+    if(ViewBag.Data != null) { items = ViewBag.Data as System.Data.DataTable; }
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<p class="mb-4">
+    Quản lý tiến trình.
+</p>
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách menu</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Link</th>
+                        <th>Đường dẫn</th>
+                        <th>Thứ tự</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (items.Rows.Count == 0)
+                        {
+                            <tr><td colspan="6">Không có dữ liệu phù hợp với truy vấn</td></tr>
+                        }
+                        else
+                        {
+                            foreach (System.Data.DataRow r in items.Rows)
+                            {
+                                DateTime t1 = $"{r["time_create"]}".fromTimestamp();
+                                DateTime t2 = $"{r["time_last_login"]}".fromTimestamp();
+                            <tr>
+                                <td><a href="javascript:showgeturl('@Url.Action("Update", "Menu", new { id=r["id"], layout="null" })');">@r["id"]</a></td>
+                                <td>@r["title"]</td>
+                                <td>@r["link"]</td>
+                                <td>@r["path"]</td>
+                                <td>@r["postion"]</td>
+                                <td>@r["note"]</td>
+                            </tr>
+                                }
+                            }
+                        }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="alert alert-warning">
+    <table class="table table-hover">
+        <tbody>
+            <tr>
+                <td>Nhấn vào tên đăng nhập để thay đổi thông tin tài khoản</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    /* $(document).ready(function () { $('#tableadmins').DataTable(); }); */
+    @{ 
+        if(ViewBag.Error != null)
+        {
+            Html.Raw($"messageBox('<div class=\"alert alert-warning\">{ViewBag.Error}</div>', 'Thông báo lỗi');");
+        }
+    }
+</script>

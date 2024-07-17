@@ -1,0 +1,19 @@
+﻿@{
+    var httpException = Server.GetLastError() as HttpException;
+}
+<!-- 404 Error Text -->
+<div class="text-center">
+    <div class="error mx-auto" data-text="404">404</div>
+    <p class="lead text-gray-800 mb-5 apptitle">Page Not Found</p>
+    @if (httpException != null)
+    {
+        <p class="text-gray-500 mb-0">
+            Message: @httpException.Message<br />
+            Source: @httpException.Source <br />
+            StackTrace: @httpException.StackTrace<br />
+            WebEventCode: @httpException.WebEventCode<br />
+            ErrorCode: @httpException.ErrorCode
+        </p>
+    }
+    <a href="~/">&larr; Back to Dashboard</a>
+</div>

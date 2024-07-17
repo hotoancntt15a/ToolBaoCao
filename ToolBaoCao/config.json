@@ -1,0 +1,16 @@
+{
+  "Settings": [
+    {
+      "Key": "App.Title",
+      "Value": "Công cụ HTBCBH"
+    },
+    {
+      "Key": "App.PageSize",
+      "Value": "50"
+    },
+    {
+      "Key": "App.PacketSize",
+      "Value": "1000"
+    }
+  ]
+}
