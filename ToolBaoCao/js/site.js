@@ -180,8 +180,8 @@ function postform(idform, url, idtarget, callback) {
                 mimeTypes: "multipart/form-data",
                 contentType: false,
                 cache: false,
-                processData: false,
-                xhr: function () {
+                processData: false
+                ,xhr: function () {
                     const xhr = $.ajaxSettings.xhr();
                     if (xhr.upload) {
                         xhr.upload.addEventListener('progress', function (e) {
@@ -204,13 +204,13 @@ function postform(idform, url, idtarget, callback) {
     }
     if (modalshow == false) { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
     ajaxRequest.done(function (response) {
-        if (modalshow) {
-            if (isUpload) { $(idmsg).find(".modal-body").html(response); }
-            else { messageBox('Thông báo', response); }
-        }
+        if (isUpload && idtarget != "") { $(idmsg).modal('hide'); }
         else {
-            if (isUpload) { $(idmsg).modal('hide'); }
-            $(idtarget).html(response);
+            if (modalshow) {
+                if (isUpload) { $(idmsg).find(".modal-body").html(response); }
+                else { messageBox('Thông báo', response); }
+            }
+            else { $(idtarget).html(response); }
         }
         if (typeof (callback) == 'function') { callback(); }
         fixAllClass();

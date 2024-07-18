@@ -25,9 +25,15 @@ namespace ToolBaoCao
 
         protected void Application_Error()
         {
-            var httpException = Server.GetLastError() as HttpException;
-            var statusCode = httpException.GetHttpCode();
-            if (statusCode == 404) { Response.Redirect("~/Error"); }
+            var ex = Server.GetLastError();
+            var httpException = ex as HttpException ?? ex.InnerException as HttpException;
+            if (httpException == null) return;
+
+            if (((System.Web.HttpException)httpException.InnerException).WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge)
+            {
+                Response.Write("Too big a file, dude");
+            }
+            if (httpException.GetHttpCode() == 404) { Response.Redirect("~/Error"); }
         }
 
         private void Session_Start(object sender, EventArgs e)

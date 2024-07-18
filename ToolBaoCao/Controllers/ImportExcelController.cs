@@ -16,6 +16,7 @@ namespace ToolBaoCao.Controllers
         }
         public ActionResult Update()
         {
+            ViewBag.Info = "Đang thao tác";
             var bieu = Request.getValue("bieu");
             if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
             if(Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }

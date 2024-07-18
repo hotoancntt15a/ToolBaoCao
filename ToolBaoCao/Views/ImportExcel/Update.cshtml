@@ -8,7 +8,8 @@
     }
     else
     {
-        var msg = ViewBag.Info == null ? $"Thao tác thành công vào lúc {DateTime.Now:yyyy-MM-d H:m:s}" : $"{ViewBag.Info}";
+        var msg = $"{ViewBag.Info}";
+        if (msg == "") { msg = $"Thao tác thành công vào lúc {DateTime.Now:yyyy-MM-d H:m:s}"; }
         <div class="alert alert-info"> Thao tác thành công vào lúc @DateTime.Now.ToString()</div>
     }
 }
