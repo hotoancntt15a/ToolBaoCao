@@ -50,6 +50,7 @@ namespace ToolBaoCao.Controllers
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }
                         ViewBag.Data = data;
+                        ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmTinh ORDER BY tt, ten");
                     }
                     return View();
                 }

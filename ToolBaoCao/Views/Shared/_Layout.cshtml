@@ -82,6 +82,7 @@
     <script src="~/js/site.js?v=@tmp"></script>
     @RenderSection("scripts", required: false)
     <script>
+        function fixAllClass() {}
         $(document).ready(function () {
             fixAllClass();
             if ($('.apptitle').length > 0) { $('title').text($('.apptitle').first().text() + ' - Trắc nghiệm'); }

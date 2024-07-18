@@ -14,5 +14,13 @@ namespace ToolBaoCao.Controllers
             ViewBag.Title = "Quản lý nhập dữ liệu từ SQLite(*.db, *.db3, *.bak, *.sqlite3, *.sqlite, *)";
             return View();
         }
+        public ActionResult Update()
+        {
+            var bieu = Request.getValue("bieu");
+            if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
+            if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
+            ViewBag.Info = $"{bieu}: {Request.Files[0].FileName} size {Request.Files[0].ContentLength} b";
+            return View();
+        }
     }
 }

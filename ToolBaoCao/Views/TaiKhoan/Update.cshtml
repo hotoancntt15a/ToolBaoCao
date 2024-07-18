@@ -1,7 +1,7 @@
 ﻿@{
     if (Request.getValue("layout") == "null") { Layout = null; }
     ViewBag.Title = "Thêm mới tài khoản quản trị";
-    var item = new Dictionary<string, string>(); 
+    var item = new Dictionary<string, string>();
     var id = $"{ViewBag.id}";
     var idReadOnly = "";
     if(id != "") {
@@ -9,6 +9,7 @@
         idReadOnly = "readonly=\"readonly\"";
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
+    System.Data.DataTable dmTinh = ViewBag.dmTinh == null ? new System.Data.DataTable() : (System.Data.DataTable)ViewBag.dmTinh;
 }
 <h2>@ViewBag.Title</h2>
 <form id="frmUpdateQuanTri" name="frmUpdateQuanTri" method="post">
@@ -25,6 +26,19 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mã tỉnh làm việc</div></div>
+            <select name="idtinh" id="idtinh" class="form-select">
+                @foreach (System.Data.DataRow row in dmTinh.Rows)
+                {
+                    if (item.getValue("idtinh") == row[0].ToString())
+                    {
+                        <option value="@row[0]" selected>@row[1]</option>
+                    }
+                    else
+                    {
+                        <option value="@row[0]">@row[1]</option>
+                    }
+                }
+            </select>
             <input type="text" name="idtinh" id="idtinh" class="form-control" maxlength="50" value="@item.getValue("idtinh")" />
         </div>
         <div class="input-group input-group-sm">

@@ -1,11 +1,12 @@
 var alertkey = { danger: 'danger', warning: 'warning', info: 'info', success: 'success' }
+var idmsg = '#modal-message';
 function LTrim(value) { return value.replace(/\s*((\S+\s*)*)/, "$1"); }
 function RTrim(value) { return value.replace(/((\s*\S+)*)\s*/, "$1"); }
 function trim(value) { return LTrim(RTrim(value)); }
-function check_email(email_id){
+function check_email(email_id) {
     emailRegExp = /^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.([a-z]){2,4})$/;
     if (emailRegExp.test(document.getElementById(email_id).value)) { return true; }
-    return false; 
+    return false;
 }
 function textCounter(inputcheck, inputcount, maxchar) {
     if (inputcheck.value.length > maxchar) { inputcheck.value = inputcheck.value.substring(0, maxchar); }
@@ -17,13 +18,13 @@ $(".custom-file-input").on("change", function () {
 });
 function InsertToText(tid, ivalue) { document.getElementById(tid).value = document.getElementById(tid).value + ivalue; }
 function changeValueToIdInput(e, idtarget) { var id = getIdJquery(idtarget); $(id).val($(e).val()); }
-function disableEnterKey(e){ var key; if (window.event) { key = window.event.keyCode; } else { key = e.which; } /* firefox */ return (key != 13); }
+function disableEnterKey(e) { var key; if (window.event) { key = window.event.keyCode; } else { key = e.which; } /* firefox */ return (key != 13); }
 var isRunLoad = 0;
 var path_images = '/images/';
 Number.prototype.format = function (n = 0, x = 3) { var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')'; return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,'); };
 Number.prototype.formatVN = function (n = 0, x = 3) {
     var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
-    re = (this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,')).replace(/[.]/g, '|').replace(/[,]/g, '.'); 
+    re = (this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,')).replace(/[.]/g, '|').replace(/[,]/g, '.');
     return re.replace(/[|]/g, ',');
 };
 function formatNumberVNTarget(eInput, eTarget) {
@@ -87,7 +88,6 @@ var getCookies = function () {
 
     // Duyệt qua tất cả các cookies
     for (var i = 0; i < cookies.length; i++) {
-
         // Lấy tên và giá trị của cookie
         var cookie = cookies[i].split("=");
         var cookieName = cookie[0].trim();
@@ -107,22 +107,21 @@ function setActiveLiMenu() {
             if (link == urlCurrent) { $(this).parent().addClass("active"); return false; }
         } else {
             if (urlCurrent.startsWith(link)) { $(this).parent().addClass("active"); return false; }
-        }      
+        }
     });
 }
 
-function showMessage(sender) { 
-    var idmsg = '#modal-message';
+function showMessage(sender) {
     if (sender['idmsg'] != undefined) {
         if (sender['idmsg'] != '') {
             idmsg = sender['idmsg'];
             if (!idmsg.startsWith('#')) idmsg = '#' + idmsg;
         }
     }
-    var footer = '<a href="javascript:void(0);" class="btn btn-primary btn-sm" data-dismiss="modal"> <i class="fa fa-times"></i> Hủy</a>'; 
+    var footer = '<a href="javascript:void(0);" class="btn btn-primary btn-sm" data-dismiss="modal"> <i class="fa fa-times"></i> Hủy</a>';
     if (sender['footer'] != undefined) footer = sender['footer'] + " " + footer;
     if (sender['action'] != undefined) footer = '<a href="' + sender['action'] + '" class="btn"> <i class="fa fa-save"></i> Lưu lại </a>' + " " + footer;
-    if (sender['title'] != undefined) { $(idmsg).find('.modal-title').html(sender['title']) } 
+    if (sender['title'] != undefined) { $(idmsg).find('.modal-title').html(sender['title']) }
     if (sender['body'] != undefined) { $(idmsg).find('div.modal-body').html(sender['body']) }
     $(idmsg).find('div.modal-footer').html(footer);
     $(idmsg).modal();
@@ -143,26 +142,76 @@ function showMessageUp(message, url) {
 function messageBox(title, body) { showMessage({ title: title, body: body }); }
 
 function getIdJquery(idObject) { if (idObject == undefined) { return ''; } if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; } if (typeof (idObject) != 'string') { return ''; } if (idObject == '') { return ''; } if (/[#]/gi.test(idObject)) { return idObject; } return '#' + idObject; }
-function getElementJquery(idObject) { 
-	if (idObject == undefined) { return ''; } 
-	if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; } 
-	if (typeof (idObject) != 'string') { return ''; } 
-	if (idObject == '') { return ''; } 
-	if (/[#.]/gi.test(idObject)) { return idObject; }
-	if($('#' + idObject).length > 0) { return '#' + idObject; }
-	return '.' + idObject; 
+function getElementJquery(idObject) {
+    if (idObject == undefined) { return ''; }
+    if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; }
+    if (typeof (idObject) != 'string') { return ''; }
+    if (idObject == '') { return ''; }
+    if (/[#.]/gi.test(idObject)) { return idObject; }
+    if ($('#' + idObject).length > 0) { return '#' + idObject; }
+    return '.' + idObject;
 }
 function postform(idform, url, idtarget, callback) {
     if (typeof (idtarget) == 'function') { if (typeof (callback) != 'function') { callback = idtarget; } }
-    idtarget = getElementJquery(idtarget); if (typeof (url) != 'string') { url = ''; } if (url == '') { url = window.location.href; }
+    idtarget = getElementJquery(idtarget);
+    if (typeof (url) != 'string') { url = ''; } 
+    var idUpload = (Math.floor((new Date()).getTime() / 1000)).toString();
+    var isUpload = false;
     var ajaxRequest;
-    var id = getIdJquery(idform); if (id == '') { ajaxRequest = $.ajax({ url: url, type: "post" }); } else {
-        if ($(id).length == 0) { messageBox('Thông báo', '<div class="alert alert-danger">Không tìm thấy Form ' + id + '</div>'); return; }
-        if ($(id).attr('enctype') == 'multipart/form-data') { var e = document.getElementById(id.replace('#', '')); var dataform = new FormData(e); ajaxRequest = $.ajax({ url: url, type: "post", data: dataform, mimeTypes: "multipart/form-data", contentType: false, cache: false, processData: false }); } else { ajaxRequest = $.ajax({ url: url, type: "post", data: $(id).serialize() }); }
+    var id = getIdJquery(idform);
+    if (id == '') {
+        if (url == '') { url = window.location.href; }
+        ajaxRequest = $.ajax({ url: url, type: "post" });
     }
-    var modalshow = false; if (typeof (idtarget) == 'string') { if (idtarget == '') { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); modalshow = true; } }
-    if (modalshow == false) { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); } ajaxRequest.done(function (response, textStatus, jqXHR) {
-        if (modalshow) { messageBox('Thông báo', response); } else { $(idtarget).html(response); }
+    else {
+        if ($(id).length == 0) { messageBox('Thông báo', '<div class="alert alert-danger">Không tìm thấy Form ' + id + '</div>'); return; }
+        if (url == '') {
+            url = $(id).attr('action') == '' ? window.location.href : $(id).attr('action');
+        }
+        if ($(id).attr('enctype') == 'multipart/form-data') {
+            isUpload = true;
+            messageBox('Thông báo', '<div class="alert alert-info">Đang thực hiện <img alt="" title="" src="/images/loader.gif" /></div><progress id="progressBar' + idUpload + '" value="0" max="100" style="width: 100%;"></progress> <span id="progressPercent' + idUpload + '">0%</span>');
+            var e = document.getElementById(id.replace('#', ''));
+            var dataform = new FormData(e);
+            ajaxRequest = $.ajax({
+                url: url,
+                type: "POST",
+                data: dataform,
+                mimeTypes: "multipart/form-data",
+                contentType: false,
+                cache: false,
+                processData: false,
+                xhr: function () {
+                    const xhr = $.ajaxSettings.xhr();
+                    if (xhr.upload) {
+                        xhr.upload.addEventListener('progress', function (e) {
+                            if (e.lengthComputable) {
+                                const percentComplete = (e.loaded / e.total) * 100;
+                                $('#progressBar').val(percentComplete);
+                                $('#progressPercent').text(`${Math.round(percentComplete)}%`);
+                            }
+                        }, false);
+                    }
+                    return xhr;
+                }
+            });
+        }
+        else { ajaxRequest = $.ajax({ url: url, type: "POST", data: $(id).serialize() }); }
+    }
+    var modalshow = false;
+    if (typeof (idtarget) == 'string') {
+        if (idtarget == '' && isUpload == false) { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); modalshow = true; }
+    }
+    if (modalshow == false) { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
+    ajaxRequest.done(function (response) {
+        if (modalshow) {
+            if (isUpload) { $(idmsg).find(".modal-body").html(response); }
+            else { messageBox('Thông báo', response); }
+        }
+        else {
+            if (isUpload) { $(idmsg).modal('hide'); }
+            $(idtarget).html(response);
+        }
         if (typeof (callback) == 'function') { callback(); }
         fixAllClass();
     });
@@ -199,10 +248,10 @@ function showForm(urlinfo, idform) {
     $(idmsg).find('div.modal-body').html('<img alt="" src="/images/loader.gif"/>');
     $(idmsg).find('div.modal-body').load(urlinfo);
     $(idmsg).find('h4.modal-title').first().text(title);
-    $(idmsg).find('div.modal-footer').html(footer); 
+    $(idmsg).find('div.modal-footer').html(footer);
     $(idmsg).modal();
 }
-function GetInfomation(url, eload) { 
+function GetInfomation(url, eload) {
     eload = eload || '';
     $.getJSON(url, function (data) {
         if (data != null) { for (var key in data) { var id = '#' + key; $(id).val(data[key]); } }
@@ -212,23 +261,23 @@ function GetInfomation(url, eload) {
     });
 }
 function selectTextToClass(e, nameClass) {
-    if(typeof(nameClass) != 'string') { return; }
+    if (typeof (nameClass) != 'string') { return; }
     var v = $(e).find('option:selected').first().text();
-    if(/^[.]/.test(nameClass) == false) { nameClass = "."+nameClass; }
+    if (/^[.]/.test(nameClass) == false) { nameClass = "." + nameClass; }
     $(nameClass).text(v);
 }
 function setsuggest(idInput, tab, field) {
     if (!idInput.startsWith('#')) { idInput = '#' + idInput; }; if (typeof (field) != 'string') { field = ''; }
     $(idInput).autocomplete({
-		source: function( request, response ) {
-			$.ajax({  
-			url:"/ajax/suggest.php", method:"POST", dataType: "json",
-			data: { to: tab, key: $(idInput).val(), f: field }, success: function (data) { response(data); }
-			}); 
-		},
-		minLength: 2,
-		maxShowItems: 6
-	});
+        source: function (request, response) {
+            $.ajax({
+                url: "/ajax/suggest.php", method: "POST", dataType: "json",
+                data: { to: tab, key: $(idInput).val(), f: field }, success: function (data) { response(data); }
+            });
+        },
+        minLength: 2,
+        maxShowItems: 6
+    });
 }
 function suggest(idObject, tab, field) {
     if (typeof (idObject) == 'string') { if (idObject == '') { return; } idObject = getIdJquery(idObject); }

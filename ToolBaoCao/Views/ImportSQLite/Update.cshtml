@@ -1,53 +1,14 @@
 ﻿@{
-    if (Request.getValue("layout") == "null") { Layout = null; }
-    ViewBag.Title = "Thêm mới menu";
-    var item = new Dictionary<string, string>(); 
-    var id = $"{ViewBag.id}";
-    var idReadOnly = "";
-    if(id != "") {
-        ViewBag.Title = $"Cập nhật menu có ID: {id}";
-        idReadOnly = "readonly=\"readonly\"";
-        if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
+    Layout = null;
+    if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning">
+            @ViewBag.Error
+        </div>
     }
-    var idfrom = $"frm{DateTime.Now.toTimestamp()}";
+    else
+    {
+        var msg = ViewBag.Info == null ? $"Thao tác thành công vào lúc {DateTime.Now:yyyy-MM-d H:m:s}" : $"{ViewBag.Info}";
+        <div class="alert alert-info"> Thao tác thành công vào lúc @DateTime.Now.ToString()</div>
+    }
 }
-<h2>@ViewBag.Title</h2>
-<form id="@idfrom" name="@idfrom" method="post">
-    <input type="hidden" name="layout" value="null" />
-    <input type="hidden" name="idobject" value="@ViewBag.id" />
-    <div class="form-group">
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="@Url.Action("Select", "Menu", new { area = "", layout="null" })"> Chọn </a>]</div></div>
-            <input type="number" name="idfather" id="idfather" class="form-control" maxlength="255" value="@item.getValue("idfather")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Menu cha</div></div>
-            <input type="number" name="postion" id="postion" class="form-control" maxlength="255" value="@item.getValue("postion")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Tiêu đề</div></div>
-            <input type="text" name="iduser" id="iduser" class="form-control" maxlength="50" value="@ViewBag.id" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Link</div></div>
-            <input type="text" name="link" id="link" class="form-control" maxlength="255" value="@item.getValue("link")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Đường dẫn</div></div>
-            <input type="text" name="path" id="path" class="form-control" maxlength="255" value="@item.getValue("path")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
-            <input type="text" name="note" id="note" class="form-control" maxlength="255" value="@item.getValue("note")" />
-        </div>
-    </div>
-    <div class="col-12">
-        <button class="btn btn-primary btn-sm" type="button" onclick="postform('@idfrom', '@Url.Action("Update", "Menu", new { mode = "update" })');"> <i class="fa fa-fw fa-save"></i> Lưu lại </button>
-        @{
-            if (id != "")
-            {
-                <button class="btn btn-primary btn-sm" type="button" onclick="postform('@idfrom', '@Url.Action("Update", "Menu", new { mode="delete" })');"> <i class="fa fa-fw fa-recycle"></i> Xóa </button>
-            }
-        }
-    </div>
-</form>
