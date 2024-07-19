@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NPOI.SS.UserModel;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing.Imaging;
@@ -35,6 +36,42 @@ namespace ToolBaoCao
         public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
+
+        public static string GetValueAsString(this ICell cell, string formatDateTime = "yyyy-MM-dd H:mm:ss")
+        {
+            if (cell == null) { return ""; }
+
+            switch (cell.CellType)
+            {
+                case CellType.String: return cell.StringCellValue;
+                case CellType.Boolean: return cell.BooleanCellValue.ToString();
+                case CellType.Blank: return "";
+                case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        // Định dạng giá trị ngày tháng
+                        return cell.DateCellValue?.ToString(formatDateTime);
+                    }
+                    else { return cell.NumericCellValue.ToString(); }
+                case CellType.Formula:
+                    // Lấy giá trị tính toán của công thức nếu cần
+                    switch (cell.CachedFormulaResultType)
+                    {
+                        case CellType.Numeric:
+                            if (DateUtil.IsCellDateFormatted(cell))
+                            {
+                                return cell.DateCellValue?.ToString(formatDateTime);
+                            }
+                            else { return cell.NumericCellValue.ToString(); }
+                        case CellType.String: return cell.StringCellValue;
+                        case CellType.Boolean: return cell.BooleanCellValue.ToString();
+                        case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
+                        default: return cell.ToString();
+                    }
+                default: return cell.ToString();
+            }
+        }
 
         public static string getValueFieldTSQL(string valueField) => valueField.Replace("'", "''");
 
@@ -379,7 +416,7 @@ namespace ToolBaoCao
         {
             if (w == null) w = HttpContext.Current;
             ListRequest.GetRequest(w.Request);
-        } 
+        }
 
         public static void GetRequest(this Dictionary<string, string> ListRequest, HttpRequest rq)
         {

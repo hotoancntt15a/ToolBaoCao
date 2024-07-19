@@ -233,11 +233,15 @@
     <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\TaiKhoanController.cs" />
     <Compile Include="Controllers\TaskController.cs" />
+    <Compile Include="Convert.cs" />
     <Compile Include="dbSQLite.cs" />
     <Compile Include="dbSQLServer.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="NPOIExcel.XLS.cs" />
+    <Compile Include="NPOIExcel.XLSX.cs" />
+    <Compile Include="NPOIExecl.CellMerge.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
