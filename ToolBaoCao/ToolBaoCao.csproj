@@ -2532,7 +2532,8 @@
   <ItemGroup>
     <Folder Include="cache\" />
     <Folder Include="Models\" />
-    <Folder Include="temp\" />
+    <Folder Include="temp\data\" />
+    <Folder Include="temp\excel\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

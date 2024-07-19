@@ -5,11 +5,9 @@
         <div class="alert alert-warning">
             @ViewBag.Error
         </div>
+        return;
     }
-    else
-    {
-        var msg = $"{ViewBag.Info}";
-        if (msg == "") { msg = $"Thao tác thành công vào lúc {DateTime.Now:yyyy-MM-d H:m:s}"; }
-        <div class="alert alert-info"> Thao tác thành công vào lúc @DateTime.Now.ToString()</div>
-    }
+    var msg = $"{ViewBag.data}";
+    if (msg == "") { msg = $"Thao tác thành công vào lúc {DateTime.Now:yyyy-MM-d H:m:s}"; }
+    <div class="alert alert-info"> @msg</div>
 }

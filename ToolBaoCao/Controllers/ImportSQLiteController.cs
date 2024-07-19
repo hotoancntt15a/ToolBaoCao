@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -14,13 +15,17 @@ namespace ToolBaoCao.Controllers
             ViewBag.Title = "Quản lý nhập dữ liệu từ SQLite(*.db, *.db3, *.bak, *.sqlite3, *.sqlite, *)";
             return View();
         }
-        public ActionResult Update()
+        public ActionResult Update(string bieu, HttpPostedFileBase file)
         {
-            var bieu = Request.getValue("bieu");
+            ViewBag.data = "Đang thao tác";
             if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
-            if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
-            Request.Files[0].SaveAs(Server.MapPath($"~/temp/{bieu}.db"));
-            ViewBag.Info = $"{bieu}: {Request.Files[0].FileName} size {Request.Files[0].ContentLength} b";
+            if (file == null) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
+            if (file.ContentLength == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
+            string fileName = Path.GetFileName(file.FileName);
+            string fileExtension = Path.GetExtension(file.FileName);
+            string fileNameSave = $"{bieu}{fileExtension}";
+            file.SaveAs(Server.MapPath($"~/temp/excel/{fileNameSave}"));
+            ViewBag.data = $"{bieu}: {fileName} size {file.ContentLength} b được lưu tại {fileNameSave}";
             return View();
         }
     }
