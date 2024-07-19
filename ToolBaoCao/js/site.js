@@ -141,7 +141,14 @@ function showMessageUp(message, url) {
 }
 function messageBox(title, body) { showMessage({ title: title, body: body }); }
 
-function getIdJquery(idObject) { if (idObject == undefined) { return ''; } if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; } if (typeof (idObject) != 'string') { return ''; } if (idObject == '') { return ''; } if (/[#]/gi.test(idObject)) { return idObject; } return '#' + idObject; }
+function getIdJquery(idObject) {
+    if (idObject == undefined) { return ''; }
+    if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; }
+    if (typeof (idObject) != 'string') { return ''; }
+    if (idObject == '') { return ''; }
+    if (/[#]/gi.test(idObject) == false) { idObject = '#' + idObject; }
+    return idObject;
+}
 function getElementJquery(idObject) {
     if (idObject == undefined) { return ''; }
     if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; }
@@ -151,75 +158,84 @@ function getElementJquery(idObject) {
     if ($('#' + idObject).length > 0) { return '#' + idObject; }
     return '.' + idObject;
 }
-function postform(idform, url, idtarget, callback) {
-    if (typeof (idtarget) == 'function') { if (typeof (callback) != 'function') { callback = idtarget; } }
+function postform(fromID, urlPost, targetID, callback) {
+    var timestamp = (Math.floor((new Date()).getTime() / 1000)).toString();
+    /** Lấy id Element hiển thị */
+    var idtarget = "";
+    if (typeof (targetID) == 'function') { if (typeof (callback) != 'function') { callback = idtarget; } }
+    else if (typeof (targetID) == "object") {
+        if ($(targetID).attr("id") == "") { idtarget = "idtarget" + timestamp; $(targetID).attr("id", idtarget); }
+    }
     idtarget = getElementJquery(idtarget);
-    if (typeof (url) != 'string') { url = ''; } 
-    var idUpload = (Math.floor((new Date()).getTime() / 1000)).toString();
-    var isUpload = false;
-    var ajaxRequest;
-    var id = getIdJquery(idform);
-    if (id == '') {
-        if (url == '') { url = window.location.href; }
-        ajaxRequest = $.ajax({ url: url, type: "post" });
+
+    /** Lấy id From truyền dữ liệu */
+    var idform = "";
+    if (typeof (fromID) == "object") { if ($(fromID).attr("id") == "") { idform = "idform" + timestamp; $(fromID).attr("id", idform); } }
+    var idform = getIdJquery(fromID);
+
+    /** Lấy Url Post */
+    var url = "";
+    if (typeof (urlPost) == 'string') { url = urlPost; }
+    if (url == "") {
+        if (idform != "") { if ($(idform).attr("action") != "") { url = $(idform).attr("action"); } }
+        if (url == "") { url = window.location.href; }
+    }
+    if (idform == '') { messageBox('<div class="alert alert-danger">Thông báo lỗi', '<div class="alert alert-danger">Không có nguồn Form để thao tác</div>'); return; }
+    if ($(idform).length == 0) { messageBox('<div class="alert alert-danger">Thông báo lỗi', `<div class="alert alert-danger">Không tìm thấy Form có id: ${idform} để thao tác</div>`); return; }
+    if ($(idform).attr('enctype') == 'multipart/form-data') {
+        var e = document.getElementById(idform.replace('#', ''));
+        var dataform = new FormData(e);
+        if (idtarget != '') { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
+        messageBox('Thông báo', '<div class="alert alert-info">Đang thực hiện <img alt="" title="" src="/images/loader.gif" /></div><progress id="progressBar' + timestamp + '" value="0" max="100" style="width: 100%;"></progress> <span id="progressPercent' + timestamp + '">0%</span>');
+        $.ajax({
+            url: url, type: "POST", data: dataform,
+            mimeTypes: "multipart/form-data",
+            contentType: false, cache: false, processData: false
+            ,xhr: function () {
+                const xhr = $.ajaxSettings.xhr();
+                if (xhr.upload) {
+                    xhr.upload.addEventListener('progress', function (e) {
+                        if (e.lengthComputable) {
+                            const percentComplete = (e.loaded / e.total) * 100;
+                            $('#progressBar' + timestamp).val(percentComplete);
+                            $('#progressPercent' + timestamp).text(`${Math.round(percentComplete)}%`);
+                        }
+                    }, false);
+                }
+                return xhr;
+            }
+            , success: function (response) { ajaxSuccess(response, true, idtarget, callback); }
+            , fail: function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); }
+        });
     }
     else {
-        if ($(id).length == 0) { messageBox('Thông báo', '<div class="alert alert-danger">Không tìm thấy Form ' + id + '</div>'); return; }
-        if (url == '') {
-            url = $(id).attr('action') == '' ? window.location.href : $(id).attr('action');
-        }
-        if ($(id).attr('enctype') == 'multipart/form-data') {
-            isUpload = true;
-            messageBox('Thông báo', '<div class="alert alert-info">Đang thực hiện <img alt="" title="" src="/images/loader.gif" /></div><progress id="progressBar' + idUpload + '" value="0" max="100" style="width: 100%;"></progress> <span id="progressPercent' + idUpload + '">0%</span>');
-            var e = document.getElementById(id.replace('#', ''));
-            var dataform = new FormData(e);
-            ajaxRequest = $.ajax({
-                url: url,
-                type: "POST",
-                data: dataform,
-                mimeTypes: "multipart/form-data",
-                contentType: false,
-                cache: false,
-                processData: false
-                ,xhr: function () {
-                    const xhr = $.ajaxSettings.xhr();
-                    if (xhr.upload) {
-                        xhr.upload.addEventListener('progress', function (e) {
-                            if (e.lengthComputable) {
-                                const percentComplete = (e.loaded / e.total) * 100;
-                                $('#progressBar').val(percentComplete);
-                                $('#progressPercent').text(`${Math.round(percentComplete)}%`);
-                            }
-                        }, false);
-                    }
-                    return xhr;
-                }
-            });
-        }
-        else { ajaxRequest = $.ajax({ url: url, type: "POST", data: $(id).serialize() }); }
+        var dataform = $(id).serialize();
+        if (idtarget == '') { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
+        else { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
+        $.ajax({
+            url: url, type: "POST", data: dataform
+            ,success: function (response) { ajaxSuccess(response, false, idtarget, callback); }
+            ,fail: function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); }
+        });
     }
     var modalshow = false;
     if (typeof (idtarget) == 'string') {
         if (idtarget == '' && isUpload == false) { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); modalshow = true; }
     }
     if (modalshow == false) { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
-    ajaxRequest.done(function (response) {
-        if (isUpload && idtarget != "") { $(idmsg).modal('hide'); }
-        else {
-            if (modalshow) {
-                if (isUpload) { $(idmsg).find(".modal-body").html(response); }
-                else { messageBox('Thông báo', response); }
-            }
-            else { $(idtarget).html(response); }
-        }
-        if (typeof (callback) == 'function') { callback(); }
-        fixAllClass();
-    });
-    ajaxRequest.fail(function (jqXHR, textStatus, errorThrown) {
-        var tmp = '<div class="alert alert-danger">Lỗi trong quá trình truyền nhận dữ liệu: ' + errorThrown + '</div>';
-        if (modalshow) { messageBox('Thông báo', tmp); return; }
-        $(idtarget).html(tmp);
-    });
+}
+function ajaxSuccess(response, isUpload, idtarget, callback) {
+    if (isUpload == false && idtarget == "") { $(idmsg).modal('hide'); }
+    if (idtarget != "") { $(idtarget).html(response); }
+    if (isUpload) { $(idmsg).find(".modal-body").html(response); }
+    else if (idtarget == "") { messageBox('Thông báo', response); }
+    if (typeof (callback) == 'function') { callback(); }
+    fixAllClass();
+}
+function ajaxFail(jqXHR, textStatus, errorThrown, idtarget) {
+    var tmp = `<div class="alert alert-danger">Lỗi trong quá trình truyền nhận dữ liệu: ${jqXHR.status}: ${textStatus}; ${errorThrown} </div>`;
+    if (idtarget == "") { messageBox('<i class="fa fa-warning"></i>Thông báo lỗi', tmp); return; }
+    else { $(idtarget).html(tmp); }
 }
 function showgeturl(url, idtarget, callback) {
     if (typeof (idtarget) == 'function') { if (typeof (callback) != 'function') { callback = idtarget; } }
