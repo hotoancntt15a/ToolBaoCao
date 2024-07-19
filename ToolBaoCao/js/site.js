@@ -191,7 +191,7 @@ function postform(fromID, urlPost, targetID, callback) {
             url: url, type: "POST", data: dataform,
             mimeTypes: "multipart/form-data",
             contentType: false, cache: false, processData: false
-            ,xhr: function () {
+            , xhr: function () {
                 const xhr = $.ajaxSettings.xhr();
                 if (xhr.upload) {
                     xhr.upload.addEventListener('progress', function (e) {
@@ -203,26 +203,18 @@ function postform(fromID, urlPost, targetID, callback) {
                     }, false);
                 }
                 return xhr;
-            }
-            , success: function (response) { ajaxSuccess(response, true, idtarget, callback); }
-            , fail: function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); }
-        });
+            }})
+            .done(function (response) { ajaxSuccess(response, true, idtarget, callback); })
+            .fail(function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); } );
     }
     else {
         var dataform = $(id).serialize();
         if (idtarget == '') { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
         else { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
-        $.ajax({
-            url: url, type: "POST", data: dataform
-            ,success: function (response) { ajaxSuccess(response, false, idtarget, callback); }
-            ,fail: function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); }
-        });
+        $.ajax({ url: url, type: "POST", data: dataform })
+            .done(function (response) { ajaxSuccess(response, true, idtarget, callback); })
+            .fail(function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); });
     }
-    var modalshow = false;
-    if (typeof (idtarget) == 'string') {
-        if (idtarget == '' && isUpload == false) { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); modalshow = true; }
-    }
-    if (modalshow == false) { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
 }
 function ajaxSuccess(response, isUpload, idtarget, callback) {
     if (isUpload == false && idtarget == "") { $(idmsg).modal('hide'); }
