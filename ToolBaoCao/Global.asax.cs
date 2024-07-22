@@ -38,10 +38,12 @@ namespace ToolBaoCao
 
         private void Session_Start(object sender, EventArgs e)
         {
+            
         }
 
         private void Session_End(object sender, EventArgs e)
         {
+            Session.Clear();
         }
     }
 }

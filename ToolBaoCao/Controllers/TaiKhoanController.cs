@@ -71,7 +71,7 @@ namespace ToolBaoCao.Controllers
                 {
                     item.Add("iduser", Request.getValue("iduser"));
                     if (item["iduser"] == "") { throw new Exception("Tên đăng nhập bỏ trống"); }
-                    if (Regex.IsMatch(item["iduser"], "^[a-z0-9@_.]+$", RegexOptions.IgnoreCase) == false) { throw new Exception("Tên đăng nhập có các ký tự không thuộc [a-z0-9@_.] các từ cho phép"); }
+                    if (Regex.IsMatch(item["iduser"], "^[a-z0-9@_.]+$", RegexOptions.IgnoreCase) == false) { throw new Exception("Tên đăng nhập có các ký tự không thuộc [a-zA-Z0-9@_.] các từ cho phép"); }
                     if (item["mat_khau"] == "") { throw new Exception("Mật khẩu để trống"); }
                     item.Add("time_create", DateTime.Now.toTimestamp().ToString());
                     idObject = item["iduser"];

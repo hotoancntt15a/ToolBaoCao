@@ -4,6 +4,7 @@ using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
@@ -22,13 +23,15 @@ namespace ToolBaoCao.Controllers
         public ActionResult Update(string bieu, HttpPostedFileBase inputfile)
         {
             DateTime timeStart = DateTime.Now;
+            var timeUp = timeStart.toTimestamp().ToString();
+            var userID = Session["iduser"].ToString();
             ViewBag.data = "Đang thao tác";
             if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
             if (inputfile == null) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
             if (inputfile.ContentLength == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
             string fileName = Path.GetFileName(inputfile.FileName);
             string fileExtension = Path.GetExtension(inputfile.FileName);
-            string fileNameSave = $"{bieu}{fileExtension}";
+            string fileNameSave = $"{userID}_{bieu}{fileExtension}";
             int sheetIndex = 0; int packetSize = 1000;
             int indexRow = 0; int indexColumn = 0; int maxRow = 0; int jIndex = 0;
             int fieldCount = 50; var tsql = new List<string>();
@@ -49,6 +52,7 @@ namespace ToolBaoCao.Controllers
                     catch (Exception ex) { throw new Exception($"Lỗi sai định dạng tập tin {fileName}: {ex.Message}"); }
                     var sheet = workbook.GetSheetAt(sheetIndex);
                     var tsqlv = new List<string>(); maxRow = sheet.LastRowNum;
+                    var cs = true;
                     IRow row = null;
                     for (; indexRow <= maxRow; indexRow++)
                     {
@@ -67,8 +71,11 @@ namespace ToolBaoCao.Controllers
                     /*
                      * Bắt đầu đọc dữ liệu
                      */
-                    /* - Đọc thông số biểu */
-                    /* Biểu B04: ma_tinh ma_loai_kcb tu_thang den_thang nam loai_bv kieubv loaick hang_bv tuyen cs + userID */
+                    /* 
+                     * - Đọc thông số biểu
+                     * Biểu B04: ma_tinh ma_loai_kcb tu_thang den_thang nam loai_bv kieubv loaick hang_bv tuyen cs + userID 
+                     * Biểu B26: ma_tinh	loai_kcb	thoi_gian	loai_bv	kieubv	loaick	hang_bv	tuyen	loai_so_sanh	cs
+                     */
                     switch (bieu)
                     {
                         /* Kiểm tra năm */
@@ -82,30 +89,47 @@ namespace ToolBaoCao.Controllers
                     indexRow++; /* Lấy dòng có dữ liệu */
                     var listValue = new List<string>();
                     row = sheet.GetRow(indexRow);
-                    for (jIndex = indexColumn; jIndex < indexColumn + 11; jIndex++)
+                    for (jIndex = indexColumn; jIndex < indexColumn + fieldCount; jIndex++)
                     {
                         ICell c = row.GetCell(jIndex);
                         listValue.Add(c.GetValueAsString().Trim());
                     }
                     /* Có phải là cơ sở không? */
                     tmpInt = (fieldCount - 1);
-                    if (listValue[tmpInt] == "true" && listValue[tmpInt] != "1") { listValue[tmpInt] = "1"; } else { listValue[tmpInt] = "0"; }
+                    if (listValue[tmpInt] == "true" && listValue[tmpInt] != "1") { listValue[tmpInt] = "1"; }
+                    else { listValue[tmpInt] = "0"; cs = false; }
                     /* Kiểm tra có đúng dữ liệu không */
                     if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
+                    /* Lấy danh sách cột */
+                    var allColumns = AppHelper.dbSqliteWork.getColumns(bieu).Select(p => p.ColumnName).ToList();
+                    allColumns.RemoveAt(0);
                     /* Thêm UserID */
-                    listValue.Add("0");
-                    tsql.Add($"INSERT INTO {bieu} VALUES ('{string.Join("','", listValue)}')");
+                    listValue.Add(userID);
+                    listValue.Add(timeUp);
+                    tsql.Add($"INSERT INTO {bieu} ({string.Join(",", allColumns)}) VALUES ('{string.Join("','", listValue)}')");
                     /**
                      * Lấy dữ liệu chi tiết
                      */
+                    allColumns = AppHelper.dbSqliteWork.getColumns(bieu + "chitiet").Select(p => p.ColumnName).ToList();
+                    allColumns.RemoveAt(0);
+                    /* id2 matinh tentinh macskcb tencskcb */
+                    if (cs) { allColumns.RemoveAt(1); allColumns.RemoveAt(1); } /* Loại bỏ ma_tinh, ten_tinh */
+                    else { allColumns.RemoveAt(3); allColumns.RemoveAt(3); } /* Loại bỏ ma_cskcb, ten_cskcb */
+                    var fieldNumbers = new List<int>();
                     switch (bieu)
                     {
                         /* Kiểm tra tổng số lượt KCB */
-                        case "b02": fieldCount = 11; indexRegex = 3; pattern = "^[0-9]+$"; break;
+                        case "b02": fieldCount = 20; indexRegex = 3; pattern = "^[0-9]+$";
+                            fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+                            break;
                         /* Kiểm tra ngày TTBQ */
-                        case "b04": fieldCount = 11; indexRegex = 9; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$"; break;
+                        case "b04": fieldCount = 11; indexRegex = 9; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                            fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
+                            break;
                         /* Kiểm tra BQ chung trong kỳ */
-                        case "b26": fieldCount = 34; indexRegex = 7; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$"; break;
+                        case "b26": fieldCount = 34; indexRegex = 7; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                            fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
+                            break;
                         default: fieldCount = 11; break;
                     }
                     /* Bỏ qua dòng tiêu đề */
@@ -115,7 +139,7 @@ namespace ToolBaoCao.Controllers
                     {
                         if (tsqlVaues.Count > packetSize)
                         {
-                            tsql.Add($"INSERT INTO {bieu}chitiet VALUES ('{string.Join("','", tsqlVaues)}')");
+                            tsql.Add($"INSERT INTO {bieu}chitiet ({string.Join(",", allColumns)}) VALUES {string.Join(",", tsqlVaues)};");
                             tsqlVaues = new List<string>();
                         }
                         /* Dòng không tồn tại */
@@ -126,7 +150,7 @@ namespace ToolBaoCao.Controllers
                         string ma = row.GetCell(indexColumn).GetValueAsString();
                         if (Regex.IsMatch(ma, "^[0-9]+$") == false) { continue; }
                         /* Xây dựng tsql VALUES */
-                        listValue = new List<string>() { ma.sqliteGetValueField() };
+                        listValue = new List<string>() { "{@id2}", ma.sqliteGetValueField() };
                         for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
                         {
                             ICell c = row.GetCell(jIndex);
@@ -134,14 +158,24 @@ namespace ToolBaoCao.Controllers
                         }
                         /* Cột lấy dữ liệu không đúng định dạng bỏ qua */
                         if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { continue; }
+                        /* Trường hợp trường số để trống thì cho bằng 0 */
+                        foreach(int i in fieldNumbers) { if (Regex.IsMatch(listValue[i], "^[0-9]+$|^[0-9]+[.][0-9]+$") == false) { listValue[i] = "0"; } }
                         tsqlVaues.Add($"('{string.Join("','", listValue)}')");
                     }
-                    if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet VALUES ('{string.Join("','", tsqlVaues)}')"); }
-                    System.IO.File.WriteAllText(Server.MapPath($"~/temp/excel/{fileNameSave}.tsql"), string.Join(Environment.NewLine, tsql));
+                    if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet ({string.Join(",", allColumns)}) VALUES {string.Join(",", tsqlVaues)};"); }
+
+                    System.IO.File.WriteAllText(Server.MapPath($"~/temp/excel/{fileNameSave}.sql"), string.Join(Environment.NewLine, tsql));
+                    if (tsql.Count < 2) { throw new Exception("Không có dữ liệu chi tiết"); }
+
+                    AppHelper.dbSqliteWork.Execute(tsql[0]);
+                    tmp = $"{AppHelper.dbSqliteWork.getValue($"SELECT id FROM {bieu} WHERE userid = '{userID}' AND timeup = {timeUp} LIMIT 1")}";
+                    if (Regex.IsMatch(tmp, "^[0-9]+$") == false) { throw new Exception($"Không cấp được id cho lần nhập liệu này: {tmp}"); }
+                    for (int i = 1; i < tsql.Count; i++) { AppHelper.dbSqliteWork.Execute(tsql[i].Replace("{@id2}", tmp)); }
+                    tsql.Add("/* {@id2}: " + tmp + " */");
                 }
                 catch (Exception ex2)
                 {
-                    ViewBag.Error =$"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{fileName}': {ex2.getLineHTML()}";
+                    ViewBag.Error = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{fileName}': {ex2.getLineHTML()}";
                 }
                 if (workbook != null)
                 {
@@ -150,7 +184,7 @@ namespace ToolBaoCao.Controllers
                 }
             }
             var timeProcess = (DateTime.Now - timeStart);
-            ViewBag.data = $"{bieu}: {fileName} size {inputfile.ContentLength} b được lưu tại {fileNameSave}; Thời gian xử lý là: {timeProcess.TotalSeconds:0.##} giây";
+            ViewBag.data = $"{bieu}: {fileName} (size {inputfile.ContentLength} b) được lưu tại {fileNameSave}; Thời gian xử lý là: {timeProcess.TotalSeconds:0.##} giây";
             return View();
         }
     }

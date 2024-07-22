@@ -68,7 +68,7 @@ namespace ToolBaoCao
                 chi_bq_chung real not null default 0, /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
                 chi_bq_ngoai real not null default 0, /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 chi_bq_noi real not null default 0, /* Như trên nhưng với nội trú	Cột K, B02 */
-                user_id text not null default '', /* Lưu ID của người dùng	 */
+                userid text not null default '', /* Lưu ID của người dùng	 */
                 user_name text not null default '' /* Lưu tên đăng nhập của người dùng	 */
                 );"
                 );
@@ -87,7 +87,7 @@ namespace ToolBaoCao
                 chi_bq_vtyt real not null default 0, /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
                 chi_bq_giuong real not null default 0, /* chi BQ tiền giường; Lấy từ B04. Cột I */
                 ngay_tt_bq text not null default '', /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                user_id text not null default '', /* Lưu ID của người dùng	 */
+                userid text not null default '', /* Lưu ID của người dùng	 */
                 user_name text not null default '' /* Lưu tên đăng nhập của người dùng	 */
                 );"
                 );
@@ -104,7 +104,7 @@ namespace ToolBaoCao
                 chi_bq_chung real not null default 0, /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
                 chi_bq_ngoai real not null default 0, /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
                 chi_bq_noi real not null default 0, /* Như trên nhưng với nội trú; Cột K B02 */
-                user_id text not null default '', /* Lưu ID của người dùng	 */
+                userid text not null default '', /* Lưu ID của người dùng	 */
                 user_name text not null default '' /* Lưu tên đăng nhập của người dùng	 */
                 );"
                 );
@@ -124,15 +124,16 @@ namespace ToolBaoCao
                 hang_bv integer not null default 0,
                 tuyen integer not null default 0,
                 cs integer not null default 0,
-                user_id text not null default ''
+                userid text not null default '',
+                timeup integer not null default 0
                 );"
                 );
             }
             if (tables.Contains("b02chitiet") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02chitiet (id INTEGER primary key AUTOINCREMENT,
-                id2 integer not null,
-                ma_tinh text not null,
+                id2 integer not null default 0,
+                ma_tinh text not null default '',
                 ten_tinh text not null default '',
                 ma_cskcb text not null default '',
                 ten_cskcb text not null default '',
@@ -173,15 +174,16 @@ namespace ToolBaoCao
                 kieubv integer not null default 0,
                 loaick integer not null default 0,
                 cs integer not null default 0,
-                user_id text not null default ''
+                userid text not null default '',
+                timeup integer not null default 0
                 );"
                 );
             }
             if (tables.Contains("b04chitiet") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04chitiet (id INTEGER primary key AUTOINCREMENT,
-                id2 integer not null,
-                ma_tinh text not null,
+                id2 integer not null default 0,
+                ma_tinh text not null default '',
                 ten_tinh text not null default '',
                 ma_cskcb text not null default '',
                 ten_cskcb text not null default '',
@@ -212,15 +214,16 @@ namespace ToolBaoCao
                 tuyen integer not null default 0,
                 loai_so_sanh text not null default '',
                 cs integer not null default 0,
-                user_id text not null default ''
+                userid text not null default '',
+                timeup integer not null default 0
                 );"
                 );
             }
             if (tables.Contains("b26chitiet") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b26chitiet (id INTEGER primary key AUTOINCREMENT,
-                id2 integer not null,
-                ma_tinh text not null,
+                id2 integer not null default 0,
+                ma_tinh text not null default '',
                 ten_tinh text not null default '',
                 ma_cskcb text not null default '',
                 ten_cskcb text not null default '',

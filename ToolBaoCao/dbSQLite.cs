@@ -13,6 +13,7 @@ namespace ToolBaoCao
     {
         public SQLiteConnectionStringBuilder connectString = new SQLiteConnectionStringBuilder();
         private SQLiteConnection connection = new SQLiteConnection();
+        private string fileDataName = "";
         public long getTimestamp(DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
         public dbSQLite(string pathOrConnectionString = "main.data", string password = "")
         {
@@ -26,6 +27,7 @@ namespace ToolBaoCao
             }
             connectString = cs;
             connection.ConnectionString = cs.ConnectionString;
+            fileDataName = Path.GetFileName(cs.DataSource);
         }
 
         public string getConnectionString(string databasePath = "main.data", string password = "")
@@ -38,7 +40,7 @@ namespace ToolBaoCao
         }
 
         public string getValueField(string valueField) { if (string.IsNullOrEmpty(valueField)) { return ""; } return valueField.Replace("'", "''"); }
-        public string getPathDataFile() => connectString.ConnectionString;
+        public string getPathDataFile() => connectString.DataSource;
 
         public void checkTableViewExists()
         { }
@@ -72,6 +74,21 @@ namespace ToolBaoCao
         {
             SQLiteParameter[] par = ConvertObjectToParameter(parameters);
             DataTable data = new DataTable("DataTable");
+            if(string.IsNullOrEmpty(query)) { return data; }
+            var parstring = new List<string>();
+            if(par != null) { foreach(var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
+            var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}");
+            if(fileCache != "")
+            {
+                try { 
+                    if (File.Exists(fileCache)) { 
+                        data.ReadXml(fileCache);
+                        return data;
+                    }
+                }
+                catch { try { File.Delete(fileCache); } catch { } }
+                
+            }            
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
             {
@@ -83,6 +100,7 @@ namespace ToolBaoCao
                     data = dataset.Tables[0];
                 }
             }
+            if(fileCache != "") { data.WriteXml(fileCache); }
             return data;
         }
 
@@ -100,13 +118,16 @@ namespace ToolBaoCao
 
         public int Execute(string query, object parameters = null)
         {
+            var rs = 0;
             SQLiteParameter[] par = ConvertObjectToParameter(parameters);
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
             {
                 if (par != null) { command.Parameters.AddRange(par); }
-                return command.ExecuteNonQuery();
+                rs = command.ExecuteNonQuery();
             }
+            AppHelper.DeleteFileCacheQuery(query, fileDataName);
+            return rs;
         }
 
         public object getValue(string query, object parameters = null)

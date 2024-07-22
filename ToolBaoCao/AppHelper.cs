@@ -1,4 +1,6 @@
-﻿using NPOI.SS.UserModel;
+﻿using Microsoft.Ajax.Utilities;
+using NPOI.SS.Formula.Functions;
+using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -37,6 +39,50 @@ namespace ToolBaoCao
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
+        public static List<string> GetTableNameFromTsql(string tsql)
+        { 
+            var matches = Regex.Matches(tsql, @"\b(FROM|JOIN|UPDATE)\s+([a-zA-Z0-9_.\[\]]+)", RegexOptions.IgnoreCase);
+            var tableNames = new List<string>();
+            foreach (System.Text.RegularExpressions.Match match in matches) { tableNames.Add(match.Groups[2].Value); }
+            return tableNames;
+        }
+
+        public static bool IsUpdateOrDelete(string sql) => Regex.IsMatch(sql, @"^\s*(UPDATE|DELETE)\s+", RegexOptions.IgnoreCase);
+
+        public static string GetPathFileCacheQuery(string tsql, string dataName = "")
+        {
+            var tables = GetTableNameFromTsql(tsql);
+            string fileCache = string.Empty;
+            if (tables.Count == 1)
+            {
+                if (Regex.IsMatch(tables[0], @"^dm", RegexOptions.IgnoreCase)) { fileCache = GetMd5Hash(tsql); }
+                else
+                {
+                    var tablesCache = new List<string> { "phanquyen", "nhomquyen", "w_menu", "wmenu", "taikhoan", "system_var" };
+                    if (tablesCache.Contains(tables[0])) { fileCache = tsql.GetMd5Hash(); }
+                }
+                if (!string.IsNullOrEmpty(fileCache)) { fileCache = $"{pathApp}/cache/d{dataName}_{tables[0]}_query_{fileCache}.xml"; }
+            }
+            return fileCache;
+        }
+
+        public static void DeleteFileCacheQuery(string tsql, string dataName)
+        {
+            if (!IsUpdateOrDelete(tsql)) return;
+            var tables = GetTableNameFromTsql(tsql);
+            if (tables.Count == 0) return;
+            DeleteCache(tables[0] + "_", dataName);
+        }
+
+        public static void DeleteCache(string nameStartWith, string dataName)
+        {
+            if (string.IsNullOrEmpty(nameStartWith)) return;
+            var files = Directory.GetFiles($"{pathApp}/cache/", $"d{dataName}_{nameStartWith}*");
+            foreach (var file in files)
+            {
+                if (File.Exists(file)) { try { File.Delete(file); } catch { } }
+            }
+        }
 
         public static string GetValueAsString(this ICell cell, string formatDateTime = "yyyy-MM-dd H:mm:ss")
         {
@@ -103,7 +149,7 @@ namespace ToolBaoCao
         {
             var http = HttpContext.Current;
             if (http == null) return false;
-            var tmp = $"{http.Session["isLogin"]}";
+            var tmp = $"{http.Session["app.isLogin"]}";
             if (tmp == "1") { return true; }
             if (http.Request.Cookies.AllKeys.Any(p => p == "idobject") == false) { return false; }
             tmp = $"{http.Request.Cookies["idobject"]?.Value}";
@@ -139,7 +185,7 @@ namespace ToolBaoCao
                 if (http == null) { return "Không xác định được HttpContext"; }
                 http.Session.Clear();
                 http.Request.Cookies.Clear();
-                http.Session.Add("isLogin", "1");
+                http.Session.Add("app.isLogin", "1");
                 foreach (DataColumn c in items.Columns) { http.Session.Add(c.ColumnName, $"{items.Rows[0][c.ColumnName]}"); }
                 /* IDUSER|PASS|DATETIME */
                 if (remember)
