@@ -19,21 +19,21 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        public ActionResult Update(string bieu, HttpPostedFileBase file)
+        public ActionResult Update(string bieu, HttpPostedFileBase inputfile)
         {
             DateTime timeStart = DateTime.Now;
             ViewBag.data = "Đang thao tác";
             if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
-            if (file == null) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
-            if (file.ContentLength == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
-            string fileName = Path.GetFileName(file.FileName);
-            string fileExtension = Path.GetExtension(file.FileName);
+            if (inputfile == null) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
+            if (inputfile.ContentLength == 0) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
+            string fileName = Path.GetFileName(inputfile.FileName);
+            string fileExtension = Path.GetExtension(inputfile.FileName);
             string fileNameSave = $"{bieu}{fileExtension}";
             int sheetIndex = 0; int packetSize = 1000;
             int indexRow = 0; int indexColumn = 0; int maxRow = 0; int jIndex = 0;
             int fieldCount = 50; var tsql = new List<string>();
             string pathNameSave = Server.MapPath($"~/temp/excel/{fileNameSave}");
-            file.SaveAs(pathNameSave);
+            inputfile.SaveAs(pathNameSave);
             var finfo = new FileInfo(pathNameSave);
             var tmp = "";
             using (FileStream fs = finfo.OpenRead())
@@ -150,7 +150,7 @@ namespace ToolBaoCao.Controllers
                 }
             }
             var timeProcess = (DateTime.Now - timeStart);
-            ViewBag.data = $"{bieu}: {fileName} size {file.ContentLength} b được lưu tại {fileNameSave}; Thời gian xử lý là: {timeProcess.TotalSeconds:0.##} giây";
+            ViewBag.data = $"{bieu}: {fileName} size {inputfile.ContentLength} b được lưu tại {fileNameSave}; Thời gian xử lý là: {timeProcess.TotalSeconds:0.##} giây";
             return View();
         }
     }

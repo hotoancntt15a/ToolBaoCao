@@ -29,9 +29,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-right">@Html.Label("file", "Chọn tập tin")</td>
+                            <td class="text-right">@Html.Label("inputfile", "Chọn tập tin")</td>
                             <td>
-                                <input type="file" name="file" id="file" value="" />
+                                <input type="file" name="inputfile" id="inputfile" value="" />
                             </td>
                         </tr>
                         <tr>
@@ -57,13 +57,13 @@
 <script>
     function importData() {
         if ($('#inputfile').val() == "") {
-            messageBox("<i class=\"fa fa-warning\"></i> Thông báo lỗi", "<div class=\"alert alert-warning\">Bạn chưa chọn tập tin</div>");
+            messageBox("<i class=\"fa fa-warning\"></i> JS Thông báo lỗi", "<div class=\"alert alert-warning\">Bạn chưa chọn tập tin</div>");
             return;
         }
         /** Kiểu tra định dạng mở rộng tập tin */
         var ext = getFileExtension($('#inputfile').val()).toLowerCase();
         if (ext != "xls" && ext != "xlsx") {
-            messageBox("<i class=\"fa fa-warning\"></i> Thông báo lỗi", "<div class=\"alert alert-warning\">Hệ thống không hỗ trợ tập tin có đuôi mở rộng " + ext + "</div>");
+            messageBox("<i class=\"fa fa-warning\"></i> JS Thông báo lỗi", "<div class=\"alert alert-warning\">Hệ thống không hỗ trợ tập tin có đuôi mở rộng '" + ext + "'</div>");
             return;
         }
         messageBox("Thông báo", "<div class=\"alert alert-info\">Vui lòng đợi hệ thống đẩy tập tin và xử lý tập tin <img alert=\"\" title=\"\" src=\"/images/loader.gif\"></img> </div>");

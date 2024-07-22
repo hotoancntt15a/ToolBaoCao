@@ -36,11 +36,11 @@ namespace ToolBaoCao
         public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
+        public static dbSQLite dbSqliteWork = new dbSQLite();
 
         public static string GetValueAsString(this ICell cell, string formatDateTime = "yyyy-MM-dd H:mm:ss")
         {
             if (cell == null) { return ""; }
-
             switch (cell.CellType)
             {
                 case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
@@ -74,14 +74,10 @@ namespace ToolBaoCao
                 appConfig.Set("App.PageSize", "50");
                 appConfig.Set("App.PacketSize", "1000");
             }
-            var dbConnectionString = appConfig.Get("dbConnectionString");
-            if (dbConnectionString == "")
-            {
-                var cns = new System.Data.SQLite.SQLiteConnectionStringBuilder();
-                cns.DataSource = Path.Combine(pathApp, "App_Data\\main.db");
-                dbConnectionString = cns.ConnectionString;
-            }
-            dbSqliteMain = BuildDatabase.getDataSQLiteMain(dbConnectionString);
+            dbSqliteMain = new dbSQLite(Path.Combine(pathApp, "App_Data\\main.db"));
+            dbSqliteMain.buildData();
+            dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
+            dbSqliteWork.buildDataCongViec();
         }
 
         public static void SapXepNgauNhien(this List<string> arr)

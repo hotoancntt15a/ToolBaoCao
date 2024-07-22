@@ -7,7 +7,7 @@ namespace ToolBaoCao
 {
     public static class BuildDatabase
     {
-        public static void checkBuildData(this dbSQLite connect) {
+        public static void buildData(this dbSQLite connect) {
             var tsqlInsert = new List<string>();
             var tsqlCreate = new List<string>();
             var tsql = "";
@@ -47,7 +47,7 @@ namespace ToolBaoCao
             }
             catch (Exception er) { er.saveError(); }
         }
-        public static void checkBuildDataCongViec(this dbSQLite connect)
+        public static void buildDataCongViec(this dbSQLite connect)
         {
             var tsqlCreate = new List<string>();
             var tsql = "";
@@ -97,8 +97,7 @@ namespace ToolBaoCao
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS sheetpl03 (id INTEGER primary key AUTOINCREMENT, 
                 id_bc text not null, /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 idtinh text not null, /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ma_cskcb text not null, /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1 */
-Các dòng còn lại lấy từ các cột A Excel B02 */
+                ma_cskcb text not null, /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
                 ten_cskcb text not null default '', /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
                 tyle_noitru real not null default 0, /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
                 ngay_dtri_bq real not null default 0, /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
@@ -263,12 +262,6 @@ Các dòng còn lại lấy từ các cột A Excel B02 */
             /* Tạo cơ sở dữ liệu */
             try { tsql = string.Join(" ", tsqlCreate); connect.Execute(tsql); } catch (Exception ex) { ex.saveError(tsql); }
             /* if (tsqlCreate.Count > 0) { foreach (var v in tsqlCreate) { try { connect.Execute(v); } catch (Exception ex) { ex.saveError(v); } } } */
-        }
-        public static dbSQLite getDataSQLiteMain(string connectionString)
-        {
-            dbSQLite connect = new dbSQLite(connectionString);
-            connect.checkBuildData();
-            return connect;
         }
     }
 }

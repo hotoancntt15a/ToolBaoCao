@@ -183,9 +183,8 @@ function postform(fromID, urlPost, targetID, callback) {
     if (idform == '') { messageBox('<div class="alert alert-danger">Thông báo lỗi', '<div class="alert alert-danger">Không có nguồn Form để thao tác</div>'); return; }
     if ($(idform).length == 0) { messageBox('<div class="alert alert-danger">Thông báo lỗi', `<div class="alert alert-danger">Không tìm thấy Form có id: ${idform} để thao tác</div>`); return; }
     if ($(idform).attr('enctype') == 'multipart/form-data') {
-        var e = document.getElementById(idform.replace('#', ''));
-        var dataform = new FormData(e);
-        if (idtarget != '') { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
+        var dataform = new FormData(document.getElementById(idform.replace('#', '')));
+        if (idtarget != '') { $(idtarget).html('Đang thực hiện <img src="/images/loader.gif" alt="" />'); }
         messageBox('Thông báo', '<div class="alert alert-info">Đang thực hiện <img alt="" title="" src="/images/loader.gif" /></div><progress id="progressBar' + timestamp + '" value="0" max="100" style="width: 100%;"></progress> <span id="progressPercent' + timestamp + '">0%</span>');
         $.ajax({
             url: url, type: "POST", data: dataform,
@@ -209,8 +208,8 @@ function postform(fromID, urlPost, targetID, callback) {
     }
     else {
         var dataform = $(id).serialize();
-        if (idtarget == '') { messageBox('Thông báo', 'Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
-        else { $(idtarget).html('Đang tải dữ liệu <img src="/images/loader.gif" alt="" />'); }
+        if (idtarget == '') { messageBox('Thông báo', 'Đang thực hiện <img src="/images/loader.gif" alt="" />'); }
+        else { $(idtarget).html('Đang thực hiện <img src="/images/loader.gif" alt="" />'); }
         $.ajax({ url: url, type: "POST", data: dataform })
             .done(function (response) { ajaxSuccess(response, true, idtarget, callback); })
             .fail(function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); });
@@ -225,8 +224,8 @@ function ajaxSuccess(response, isUpload, idtarget, callback) {
     fixAllClass();
 }
 function ajaxFail(jqXHR, textStatus, errorThrown, idtarget) {
-    var tmp = `<div class="alert alert-danger">Lỗi JS trong quá trình truyền nhận dữ liệu: ${jqXHR.status}: ${textStatus}; ${errorThrown} </div>`;
-    if (idtarget == "") { messageBox('<i class="fa fa-warning"></i>Thông báo lỗi', tmp); return; }
+    var tmp = `<div class="alert alert-danger"> JS Lỗi trong quá trình truyền nhận dữ liệu: ${jqXHR.status}: ${textStatus}; ${errorThrown} </div>`;
+    if (idtarget == "") { messageBox('<i class="fa fa-warning"></i> JS Thông báo lỗi', tmp); return; }
     else { $(idtarget).html(tmp); }
 }
 function showgeturl(url, idtarget, callback) {
