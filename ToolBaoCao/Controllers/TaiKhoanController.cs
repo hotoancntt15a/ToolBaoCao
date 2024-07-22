@@ -64,6 +64,7 @@ namespace ToolBaoCao.Controllers
                     { "email", Request.getValue("email") },
                     { "dien_thoai", Request.getValue("dien_thoai") },
                     { "dia_chi", Request.getValue("dia_chi") },
+                    { "idtinh", Request.getValue("idtinh") },
                     { "ghi_chu", Request.getValue("ghi_chu") },
                     { "hinh_dai_dien", "" }
                 };

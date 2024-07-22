@@ -367,6 +367,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="BuildDatabase.cs" />
     <Compile Include="CaptchaImage.cs" />
+    <Compile Include="Controllers\BaoCaoController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ImportExcelController.cs" />
@@ -769,6 +770,7 @@
     <Content Include="ckeditor\samples\toolbarconfigurator\lib\codemirror\LICENSE" />
     <Content Include="ckeditor\SECURITY.md" />
     <Content Include="ckeditor\skins\moono-lisa\readme.md" />
+    <Content Include="App_Data\baocaotuan.docx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -2675,6 +2677,8 @@
     <Content Include="Views\Task\Index.cshtml" />
     <Content Include="Views\ImportSQLite\Index.cshtml" />
     <Content Include="Views\ImportSQLite\Update.cshtml" />
+    <Content Include="Views\BaoCao\Tuan.cshtml" />
+    <Content Include="Views\BaoCao\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

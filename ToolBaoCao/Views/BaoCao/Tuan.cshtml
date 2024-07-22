@@ -1,0 +1,81 @@
+﻿@{
+    ViewBag.Title = "Báo cáo tuần";
+    var idForm = "idfrm" + DateTime.Now.toTimestamp().ToString();
+    System.Data.DataTable dmTinh = new System.Data.DataTable();
+    if(ViewBag.dmTinh!=  null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
+    string tinhSelect = $"{ViewBag.tinhSelect}";
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Thông tin</h6>
+    </div>
+    <div class="card-body">
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-warning">@ViewBag.Error</div>
+        }
+        else
+        {
+        <div class="table-responsive">
+            @using (Html.BeginForm("Tuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            {
+                <input type="hidden" name="mode" value="taive" />
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td style="width: 150px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
+                            <td>
+                                <select name="matinh" id="matinh">
+                                    @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                    {
+                                        if (tinhSelect == row[0].ToString())
+                                        {
+                                            <option value="@row[0]" selected>@row[1]</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@row[0]">@row[1]</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("thoigian", "Thời gian")</td>
+                            <td>
+                                <input type="text" name="ngay" id="ngay" value="" class="clsdate" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <a href="javascript:baocao();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                                <a href="javascript:baocao('1');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+        }
+    </div>
+</div>
+<div class="alert alert-warning">
+    <table class="table table-hover">
+        <tbody>
+            <tr>
+                <td>Ghi chú</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    function baocao(sender) {
+        var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
+        var idform = '#@idForm';
+        $(idform).find("input[name='mode']").val(mode);
+        $(idform).submit();
+    }
+</script>

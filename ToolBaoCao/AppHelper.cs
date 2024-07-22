@@ -291,6 +291,20 @@ namespace ToolBaoCao
             if (DateTime.TryParseExact(dateVN, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out date)) { return date.ToOADate(); }
             return 0;
         }
+        public static DateTime getFromDateVN(this string dateVN)
+        {
+            var format = "dd/MM/yyyy"; dateVN = dateVN.Trim();
+            if (dateVN.Length > 10)
+            {
+                var tmp = dateVN.Split(':').ToList();
+                if (tmp.Count == 2) { format += " HH:mm"; }
+                else if (tmp.Count == 3) { format += " HH:mm:ss"; }
+                else { return new DateTime(1970, 1, 1); }
+            }
+            var date = DateTime.Now;
+            if (DateTime.TryParseExact(dateVN, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out date)) { return date; }
+            return new DateTime(1970, 1, 1);
+        }
 
         public static Dictionary<string, object> toDictionary(this DataTable dataTable)
         {

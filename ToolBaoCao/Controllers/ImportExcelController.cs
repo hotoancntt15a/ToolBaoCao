@@ -22,9 +22,10 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Update(string bieu, HttpPostedFileBase inputfile)
         {
+            if (Session["iduser"] == null) { ViewBag.Error = "Bạn chưa đăng nhập"; return View(); }
             DateTime timeStart = DateTime.Now;
             var timeUp = timeStart.toTimestamp().ToString();
-            var userID = Session["iduser"].ToString();
+            var userID = $"{Session["iduser"]}".Trim();
             ViewBag.data = "Đang thao tác";
             if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
             if (inputfile == null) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }

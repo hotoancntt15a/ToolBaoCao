@@ -207,7 +207,7 @@ function postform(fromID, urlPost, targetID, callback) {
             .fail(function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); } );
     }
     else {
-        var dataform = $(id).serialize();
+        var dataform = $(idform).serialize();
         if (idtarget == '') { messageBox('Thông báo', 'Đang thực hiện <img src="/images/loader.gif" alt="" />'); }
         else { $(idtarget).html('Đang thực hiện <img src="/images/loader.gif" alt="" />'); }
         $.ajax({ url: url, type: "POST", data: dataform })

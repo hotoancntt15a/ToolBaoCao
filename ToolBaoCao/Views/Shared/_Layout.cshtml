@@ -82,7 +82,12 @@
     <script src="~/js/site.js?v=@tmp"></script>
     @RenderSection("scripts", required: false)
     <script>
-        function fixAllClass() {}
+        function fixAllClass() {
+            if ($('.clsdate').length > 0) { $('.clsdate').datepicker({ language: "vi", autoclose: true, todayHighlight: true }); }
+            if ($('.clstime').length > 0) { $('.clstime').timepicker({ 'timeFormat': 'H:i:s' }); }
+            $(".clsnumberint").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9]/g)) return false; });
+            $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.]/g)) return false; });
+        }
         $(document).ready(function () {
             fixAllClass();
             if ($('.apptitle').length > 0) { $('title').text($('.apptitle').first().text() + ' - Trắc nghiệm'); }

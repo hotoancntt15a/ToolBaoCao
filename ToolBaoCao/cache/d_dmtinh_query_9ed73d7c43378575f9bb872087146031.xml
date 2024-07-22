@@ -1,0 +1,263 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Table>
+    <id />
+    <ten>[Không xác định]</ten>
+  </Table>
+  <Table>
+    <id>00</id>
+    <ten>Toàn Tỉnh</ten>
+  </Table>
+  <Table>
+    <id>10</id>
+    <ten>Tỉnh Lào Cai</ten>
+  </Table>
+  <Table>
+    <id>92</id>
+    <ten>Thành phố Cần Thơ</ten>
+  </Table>
+  <Table>
+    <id>01</id>
+    <ten>Thành phố Hà Nội</ten>
+  </Table>
+  <Table>
+    <id>31</id>
+    <ten>Thành phố Hải Phòng</ten>
+  </Table>
+  <Table>
+    <id>79</id>
+    <ten>Thành phố Hồ Chí Minh</ten>
+  </Table>
+  <Table>
+    <id>48</id>
+    <ten>Thành phố Đà Nẵng</ten>
+  </Table>
+  <Table>
+    <id>89</id>
+    <ten>Tỉnh An Giang</ten>
+  </Table>
+  <Table>
+    <id>77</id>
+    <ten>Tỉnh Bà Rịa - Vũng Tàu</ten>
+  </Table>
+  <Table>
+    <id>74</id>
+    <ten>Tỉnh Bình Dương</ten>
+  </Table>
+  <Table>
+    <id>70</id>
+    <ten>Tỉnh Bình Phước</ten>
+  </Table>
+  <Table>
+    <id>60</id>
+    <ten>Tỉnh Bình Thuận</ten>
+  </Table>
+  <Table>
+    <id>52</id>
+    <ten>Tỉnh Bình Định</ten>
+  </Table>
+  <Table>
+    <id>95</id>
+    <ten>Tỉnh Bạc Liêu</ten>
+  </Table>
+  <Table>
+    <id>24</id>
+    <ten>Tỉnh Bắc Giang</ten>
+  </Table>
+  <Table>
+    <id>06</id>
+    <ten>Tỉnh Bắc Kạn</ten>
+  </Table>
+  <Table>
+    <id>27</id>
+    <ten>Tỉnh Bắc Ninh</ten>
+  </Table>
+  <Table>
+    <id>83</id>
+    <ten>Tỉnh Bến Tre</ten>
+  </Table>
+  <Table>
+    <id>04</id>
+    <ten>Tỉnh Cao Bằng</ten>
+  </Table>
+  <Table>
+    <id>96</id>
+    <ten>Tỉnh Cà Mau</ten>
+  </Table>
+  <Table>
+    <id>64</id>
+    <ten>Tỉnh Gia Lai</ten>
+  </Table>
+  <Table>
+    <id>02</id>
+    <ten>Tỉnh Hà Giang</ten>
+  </Table>
+  <Table>
+    <id>35</id>
+    <ten>Tỉnh Hà Nam</ten>
+  </Table>
+  <Table>
+    <id>42</id>
+    <ten>Tỉnh Hà Tĩnh</ten>
+  </Table>
+  <Table>
+    <id>17</id>
+    <ten>Tỉnh Hòa Bình</ten>
+  </Table>
+  <Table>
+    <id>33</id>
+    <ten>Tỉnh Hưng Yên</ten>
+  </Table>
+  <Table>
+    <id>30</id>
+    <ten>Tỉnh Hải Dương</ten>
+  </Table>
+  <Table>
+    <id>93</id>
+    <ten>Tỉnh Hậu Giang</ten>
+  </Table>
+  <Table>
+    <id>56</id>
+    <ten>Tỉnh Khánh Hòa</ten>
+  </Table>
+  <Table>
+    <id>91</id>
+    <ten>Tỉnh Kiên Giang</ten>
+  </Table>
+  <Table>
+    <id>62</id>
+    <ten>Tỉnh Kon Tum</ten>
+  </Table>
+  <Table>
+    <id>12</id>
+    <ten>Tỉnh Lai Châu</ten>
+  </Table>
+  <Table>
+    <id>80</id>
+    <ten>Tỉnh Long An</ten>
+  </Table>
+  <Table>
+    <id>68</id>
+    <ten>Tỉnh Lâm Đồng</ten>
+  </Table>
+  <Table>
+    <id>20</id>
+    <ten>Tỉnh Lạng Sơn</ten>
+  </Table>
+  <Table>
+    <id>36</id>
+    <ten>Tỉnh Nam Định</ten>
+  </Table>
+  <Table>
+    <id>40</id>
+    <ten>Tỉnh Nghệ An</ten>
+  </Table>
+  <Table>
+    <id>37</id>
+    <ten>Tỉnh Ninh Bình</ten>
+  </Table>
+  <Table>
+    <id>58</id>
+    <ten>Tỉnh Ninh Thuận</ten>
+  </Table>
+  <Table>
+    <id>25</id>
+    <ten>Tỉnh Phú Thọ</ten>
+  </Table>
+  <Table>
+    <id>54</id>
+    <ten>Tỉnh Phú Yên</ten>
+  </Table>
+  <Table>
+    <id>44</id>
+    <ten>Tỉnh Quảng Bình</ten>
+  </Table>
+  <Table>
+    <id>49</id>
+    <ten>Tỉnh Quảng Nam</ten>
+  </Table>
+  <Table>
+    <id>51</id>
+    <ten>Tỉnh Quảng Ngãi</ten>
+  </Table>
+  <Table>
+    <id>22</id>
+    <ten>Tỉnh Quảng Ninh</ten>
+  </Table>
+  <Table>
+    <id>45</id>
+    <ten>Tỉnh Quảng Trị</ten>
+  </Table>
+  <Table>
+    <id>94</id>
+    <ten>Tỉnh Sóc Trăng</ten>
+  </Table>
+  <Table>
+    <id>14</id>
+    <ten>Tỉnh Sơn La</ten>
+  </Table>
+  <Table>
+    <id>38</id>
+    <ten>Tỉnh Thanh Hóa</ten>
+  </Table>
+  <Table>
+    <id>34</id>
+    <ten>Tỉnh Thái Bình</ten>
+  </Table>
+  <Table>
+    <id>19</id>
+    <ten>Tỉnh Thái Nguyên</ten>
+  </Table>
+  <Table>
+    <id>46</id>
+    <ten>Tỉnh Thừa Thiên Huế</ten>
+  </Table>
+  <Table>
+    <id>82</id>
+    <ten>Tỉnh Tiền Giang</ten>
+  </Table>
+  <Table>
+    <id>84</id>
+    <ten>Tỉnh Trà Vinh</ten>
+  </Table>
+  <Table>
+    <id>08</id>
+    <ten>Tỉnh Tuyên Quang</ten>
+  </Table>
+  <Table>
+    <id>72</id>
+    <ten>Tỉnh Tây Ninh</ten>
+  </Table>
+  <Table>
+    <id>86</id>
+    <ten>Tỉnh Vĩnh Long</ten>
+  </Table>
+  <Table>
+    <id>26</id>
+    <ten>Tỉnh Vĩnh Phúc</ten>
+  </Table>
+  <Table>
+    <id>15</id>
+    <ten>Tỉnh Yên Bái</ten>
+  </Table>
+  <Table>
+    <id>11</id>
+    <ten>Tỉnh Điện Biên</ten>
+  </Table>
+  <Table>
+    <id>66</id>
+    <ten>Tỉnh Đắk Lắk</ten>
+  </Table>
+  <Table>
+    <id>67</id>
+    <ten>Tỉnh Đắk Nông</ten>
+  </Table>
+  <Table>
+    <id>75</id>
+    <ten>Tỉnh Đồng Nai</ten>
+  </Table>
+  <Table>
+    <id>87</id>
+    <ten>Tỉnh Đồng Tháp</ten>
+  </Table>
+</NewDataSet>
