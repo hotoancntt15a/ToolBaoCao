@@ -28,11 +28,13 @@ namespace ToolBaoCao
             var ex = Server.GetLastError();
             var httpException = ex as HttpException ?? ex.InnerException as HttpException;
             if (httpException == null) return;
-
-            if (((System.Web.HttpException)httpException.InnerException).WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge)
+            if(httpException.InnerException != null)
             {
-                Response.Write("Too big a file, dude");
-            }
+                if (((System.Web.HttpException)httpException.InnerException).WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge)
+                {
+                    Response.Write("Too big a file, dude");
+                }
+            }            
             if (httpException.GetHttpCode() == 404) { Response.Redirect("~/Error"); }
         }
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Table>
+    <iduser>admin</iduser>
+    <mat_khau>53984fd0c0d4ec42aeb48834b1bb02c0</mat_khau>
+    <ten_hien_thi>Quản trị hệ thống</ten_hien_thi>
+    <gioi_tinh />
+    <ngay_sinh>17/07/2024</ngay_sinh>
+    <email>hotoancntt15a@gmail.com</email>
+    <dien_thoai>0914272795</dien_thoai>
+    <dia_chi>TP Lào Cai, Tỉnh Lào Cai</dia_chi>
+    <hinh_dai_dien />
+    <idtinh />
+    <ghi_chu />
+    <nhom>0</nhom>
+    <locked>0</locked>
+    <time_create>1721204666</time_create>
+    <time_last_login>1721648199</time_last_login>
+  </Table>
+</NewDataSet>

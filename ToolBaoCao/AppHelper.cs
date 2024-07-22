@@ -124,6 +124,11 @@ namespace ToolBaoCao
             dbSqliteMain.buildData();
             dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
             dbSqliteWork.buildDataCongViec();
+            /* Check Folder Exists */
+            if(Directory.Exists(pathApp + "\\cache") == false) { Directory.CreateDirectory(pathApp + "\\cache"); }
+            if (Directory.Exists(pathApp + "\\temp") == false) { Directory.CreateDirectory(pathApp + "\\temp"); }
+            if (Directory.Exists(pathApp + "\\temp\\data") == false) { Directory.CreateDirectory(pathApp + "\\temp\\data"); }
+            if (Directory.Exists(pathApp + "\\temp\\excel") == false) { Directory.CreateDirectory(pathApp + "\\temp\\excel"); }
         }
 
         public static void SapXepNgauNhien(this List<string> arr)
