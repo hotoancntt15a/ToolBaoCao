@@ -225,7 +225,7 @@ function ajaxSuccess(response, isUpload, idtarget, callback) {
     fixAllClass();
 }
 function ajaxFail(jqXHR, textStatus, errorThrown, idtarget) {
-    var tmp = `<div class="alert alert-danger">Lỗi trong quá trình truyền nhận dữ liệu: ${jqXHR.status}: ${textStatus}; ${errorThrown} </div>`;
+    var tmp = `<div class="alert alert-danger">Lỗi JS trong quá trình truyền nhận dữ liệu: ${jqXHR.status}: ${textStatus}; ${errorThrown} </div>`;
     if (idtarget == "") { messageBox('<i class="fa fa-warning"></i>Thông báo lỗi', tmp); return; }
     else { $(idtarget).html(tmp); }
 }

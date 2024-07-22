@@ -43,33 +43,21 @@ namespace ToolBaoCao
 
             switch (cell.CellType)
             {
-                case CellType.String: return cell.StringCellValue;
-                case CellType.Boolean: return cell.BooleanCellValue.ToString();
-                case CellType.Blank: return "";
                 case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
                 case CellType.Numeric:
-                    if (DateUtil.IsCellDateFormatted(cell))
-                    {
-                        // Định dạng giá trị ngày tháng
-                        return cell.DateCellValue?.ToString(formatDateTime);
-                    }
-                    else { return cell.NumericCellValue.ToString(); }
+                    if (DateUtil.IsCellDateFormatted(cell)) { return cell.DateCellValue?.ToString(formatDateTime); }
+                    return cell.NumericCellValue.ToString().Replace(",", ".");
                 case CellType.Formula:
                     // Lấy giá trị tính toán của công thức nếu cần
                     switch (cell.CachedFormulaResultType)
                     {
                         case CellType.Numeric:
-                            if (DateUtil.IsCellDateFormatted(cell))
-                            {
-                                return cell.DateCellValue?.ToString(formatDateTime);
-                            }
-                            else { return cell.NumericCellValue.ToString(); }
-                        case CellType.String: return cell.StringCellValue;
-                        case CellType.Boolean: return cell.BooleanCellValue.ToString();
+                            if (DateUtil.IsCellDateFormatted(cell)) { return cell.DateCellValue?.ToString(formatDateTime); }
+                            return cell.NumericCellValue.ToString().Replace(",", ".");
                         case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
-                        default: return cell.ToString();
+                        default: return $"{cell}";
                     }
-                default: return cell.ToString();
+                default: return $"{cell}";
             }
         }
 

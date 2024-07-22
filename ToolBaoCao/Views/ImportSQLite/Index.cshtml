@@ -17,23 +17,24 @@
                 <table class="table table-hover">
                     <tbody>
                         <tr>
-                            <td style="width: 180px;" class="text-right">Chọn cấu trúc dữ liệu</td>
+                            <td style="width: 150px;" class="text-right">@Html.Label("bieu", "Chọn cấu trúc dữ liệu")</td>
                             <td>
-                                <select name="bieu">
-                                    <option value="bhyt7980a">bhyt7980a</option>
-                                    <option value="xml123">xml123</option>
-                                </select>
+                                @Html.DropDownList("bieu", new SelectList(new List<SelectListItem>
+                                {
+                                    new SelectListItem { Value = "bhyt7980a", Text = "bhyt7980a"  },
+                                    new SelectListItem { Value = "xml123", Text = "xml123"  }
+                                }, "Value", "Text"))
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-right">Chọn tập tin</td>
+                            <td class="text-right">@Html.Label("file", "Chọn tập tin")</td>
                             <td>
-                                <input type="file" name="file" id="inputfile" value="" />
+                                <input type="file" name="file" id="file" value="" />
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <a href="javascript:importexecl();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                                <a href="javascript:importData();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
                             </td>
                         </tr>
                     </tbody>
@@ -53,7 +54,7 @@
 </div>
 <script>
     var extSQLite = ["", "db", "db3", "sqlite", "sqlite3", "bak"];
-    function importexecl() {
+    function importData() {
         if ($('#inputfile').val() == "") {
             messageBox("<i class=\"fa fa-warning\"></i> Thông báo lỗi", "<div class=\"alert alert-warning\">Bạn chưa chọn tập tin</div>");
             return;

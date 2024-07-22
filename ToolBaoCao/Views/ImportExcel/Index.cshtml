@@ -18,24 +18,25 @@
                 <table class="table table-hover">
                     <tbody>
                         <tr>
-                            <td style="width: 150px;" class="text-right">Chọn biểu nhập</td>
+                            <td style="width: 150px;" class="text-right">@Html.Label("bieu", "Chọn biểu nhập")</td>
                             <td>
-                                <select name="bieu">
-                                    <option value="b02">B02. Thống kê KCB (tháng)</option>
-                                    <option value="b04">B04. Thống kê chi bình quân (tháng)</option>
-                                    <option value="b26">B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)</option>
-                                </select>
+                                @Html.DropDownList("bieu", new SelectList(new List<SelectListItem>
+                                {
+                                    new SelectListItem { Value = "b02", Text = "B02. Thống kê KCB (tháng)"  },
+                                    new SelectListItem { Value = "b04", Text = "B04. Thống kê chi bình quân (tháng)"  },
+                                    new SelectListItem { Value = "b26", Text = "B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)" }
+                                }, "Value", "Text"))
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-right">Chọn tập tin</td>
+                            <td class="text-right">@Html.Label("file", "Chọn tập tin")</td>
                             <td>
-                                <input type="file" name="file" id="inputfile" value="" />
+                                <input type="file" name="file" id="file" value="" />
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <a href="javascript:importexecl();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                                <a href="javascript:importData();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
                             </td>
                         </tr>
                     </tbody>
@@ -54,7 +55,7 @@
     </table>
 </div>
 <script>
-    function importexecl() {
+    function importData() {
         if ($('#inputfile').val() == "") {
             messageBox("<i class=\"fa fa-warning\"></i> Thông báo lỗi", "<div class=\"alert alert-warning\">Bạn chưa chọn tập tin</div>");
             return;

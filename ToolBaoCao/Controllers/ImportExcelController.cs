@@ -21,6 +21,7 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Update(string bieu, HttpPostedFileBase file)
         {
+            DateTime timeStart = DateTime.Now;
             ViewBag.data = "Đang thao tác";
             if (string.IsNullOrEmpty(bieu)) { ViewBag.Error = "Tham số biểu nhập không có chỉ định"; return View(); }
             if (file == null) { ViewBag.Error = "Không có tập tin nào được đẩy lên"; return View(); }
@@ -29,9 +30,13 @@ namespace ToolBaoCao.Controllers
             string fileExtension = Path.GetExtension(file.FileName);
             string fileNameSave = $"{bieu}{fileExtension}";
             int sheetIndex = 0; int packetSize = 1000;
-            int indexRow = 0; int indexColumn = 0; int maxRow = 0;
+            int indexRow = 0; int indexColumn = 0; int maxRow = 0; int jIndex = 0;
             int fieldCount = 50; var tsql = new List<string>();
-            using (var fs = file.InputStream)
+            string pathNameSave = Server.MapPath($"~/temp/excel/{fileNameSave}");
+            file.SaveAs(pathNameSave);
+            var finfo = new FileInfo(pathNameSave);
+            var tmp = "";
+            using (FileStream fs = finfo.OpenRead())
             {
                 IWorkbook workbook = null;
                 try
@@ -51,11 +56,12 @@ namespace ToolBaoCao.Controllers
                         /* Xác định vị trí hàng bắt đầu có dữ liệu */
                         foreach (var c in row.Cells)
                         {
-                            if ($"{c}".ToLower() == "ma_tinh") { indexColumn = c.ColumnIndex; break; }
+                            tmp = c.GetValueAsString().Trim().ToLower();
+                            if (tmp == "ma_tinh") { indexColumn = c.ColumnIndex; break; }
                         }
+                        if (tmp == "ma_tinh") { break; }
                     }
                     if (indexRow >= maxRow) { throw new Exception("Không có dữ liệu"); }
-                    var listValue = new List<string>();
                     string pattern = "^20[0-9][0-9]$";
                     int indexRegex = 3; int tmpInt = 0;
                     /*
@@ -74,12 +80,12 @@ namespace ToolBaoCao.Controllers
                         default: fieldCount = 11; break;
                     }
                     indexRow++; /* Lấy dòng có dữ liệu */
+                    var listValue = new List<string>();
                     row = sheet.GetRow(indexRow);
-                    for (int j = indexColumn; j < j + 11; j++)
+                    for (jIndex = indexColumn; jIndex < indexColumn + 11; jIndex++)
                     {
-                        ICell c = row.GetCell(j);
-                        if (c == null) { listValue.Add(""); }
-                        else { listValue.Add($"{c.GetValueAsString()}".Trim()); }
+                        ICell c = row.GetCell(jIndex);
+                        listValue.Add(c.GetValueAsString().Trim());
                     }
                     /* Có phải là cơ sở không? */
                     tmpInt = (fieldCount - 1);
@@ -109,7 +115,7 @@ namespace ToolBaoCao.Controllers
                     {
                         if (tsqlVaues.Count > packetSize)
                         {
-                            tsql.Add($"INSERT INTO {bieu}chitiet VALUES ('{string.Join("','", listValue)}')");
+                            tsql.Add($"INSERT INTO {bieu}chitiet VALUES ('{string.Join("','", tsqlVaues)}')");
                             tsqlVaues = new List<string>();
                         }
                         /* Dòng không tồn tại */
@@ -121,28 +127,30 @@ namespace ToolBaoCao.Controllers
                         if (Regex.IsMatch(ma, "^[0-9]+$") == false) { continue; }
                         /* Xây dựng tsql VALUES */
                         listValue = new List<string>() { ma.sqliteGetValueField() };
-                        for (int j = indexColumn + 1; j < (indexColumn + fieldCount); j++)
+                        for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
                         {
-                            ICell c = row.GetCell(j);
-                            if (c == null) { listValue.Add(""); }
-                            else { listValue.Add($"{c.GetValueAsString()}".Trim().sqliteGetValueField()); }
-                            /* Cột lấy dữ liệu không đúng định dạng bỏ qua */
-                            if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { continue; }
+                            ICell c = row.GetCell(jIndex);
+                            listValue.Add(c.GetValueAsString().Trim().sqliteGetValueField());
                         }
+                        /* Cột lấy dữ liệu không đúng định dạng bỏ qua */
+                        if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { continue; }
                         tsqlVaues.Add($"('{string.Join("','", listValue)}')");
                     }
-                    if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet VALUES ('{string.Join("','", listValue)}')"); }
+                    if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet VALUES ('{string.Join("','", tsqlVaues)}')"); }
                     System.IO.File.WriteAllText(Server.MapPath($"~/temp/excel/{fileNameSave}.tsql"), string.Join(Environment.NewLine, tsql));
                 }
-                catch (Exception ex2) { throw new Exception($"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel {fileName}: {ex2.Message}"); }
+                catch (Exception ex2)
+                {
+                    ViewBag.Error =$"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{fileName}': {ex2.getLineHTML()}";
+                }
                 if (workbook != null)
                 {
                     workbook.Close();
                     workbook = null;
                 }
             }
-            file.SaveAs(Server.MapPath($"~/temp/excel/{fileNameSave}"));
-            ViewBag.data = $"{bieu}: {fileName} size {file.ContentLength} b được lưu tại {fileNameSave}";
+            var timeProcess = (DateTime.Now - timeStart);
+            ViewBag.data = $"{bieu}: {fileName} size {file.ContentLength} b được lưu tại {fileNameSave}; Thời gian xử lý là: {timeProcess.TotalSeconds:0.##} giây";
             return View();
         }
     }
