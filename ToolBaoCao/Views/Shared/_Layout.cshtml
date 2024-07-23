@@ -11,7 +11,7 @@
     <meta name="author" content="">
     <title>@ViewBag.Title - Trắc Nghiệm</title>
     <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
-    <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
     <link href="/css/sb-admin-2.min.css" rel="stylesheet" />
     <link href="~/vendor/datepicker/bootstrap-datepicker.min.css" rel="stylesheet" />
     <link href="~/vendor/datepicker/jquery.timepicker.min.css" rel="stylesheet" />
@@ -74,12 +74,11 @@
             </div>
         </div>
     </div>
-    @Scripts.Render("~/bootstrap")
-    @{
-        var fjs = new System.IO.FileInfo(Server.MapPath("~/js/site.js"));
-        var tmp = fjs.LastWriteTime.ToOADate();
-    }
-    <script src="~/js/site.js?v=@tmp"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script src="~/vendor/datatables/jquery.dataTables.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sb-admin-2.min.js"></script>
+    <script src="~/js/site.js?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/js/site.js")).ToOADate())"></script>
     @RenderSection("scripts", required: false)
     <script>
         function fixAllClass() {

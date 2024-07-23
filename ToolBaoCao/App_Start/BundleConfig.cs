@@ -19,14 +19,14 @@ namespace ToolBaoCao
                         "~/Scripts/modernizr-*"));
 
             bundles.Add(new ScriptBundle("~/bootstrap").Include(
-                      "~/vendor/bootstrap/js/bootstrap.bundle.min.js",
+                      "~/Scripts/bootstrap.bundle.min.js",
                         "~/vendor/datatables/jquery.dataTables.js",
                       "~/vendor/datatables/dataTables.bootstrap4.min.js",
                       "~/js/sb-admin-2.min.js"));
 
             bundles.Add(new StyleBundle("~/css").Include(
                       "~/vendor/fontawesome-free/css/all.min.css",
-                      "~/vendor/bootstrap/css/bootstrap.min.css",
+                      "~/Content/bootstrap.min.css",
                       "~/css/sb-admin-2.min.css"));
         }
     }
