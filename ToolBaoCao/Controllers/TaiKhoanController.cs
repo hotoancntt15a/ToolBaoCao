@@ -26,6 +26,8 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Update(string id = "")
         {
+            var tmp = $"{Session["nhom"]}";
+            if (tmp != "0" && tmp != "1") { return Content($"<div class=\"alert alert-warning\">Tài khoản bạn không có quyền khóa tài khoản</div>"); }
             ViewBag.id = id;
             var idObject = Request.getValue("idobject");
             try
@@ -35,8 +37,8 @@ namespace ToolBaoCao.Controllers
                 {
                     /* Kiểm tra tài khoản đã sử dụng chưa, Nếu đã sử dụng thì không thể xóa */
                     if (idObject == "") { throw new Exception("Tham số tài khoản không đúng"); }
-                    var listAccoutNotRemove = new List<string>() { "admin", "administrator" };
-                    if (listAccoutNotRemove.Contains(idObject.ToLower())) { throw new Exception("Tài khoản có tên đăng nhập đặc biệt không thể khóa"); }
+                    var listAccoutNotAccess = new List<string>() { "admin", "administrator", "system" };
+                    if (listAccoutNotAccess.Contains(idObject.ToLower())) { throw new Exception("Tài khoản có tên đăng nhập đặc biệt không thể khóa"); }
                     AppHelper.dbSqliteMain.Execute("UPDATE taikhoan SET locked=1 WHERE iduser=@iduser", new KeyValuePair<string, string>("@iduser", idObject));
                     /* Xóa tài khoản */
                     return Content($"<div class=\"alert alert-info\">Khóa tài khoản {idObject} thành công</div>");
@@ -45,7 +47,7 @@ namespace ToolBaoCao.Controllers
                 {
                     if (id != "")
                     {
-                        DataTable items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan WHERE iduser = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
+                        var items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan WHERE iduser = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
                         if (items.Rows.Count == 0) { throw new Exception($"Tài khoản có tên đăng nhập '{id}' đã bị xoá hoặc không tồn tại trên hệ thống"); }
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }
@@ -87,7 +89,7 @@ namespace ToolBaoCao.Controllers
                 AppHelper.dbSqliteMain.Update("taikhoan", item, where);
                 return Content($"<div class=\"alert alert-info\">Thao tác thành công với tài khoản '{idObject}'</div>");
             }
-            catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getErrorSave()}</div>"); }
+            catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }
     }
 }

@@ -2676,6 +2676,7 @@
     <Content Include="Scripts\bootstrap.bundle.js.map" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+    <Content Include="Views\Home\TaiKhoan.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

@@ -18,7 +18,7 @@ $(".custom-file-input").on("change", function () {
 });
 function InsertToText(tid, ivalue) { document.getElementById(tid).value = document.getElementById(tid).value + ivalue; }
 function changeValueToIdInput(e, idtarget) { var id = getIdJquery(idtarget); $(id).val($(e).val()); }
-function disableEnterKey(e) { var key; if (window.event) { key = window.event.keyCode; } else { key = e.which; } /* firefox */ return (key != 13); }
+function disableEnterKey(e) { var key; if (window.Event) { key = window.Event.keyCode; } else { key = e.which; } /* firefox */ return (key != 13); }
 var isRunLoad = 0;
 var path_images = '/images/';
 Number.prototype.format = function (n = 0, x = 3) { var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')'; return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,'); };

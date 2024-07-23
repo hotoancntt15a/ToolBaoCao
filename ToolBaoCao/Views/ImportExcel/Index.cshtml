@@ -12,37 +12,35 @@
         <h6 class="m-0 font-weight-bold text-primary">Thông tin</h6>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
-            @using (Html.BeginForm("Update", "ImportExcel", new { area = "" }, FormMethod.Post, new { id = idForm, enctype = "multipart/form-data" }))
-            {
-                <table class="table table-hover">
-                    <tbody>
-                        <tr>
-                            <td style="width: 150px;" class="text-right">@Html.Label("bieu", "Chọn biểu nhập")</td>
-                            <td>
-                                @Html.DropDownList("bieu", new SelectList(new List<SelectListItem>
-                                {
-                                    new SelectListItem { Value = "b02", Text = "B02. Thống kê KCB (tháng)"  },
-                                    new SelectListItem { Value = "b04", Text = "B04. Thống kê chi bình quân (tháng)"  },
-                                    new SelectListItem { Value = "b26", Text = "B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)" }
-                                }, "Value", "Text"))
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-right">@Html.Label("inputfile", "Chọn tập tin")</td>
-                            <td>
-                                <input type="file" name="inputfile" id="inputfile" value="" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <a href="javascript:importData();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            }
-        </div>
+        @using (Html.BeginForm("Update", "ImportExcel", new { area = "" }, FormMethod.Post, new { id = idForm, enctype = "multipart/form-data" }))
+        {
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td style="width: 150px;" class="text-right">@Html.Label("bieu", "Chọn biểu nhập")</td>
+                        <td>
+                            @Html.DropDownList("bieu", new SelectList(new List<SelectListItem>
+                            {
+                                new SelectListItem { Value = "b02", Text = "B02. Thống kê KCB (tháng)"  },
+                                new SelectListItem { Value = "b04", Text = "B04. Thống kê chi bình quân (tháng)"  },
+                                new SelectListItem { Value = "b26", Text = "B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)" }
+                            }, "Value", "Text"))
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-right">@Html.Label("inputfile", "Chọn tập tin")</td>
+                        <td>
+                            <input type="file" name="inputfile" id="inputfile" value="" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="javascript:importData();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
     </div>
 </div>
 <div class="alert alert-warning">
