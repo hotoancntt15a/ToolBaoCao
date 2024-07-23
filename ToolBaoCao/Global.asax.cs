@@ -40,12 +40,21 @@ namespace ToolBaoCao
 
         private void Session_Start(object sender, EventArgs e)
         {
-            
+            Session["IpAddressConnect"] = GetUserIpAddress();
         }
 
         private void Session_End(object sender, EventArgs e)
         {
             Session.Clear();
+        }
+
+        private string GetUserIpAddress()
+        {
+            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            if (string.IsNullOrEmpty(ipAddress)) { ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"]; }
+            // Trường hợp có nhiều địa chỉ IP trong X-Forwarded-For, lấy địa chỉ đầu tiên
+            if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Contains(",")) { ipAddress = ipAddress.Split(',')[0].Trim(); }
+            return ipAddress;
         }
     }
 }

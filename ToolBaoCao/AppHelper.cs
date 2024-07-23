@@ -1,4 +1,5 @@
 ﻿using Microsoft.Ajax.Utilities;
+using NPOI.HSSF.Record.Chart;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using System;
@@ -125,10 +126,11 @@ namespace ToolBaoCao
             dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
             dbSqliteWork.buildDataCongViec();
             /* Check Folder Exists */
-            if(Directory.Exists(pathApp + "\\cache") == false) { Directory.CreateDirectory(pathApp + "\\cache"); }
-            if (Directory.Exists(pathApp + "\\temp") == false) { Directory.CreateDirectory(pathApp + "\\temp"); }
-            if (Directory.Exists(pathApp + "\\temp\\data") == false) { Directory.CreateDirectory(pathApp + "\\temp\\data"); }
-            if (Directory.Exists(pathApp + "\\temp\\excel") == false) { Directory.CreateDirectory(pathApp + "\\temp\\excel"); }
+            if(Directory.Exists(pathApp + "cache") == false) { Directory.CreateDirectory(pathApp + "cache"); }
+            if (Directory.Exists(pathApp + "temp") == false) { Directory.CreateDirectory(pathApp + "temp"); }
+            if (Directory.Exists(pathApp + "temp\\data") == false) { Directory.CreateDirectory(pathApp + "temp\\data"); }
+            if (Directory.Exists(pathApp + "temp\\excel") == false) { Directory.CreateDirectory(pathApp + "temp\\excel"); }
+            getDBUserOnline();           
         }
 
         public static void SapXepNgauNhien(this List<string> arr)
@@ -149,13 +151,38 @@ namespace ToolBaoCao
                 $"<div><div class=\"small text-gray-500\">{date}</div>" + (fontBold ? $"<span class=\"font-weight-bold\">{content}</span>" : content) +
                 "</div></a>";
         }
-
+        public static dbSQLite getDBUserOnline()
+        {
+            string pathData = pathApp + "App_Data\\useronline.db";
+            dbSQLite db = new dbSQLite(pathData);
+            if (File.Exists(pathData) == false)
+            {
+                try
+                {
+                    db.Execute(@"CREATE TABLE IF NOT EXISTS useronline (
+                        userid TEXT NOT NULL,
+                        time1 INTEGER NOT NULL DEFAULT 0,
+                        time2 INTEGER NOT NULL DEFAULT 0,
+                        ten_hien_thi TEXT NOT NULL DEFAULT '',
+                        ip TEXT NOT NULL DEFAULT '',
+                        [local] TEXT NOT NULL DEFAULT '', PRIMARY KEY (userid, ip));");
+                }
+                catch { }
+            }
+            return db;
+        }
         public static bool CheckIsLogin()
         {
             var http = HttpContext.Current;
             if (http == null) return false;
+            var db = getDBUserOnline();
+            int maxSeccondsOnline = 15 * 60;
+            try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }
             var tmp = $"{http.Session["app.isLogin"]}";
-            if (tmp == "1") { return true; }
+            if (tmp == "1") {
+                db.Execute($"UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session["IpAddressConnect"]}'");
+                return true; 
+            }
             if (http.Request.Cookies.AllKeys.Any(p => p == "idobject") == false) { return false; }
             tmp = $"{http.Request.Cookies["idobject"]?.Value}";
             /* IDUSER|PASS|DATETIME */
@@ -172,6 +199,7 @@ namespace ToolBaoCao
             if (userName == "") { return "Tên đăng nhập để trống"; }
             if (passWord == "") { return "Mật khẩu để trống"; }
             string tsql = $"SELECT * FROM taikhoan WHERE iduser = @iduser AND mat_khau='{passWord.GetMd5Hash()}'";
+            var http = HttpContext.Current;
             try
             {
                 var items = dbSqliteMain.getDataTable(tsql, new KeyValuePair<string, string>("@iduser", userName));
@@ -186,7 +214,6 @@ namespace ToolBaoCao
                         if (items.Rows.Count == 0) { return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng"; }
                     }
                 }
-                var http = HttpContext.Current;
                 if (http == null) { return "Không xác định được HttpContext"; }
                 http.Session.Clear();
                 http.Request.Cookies.Clear();
@@ -202,6 +229,8 @@ namespace ToolBaoCao
                 try { dbSqliteMain.Execute($"UPDATE taikhoan SET time_last_login='{DateTime.Now.toTimestamp()}' WHERE iduser = @iduser", new KeyValuePair<string, string>("@iduser", userName)); } catch { }
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
+            var db = getDBUserOnline();
+            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},{http.Session["IpAddressConnect"]})");
             return "";
         }
 
