@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
@@ -36,7 +37,11 @@ namespace ToolBaoCao.Controllers
             if (mode == "taive")
             {
                 string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
-                if (System.IO.File.Exists(pathFileTemplate)) { ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"; return View(); }
+                if (System.IO.File.Exists(pathFileTemplate) == false)
+                {
+                    ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"; 
+                    return View();
+                }
                 string matinh = Request.getValue("matinh");
                 string ngay = Request.getValue("thoigian");
                 if (ngay.isDateVN() == false) { ViewBag.Error = $"Thời gian không đúng định dạng ngày/tháng/năm '{ngay}'"; return View(); }
@@ -50,15 +55,14 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X73}", tmp);
                 /* Lấy ngày chọn báo cáo */
                 tailieu.Add("{X74}", ngay);
-                /* 
+                /*
                 * X1={cột R (T-BHTT) bảng B02_TOANQUOC }
                 * X71 = {cột S T_BHTT_NOI bảng B02_TOANQUOC }
                 * X72={cột T T_BHTT_NGOAI bảng B02_TOANQUOC }
                 */
-                var data = AppHelper.dbSqliteWork.getDataTable($@"SELECT IFNULL(p1.t_bhtt, 0) AS t, IFNULL(p1.t_bhtt_noi, 0) AS noi, IFNULL(p1.t_bhtt_ngoai, 0) AS ngoai FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='1' AND p1.ma_tinh='{matinh.sqliteGetValueField()}' LIM1T 1");
-                if(data.Rows.Count > 0)
+                var data = AppHelper.dbSqliteWork.getDataTable($@"SELECT IFNULL(p1.t_bhtt, 0) AS t, IFNULL(p1.t_bhtt_noi, 0) AS noi, IFNULL(p1.t_bhtt_ngoai, 0) AS ngoai FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='1' AND p1.ma_tinh='{matinh.sqliteGetValueField()}' LIMIT 1");
+                if (data.Rows.Count > 0)
                 {
-                    
                     tailieu.Add("{X1}", data.Rows[1].ToString());
                     tailieu.Add("{X71}", data.Rows[2].ToString());
                     tailieu.Add("{X72}", data.Rows[3].ToString());
@@ -74,7 +78,6 @@ namespace ToolBaoCao.Controllers
                  X3={Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay}
                  */
 
-
                 using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var document = new XWPFDocument(fileStream);
@@ -82,22 +85,20 @@ namespace ToolBaoCao.Controllers
                     {
                         foreach (var run in paragraph.Runs)
                         {
-                            var text = run.ToString();
+                            tmp = run.ToString();
                             foreach (var v in tailieu)
                             {
-                                if (text.Contains(v.Key))
-                                {
-                                    run.SetText(text.Replace(v.Key, v.Value));
-                                }
+                                if (tmp.Contains(v.Key)) { tmp = tmp.Replace(v.Key, v.Value); }
                             }
+                            /* Xóa hết các thông tin {X[0-9]+} nếu còn */
+                            tmp = Regex.Replace(tmp, "{X[0-9]+}", "", RegexOptions.IgnoreCase);
+                            run.SetText(tmp,0);
                         }
                     }
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        document.Write(memoryStream);
-                        memoryStream.Position = 0;
-                        return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "updated-document.docx");
-                    }
+                    MemoryStream memoryStream = new MemoryStream();
+                    document.Write(memoryStream);
+                    memoryStream.Position = 0;
+                    return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{matinh}_{thoigian}.docx");
                 }
             }
             return View();

@@ -46,13 +46,13 @@
                         <tr>
                             <td class="text-right">@Html.Label("thoigian", "Thời gian")</td>
                             <td>
-                                <input type="text" name="ngay" id="ngay" value="" class="clsdate" />
+                                <input type="text" name="thoigian" id="thoigian" value="@DateTime.Now.ToString("dd/MM/yyyy")" class="clsdate" />
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
                                 <a href="javascript:baocao();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
-                                <a href="javascript:baocao('1');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về</a>
+                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về</a>
                             </td>
                         </tr>
                     </tbody>
@@ -73,6 +73,11 @@
 </div>
 <script>
     function baocao(sender) {
+        var tmp = $('#thoigian').val();
+        if (/^[0-3][0-9]\/[0-1][0-9]\/[2-3][0-9]{3}$/.test(tmp) == false) {
+            messageBox('<i class="fa fa-warning"></i> Thông báo lỗi', `Thời gian không đúng định dạng ngày/tháng/năm '${tmp}'`);
+            return;
+        }
         var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
         var idform = '#@idForm';
         $(idform).find("input[name='mode']").val(mode);
