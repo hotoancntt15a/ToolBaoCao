@@ -40,7 +40,8 @@ namespace ToolBaoCao
 
         private void Session_Start(object sender, EventArgs e)
         {
-            Session["IpAddressConnect"] = GetUserIpAddress();
+            Session[keyMSG.SessionIPAddress] = GetUserIpAddress();
+            Session[keyMSG.SessionBrowserInfo] = GetUserBrowserInfo();
         }
 
         private void Session_End(object sender, EventArgs e)
@@ -55,6 +56,14 @@ namespace ToolBaoCao
             // Trường hợp có nhiều địa chỉ IP trong X-Forwarded-For, lấy địa chỉ đầu tiên
             if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Contains(",")) { ipAddress = ipAddress.Split(',')[0].Trim(); }
             return ipAddress;
+        }
+        private string GetUserBrowserInfo()
+        {
+            string userAgent = HttpContext.Current.Request.UserAgent;
+            HttpBrowserCapabilities browser = HttpContext.Current.Request.Browser;
+            string browserName = browser.Browser;
+            string browserVersion = browser.Version;
+            return $"{browserName} {browserVersion} ({userAgent})";
         }
     }
 }

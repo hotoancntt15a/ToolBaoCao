@@ -19,7 +19,7 @@ namespace ToolBaoCao.Controllers
         {
             if (Session["iduser"] == null)
             {
-                ViewBag.Error = "Bạn chưa đăng nhập để sử dụng chức năng nhày";
+                ViewBag.Error = keyMSG.ErrorNotLoginAccess;
                 return View();
             }
             var mode = Request.getValue("mode");
@@ -115,7 +115,6 @@ namespace ToolBaoCao.Controllers
                 }
                 if (tailieu["{X3}"] == "0") { tailieu.Add("{X4}", "0"); }
                 else { tailieu.Add("{X4}", (double.Parse(tailieu["{X1}"])/double.Parse(tailieu["{X3}"])).ToString("0.###")); }
-
 
                 using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.ReadWrite))
                 {

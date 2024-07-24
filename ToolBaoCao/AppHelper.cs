@@ -180,7 +180,7 @@ namespace ToolBaoCao
             try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }
             var tmp = $"{http.Session["app.isLogin"]}";
             if (tmp == "1") {
-                db.Execute($"UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session["IpAddressConnect"]}'");
+                db.Execute($"UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}'");
                 return true; 
             }
             if (http.Request.Cookies.AllKeys.Any(p => p == "idobject") == false) { return false; }
@@ -214,7 +214,7 @@ namespace ToolBaoCao
                         if (items.Rows.Count == 0) { return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng"; }
                     }
                 }
-                if (http == null) { return "Không xác định được HttpContext"; }
+                if (http == null) { return keyMSG.ErrorHttpConnetNull; }
                 http.Session.Clear();
                 http.Request.Cookies.Clear();
                 http.Session.Add("app.isLogin", "1");
@@ -230,7 +230,7 @@ namespace ToolBaoCao
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
             var db = getDBUserOnline();
-            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},{http.Session["IpAddressConnect"]})");
+            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},{http.Session[keyMSG.SessionIPAddress]})");
             return "";
         }
 

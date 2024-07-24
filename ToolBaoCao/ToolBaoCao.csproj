@@ -355,6 +355,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="messageKey.cs" />
     <Compile Include="NPOIExcel.XLS.cs" />
     <Compile Include="NPOIExcel.XLSX.cs" />
     <Compile Include="NPOIExecl.CellMerge.cs" />
