@@ -216,9 +216,9 @@ function postform(fromID, urlPost, targetID, callback) {
     }
 }
 function ajaxSuccess(response, isUpload, idtarget, callback) {
-    if (isUpload == false && idtarget == "") { $(idmsg).modal('hide'); }
     if (idtarget != "") { $(idtarget).html(response); }
     if (isUpload) { $(idmsg).find(".modal-body").html(response); }
+    if (isUpload == false && idtarget == "") { $(idmsg).modal('hide'); }
     else if (idtarget == "") { messageBox('Thông báo', response); }
     if (typeof (callback) == 'function') { callback(); }
     fixAllClass();
