@@ -217,9 +217,11 @@ function postform(fromID, urlPost, targetID, callback) {
 }
 function ajaxSuccess(response, isUpload, idtarget, callback) {
     if (idtarget != "") { $(idtarget).html(response); }
-    if (isUpload) { $(idmsg).find(".modal-body").html(response); }
-    if (isUpload == false && idtarget == "") { $(idmsg).modal('hide'); }
-    else if (idtarget == "") { messageBox('Thông báo', response); }
+    else {
+        if (isUpload) { $(idmsg).find(".modal-body").html(response); }
+        else { messageBox('Thông báo', response); }
+        /* $(idmsg).modal('hide'); */
+    }
     if (typeof (callback) == 'function') { callback(); }
     fixAllClass();
 }

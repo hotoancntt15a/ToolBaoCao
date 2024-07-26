@@ -55,28 +55,25 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X73}", tmp);
                 /* Lấy ngày chọn báo cáo */
                 tailieu.Add("{X74}", ngay);
-                /*
-                * X1={cột R (T-BHTT) bảng B02_TOANQUOC }
-                * X71 = {cột S T_BHTT_NOI bảng B02_TOANQUOC }
-                * X72={cột T T_BHTT_NGOAI bảng B02_TOANQUOC }
-                */
-                var data = AppHelper.dbSqliteWork.getDataTable($@"SELECT IFNULL(p1.t_bhtt, 0) AS x1, IFNULL(p1.t_bhtt_noi, 0) AS x71, IFNULL(p1.t_bhtt_ngoai, 0) AS x72
-                    , IFNULL(p1.tyle_noitru, 0) AS x5
+                
+                var dataTinh = AppHelper.dbSqliteWork.getDataTable($@"SELECT p1.*
                     FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id
                     WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='1' AND p1.ma_tinh='{matinh.sqliteGetValueField()}' LIMIT 1");
 
-                if (data.Rows.Count > 0)
+                var data00 = AppHelper.dbSqliteWork.getDataTable($@"SELECT p1.*
+                    FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id
+                    WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='1' AND p1.ma_tinh='00' LIMIT 1");
+
+                /* X1={cột R (T-BHTT) bảng B02_TOANQUOC } */
+
+                if (dataTinh.Rows.Count > 0)
                 {
-                    tailieu.Add("{X1}", data.Rows[0].ToString());
-                    tailieu.Add("{X71}", data.Rows[1].ToString());
-                    tailieu.Add("{X72}", data.Rows[2].ToString());
-                    tailieu.Add("{X5}", data.Rows[3].ToString());
+                    tailieu.Add("{X1}", dataTinh.Rows[0].ToString());
+                    tailieu.Add("{X5}", dataTinh.Rows[3].ToString());
                 }
                 else
                 {
                     tailieu.Add("{X1}", "0");
-                    tailieu.Add("{X71}", "0");
-                    tailieu.Add("{X72}", "0");
                     tailieu.Add("{X5}", "0");
                 }
                 /*
@@ -95,18 +92,12 @@ namespace ToolBaoCao.Controllers
                  * X10 ={đoạn văn tùy thuộc X5> hay < X9. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số };
                  * X11= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort cột G (TYLE_NOITRU ) cao –thấp và lấy thứ tự}
                  * */
-                data = AppHelper.dbSqliteWork.getDataTable($@"SELECT IFNULL(p1.tyle_noitru, 0) AS x6
-                    FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id
-                    WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='1' AND p1.ma_tinh='00' LIMIT 1");
 
-                if (data.Rows.Count > 0)
+                if (data00.Rows.Count > 0)
                 {
-                    tailieu.Add("{X6}", data.Rows[0].ToString());
+                    tailieu.Add("{X6}", data00.Rows[0].ToString());
                 }
-                else
-                {
-                    tailieu.Add("{X6}", "0");
-                }
+                else { tailieu.Add("{X6}", "0"); }
                 if (tailieu["{X5}"] == tailieu["{X6}"]) { tailieu["{X7}"] = "Bằng"; }
                 else
                 {
@@ -116,6 +107,20 @@ namespace ToolBaoCao.Controllers
                 if (tailieu["{X3}"] == "0") { tailieu.Add("{X4}", "0"); }
                 else { tailieu.Add("{X4}", (double.Parse(tailieu["{X1}"])/double.Parse(tailieu["{X3}"])).ToString("0.###")); }
 
+                /*
+                * X71 = {cột S T_BHTT_NOI bảng B02_TOANQUOC }
+                * X72={cột T T_BHTT_NGOAI bảng B02_TOANQUOC }
+                 */
+                if (dataTinh.Rows.Count > 0)
+                {
+                    tailieu.Add("{X71}", dataTinh.Rows[1].ToString());
+                    tailieu.Add("{X72}", dataTinh.Rows[2].ToString());
+                } 
+                else
+                {
+                    tailieu.Add("{X71}", "0");
+                    tailieu.Add("{X72}", "0");
+                }
                 using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var document = new XWPFDocument(fileStream);
