@@ -230,7 +230,7 @@ namespace ToolBaoCao
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
             var db = getDBUserOnline();
-            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},{http.Session[keyMSG.SessionIPAddress]})");
+            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}')");
             return "";
         }
 

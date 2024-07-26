@@ -117,18 +117,22 @@ namespace ToolBaoCao.Controllers
                     if (cs) { allColumns.RemoveAt(1); allColumns.RemoveAt(1); } /* Loại bỏ ma_tinh, ten_tinh */
                     else { allColumns.RemoveAt(3); allColumns.RemoveAt(3); } /* Loại bỏ ma_cskcb, ten_cskcb */
                     var fieldNumbers = new List<int>();
+                    /* indexRegex + 1 do thêm cột {@id2} ID vào đằng trước */
                     switch (bieu)
                     {
                         /* Kiểm tra tổng số lượt KCB */
-                        case "b02": fieldCount = 20; indexRegex = 3; pattern = "^[0-9]+$";
+                        case "b02":
+                            fieldCount = 20; indexRegex = 3 + 1; pattern = "^[0-9]+$";
                             fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
                             break;
                         /* Kiểm tra ngày TTBQ */
-                        case "b04": fieldCount = 11; indexRegex = 9; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                        case "b04":
+                            fieldCount = 11; indexRegex = 9 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
                             fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
                             break;
                         /* Kiểm tra BQ chung trong kỳ */
-                        case "b26": fieldCount = 34; indexRegex = 7; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                        case "b26":
+                            fieldCount = 34; indexRegex = 7 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
                             fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
                             break;
                         default: fieldCount = 11; break;
