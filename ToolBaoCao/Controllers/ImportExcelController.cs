@@ -150,10 +150,11 @@ namespace ToolBaoCao.Controllers
                         /* Dòng không tồn tại */
                         row = sheet.GetRow(indexRow); if (row == null) { continue; }
                         /* Số cột ít hơn số trường cần lấy dữ liệu */
-                        if ((int)row.LastCellNum < fieldCount) { continue; }
+                        /* if ((int)row.LastCellNum < fieldCount) { continue; } */
                         /* Cột đầu tiên không phải là matinh dạng số */
-                        string ma = row.GetCell(indexColumn).GetValueAsString();
-                        if (Regex.IsMatch(ma, "^[0-9]+$") == false) { continue; }
+                        string ma = row.GetCell(indexColumn).GetValueAsString().Trim();
+
+                        if (Regex.IsMatch(ma, "^[0-9]+$|^V[0-9]+$") == false) { continue; }
                         /* Xây dựng tsql VALUES */
                         listValue = new List<string>() { "{@id2}", ma.sqliteGetValueField() };
                         for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)

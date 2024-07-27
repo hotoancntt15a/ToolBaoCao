@@ -315,11 +315,11 @@ namespace ToolBaoCao
                     ,x59 text not null default '' /* số tương đối X59={nếu cột AC dòng có mã tỉnh=10 là số dương, “tăng “ & cột AC & “%”, không thì “giảm “ & cột AC %}; */
                     ,x60 text not null default '' /* số tuyệt đối X60={nếu cột AC là dương, “tăng “ & cột AB trừ đi (cột AB chia (cột AC +100) *100 ) & “ đồng”, không thì “giảm “ &  cột AB trừ đi (cột AB chia (cột AC+100) *100 ) & “ đồng”} */
                     ,x61 real not null default 0 /* Chỉ định xét nghiệm X61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-                    ,x62 real not null default 0 /* số tương đối X62={cột AE dòng có mã tỉnh=10 & “%”}; */
-                    ,x63 real not null default 0 /* số tuyệt đối X63 {tính toán: X61 trừ đi (X61 chia (cột AE+100)*100) & “bệnh nhân”}  */
+                    ,x62 text not null default '' /* số tương đối X62={cột AE dòng có mã tỉnh=10 & “%”}; */
+                    ,x63 text not null default '' /* số tuyệt đối X63 {tính toán: X61 trừ đi (X61 chia (cột AE+100)*100) & “bệnh nhân”}  */
                     ,x64 real not null default 0 /* Chỉ định CĐHA X64={cột AF, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-                    ,x65 real not null default 0 /* số tương đối X65={cột AG dòng có mã tỉnh=10 & “%”}; */
-                    ,x66 real not null default 0 /* số tuyệt đối X66 {tính toán: X64 trừ đi (X64 chia (cột AG+100)*100) & “bệnh nhân”} */
+                    ,x65 text not null default '' /* số tương đối X65={cột AG dòng có mã tỉnh=10 & “%”}; */
+                    ,x66 text not null default '' /* số tuyệt đối X66 {tính toán: X64 trừ đi (X64 chia (cột AG+100)*100) & “bệnh nhân”} */
                     ,x67 text not null default '' /* Công tác kiểm soát chi X67={lần đầu lập BC sẽ rỗng, người dùng tự trình bày văn bản, lưu lại ở bảng dữ liệu kết quả báo cáo, kỳ sau sẽ tự động lấy từ kỳ trước, để người dùng kế thừa, sửa và lưu dùng cho kỳ này và kỳ sau} */
                     ,x68 text not null default '' /* Công tác thanh, quyết toán năm X68={tương tự X67} */
                     ,x69 text not null default '' /* Phương hướng kỳ tiếp theo X69={tương tự X67} */

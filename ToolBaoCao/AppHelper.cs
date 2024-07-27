@@ -40,6 +40,27 @@ namespace ToolBaoCao
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
+        public static CultureInfo cul = CultureInfo.GetCultureInfo("vi-VN");
+        public static string formatNumberVN(this string NumberUS, int Decimal = 3)
+        {
+            if (Regex.IsMatch(NumberUS, "^[0-9]+$|^[-][0-9]+$"))
+            {
+                long v = long.Parse(NumberUS);
+                if (v < 0) { return "-" + Math.Abs(v).ToString("#,##0", cul.NumberFormat); }
+                return v.ToString("#,##0", cul.NumberFormat);
+            }
+            if (Regex.IsMatch(NumberUS, "^[0-9][.][0-9]+$^[-][0-9][.][0-9]+$"))
+            {
+                var l = new List<string>();
+                if (Decimal > 0) { for (int i = 0; i < Decimal; i++) { l.Add("0"); } }
+                var f = l.Count == 0 ? "#,##0.#" : "#,##0." + string.Join("", l);
+                double v = double.Parse(NumberUS);
+                if (v < 0) { return "-" + Math.Abs(v).ToString(f, cul.NumberFormat); }
+                return v.ToString(f, cul.NumberFormat);
+            }
+            return NumberUS;
+        }
+        public static string formatNumberVN(this object NumberUS, int Decimal = 3) => NumberUS.ToString().formatNumberVN(Decimal);
         public static List<string> GetTableNameFromTsql(string tsql)
         { 
             var matches = Regex.Matches(tsql, @"\b(FROM|JOIN|UPDATE)\s+([a-zA-Z0-9_.\[\]]+)", RegexOptions.IgnoreCase);
