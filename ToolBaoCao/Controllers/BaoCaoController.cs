@@ -26,6 +26,7 @@ namespace ToolBaoCao.Controllers
             }
             var mode = Request.getValue("mode");
             string tmp = "";
+            string tsql = "";
             if (mode == "")
             {
                 tmp = $"{Session["idtinh"]}".Trim();
@@ -55,12 +56,14 @@ namespace ToolBaoCao.Controllers
                 var tmpD = new Dictionary<string, string>();
 
                 /* Bỏ qua các vùng */
-                var b02TQ = AppHelper.dbSqliteWork.getDataTable($@"SELECT p1.* FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id
-                    WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='0' AND p1.ma_tinh NOT LIKE 'V%'").AsEnumerable().ToList();
+                tsql = $@"SELECT p1.* FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id
+                    WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='0' AND p1.ma_tinh NOT LIKE 'V%'";
+                var b02TQ = AppHelper.dbSqliteWork.getDataTable(tsql).AsEnumerable().ToList();
                 if (b02TQ.Count() == 0) { ViewBag.Error = "B02 Toàn Quốc không có dữ liệu phù hợp truy vấn"; return View(); }
                 /* Bỏ qua các vùng */
-                var b26TQ = AppHelper.dbSqliteWork.getDataTable($@"SELECT p1.* FROM b26chitiet p1 INNER JOIN b26 ON p1.id2=b26.id
-                    WHERE b26.thoigian = '{thoigian}' AND b26.cs='0' AND p1.ma_tinh NOT LIKE 'V%'").AsEnumerable().ToList();
+                tsql = $@"SELECT p1.* FROM b26chitiet p1 INNER JOIN b26 ON p1.id2=b26.id
+                    WHERE b26.thoigian = '{thoigian}' AND b26.cs='0' AND p1.ma_tinh NOT LIKE 'V%'";
+                var b26TQ = AppHelper.dbSqliteWork.getDataTable(tsql).AsEnumerable().ToList();
                 if (b26TQ.Count() == 0) { ViewBag.Error = "B26 Toàn quốc không có dữ liệu phù hợp truy vấn"; return View(); }
 
                 var dataTinhB02 = b02TQ.Where(r => r.Field<string>("ma_tinh") == matinh).FirstOrDefault();
@@ -74,31 +77,31 @@ namespace ToolBaoCao.Controllers
                 if (dataTQB26 == null) { ViewBag.Error = "B26 không có dữ liệu toàn quốc phù hợp truy vấn"; return View(); }
 
                 /* Bỏ Toàn quốc ra khỏi danh sách */
-                b02TQ = b02TQ.Where(p=>p.Field<string>("ma_tinh") == "00").ToList();
-                b26TQ = b26TQ.Where(p => p.Field<string>("ma_tinh") == "00").ToList();
+                b02TQ = b02TQ.Where(p=>p.Field<string>("ma_tinh") != "00").ToList();
+                b26TQ = b26TQ.Where(p => p.Field<string>("ma_tinh") != "00").ToList();
 
                 string mavung = dataTinhB02["ma_vung"].ToString();
 
                 /* X1 = {cột R (T-BHTT) bảng B02_TOANQUOC } */
-                tailieu.Add("{X1}", dataTinhB02["t_bhtt"].formatNumberVN());
+                tailieu.Add("{X1}", dataTinhB02["t_bhtt"].ToString());
                 /* X2 = {“ Quyết định số: Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
                 tailieu.Add("{X2}", "0");
                 /* X3 = {Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay} */
                 tailieu.Add("{X3}", "0");
                 /* X4={X1/X2 %} So sánh với dự toán, tỉnh đã sử dụng */
                 if (tailieu["{X2}"] == "0") { tailieu.Add("{X4}", "0"); }
-                else { tailieu.Add("{X4}", (double.Parse(tailieu["{X1}"]) / double.Parse(tailieu["{X2}"])).formatNumberVN()); }
+                else { tailieu.Add("{X4}", (double.Parse(tailieu["{X1}"]) / double.Parse(tailieu["{X2}"])).ToString()); }
 
                 /* X5 = {Cột tyle_noitru, dòng MA_TINH=10} bảng B02_TOANQUOC */
-                tailieu.Add("{X5}", dataTinhB02["tyle_noitru"].formatNumberVN());
+                tailieu.Add("{X5}", dataTinhB02["tyle_noitru"].ToString());
                 /* X6 = {Cột tyle_noitru, dòng MA_TINH=00} bảng B02_TOANQUOC */
-                tailieu.Add("{X6}", dataTQB02["tyle_noitru"].formatNumberVN());
+                tailieu.Add("{X6}", dataTQB02["tyle_noitru"].ToString());
                 /* X7 = {đoạn văn tùy thuộc X5> hay < X6. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
                 tailieu.Add("{X7}", "bằng");
                 so1 = (double)dataTinhB02["tyle_noitru"];
                 so2 = (double)dataTQB02["tyle_noitru"];
-                if (so1 > so2) { tailieu["{X7}"] = $"cao hơn {(so1 - so2).formatNumberVN()}"; }
-                else { if (so1 < so2) { tailieu["{X7}"] = $"thấp hơn {(so2 - so1).formatNumberVN()}"; } }
+                if (so1 > so2) { tailieu["{X7}"] = $"cao hơn {(so1 - so2).ToString()}"; }
+                else { if (so1 < so2) { tailieu["{X7}"] = $"thấp hơn {(so2 - so1).ToString()}"; } }
                 /* X8={Sort cột G (TYLE_NOITRU) cao xuống thấp và lấy thứ tự}; */
                 var sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
                 int position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1;
@@ -114,9 +117,9 @@ namespace ToolBaoCao.Controllers
                 /* X10 ={đoạn văn tùy thuộc X5> hay < X9. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
                 tailieu.Add("{X10}", "bằng");
                 so1 = (double)dataTinhB02["tyle_noitru"];
-                so2 = double.Parse(tailieu["{X9}"]); tailieu["{X9}"] = tailieu["{X9}"].formatNumberVN();
-                if (so1 > so2) { tailieu["{X10}"] = $"cao hơn {(so1 - so2).formatNumberVN()}"; }
-                else { if (so1 < so2) { tailieu["{X10}"] = $"thấp hơn {(so2 - so1).formatNumberVN()}"; } }
+                so2 = double.Parse(tailieu["{X9}"]); tailieu["{X9}"] = tailieu["{X9}"].ToString();
+                if (so1 > so2) { tailieu["{X10}"] = $"cao hơn {(so1 - so2).ToString()}"; }
+                else { if (so1 < so2) { tailieu["{X10}"] = $"thấp hơn {(so2 - so1).ToString()}"; } }
                 /* X11= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort cột G (TYLE_NOITRU ) cao –thấp và lấy thứ tự} */
                 sortedRows = b02TQ.Where(r => r.Field<string>("ma_vung") == mavung)
                     .OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
@@ -124,9 +127,9 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X11}", position.ToString());
 
                 /* X12 = Ngày điều trị bình quân X12={Cột H NGAY_DTRI_BQ , dòng MA_TINH=10}; */
-                tailieu.Add("{X12}", dataTinhB02["ngay_dtri_bq"].formatNumberVN());
+                tailieu.Add("{X12}", dataTinhB02["ngay_dtri_bq"].ToString());
                 /* X13 = Nbình quân toàn quốc X13={cột H NGAY_DTRI_BQ, dòng MA_TINH=00}; */
-                tailieu.Add("{X13}", dataTQB02["ngay_dtri_bq"].formatNumberVN());
+                tailieu.Add("{X13}", dataTQB02["ngay_dtri_bq"].ToString());
                 /* X14 = Số chênh lệch X14={đoạn văn tùy thuộc X12> hay < X13. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
                 tailieu.Add("{X14}", "bằng");
                 so1 = (double)dataTinhB02["ngay_dtri_bq"];
@@ -148,9 +151,9 @@ namespace ToolBaoCao.Controllers
                 /* X17 = Số chênh lệch X17 ={đoạn văn tùy thuộc X12> hay < X16. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
                 tailieu.Add("{X17}", "bằng");
                 so1 = (double)dataTinhB02["ngay_dtri_bq"];
-                so2 = double.Parse(tailieu["{X16}"]); tailieu["{X16}"] = tailieu["{X16}"].formatNumberVN();
-                if (so1 > so2) { tailieu["{X17}"] = $"cao hơn {(so1 - so2).formatNumberVN()}"; }
-                else { if (so1 < so2) { tailieu["{X17}"] = $"thấp hơn {(so2 - so1).formatNumberVN()}"; } }
+                so2 = double.Parse(tailieu["{X16}"]); tailieu["{X16}"] = tailieu["{X16}"].ToString();
+                if (so1 > so2) { tailieu["{X17}"] = $"cao hơn {(so1 - so2).ToString()}"; }
+                else { if (so1 < so2) { tailieu["{X17}"] = $"thấp hơn {(so2 - so1).ToString()}"; } }
                 /* X18 = đứng thứ so với vùng X18 = {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột H (NGAY_DTRI_BQ) cao –thấp và lấy thứ tự} */
                 sortedRows = b02TQ.Where(r => r.Field<string>("ma_vung") == mavung)
                     .OrderByDescending(row => row.Field<double>("ngay_dtri_bq")).ToList();
@@ -207,9 +210,9 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X70}", "Khó khăn, vướng mắc, đề xuất (nếu có) X70={tương tự X67}");
 
                 /* X71 = {cột S T_BHTT_NOI bảng B02_TOANQUOC } */
-                tailieu.Add("{X71}", dataTinhB02["t_bhtt_noi"].formatNumberVN());
+                tailieu.Add("{X71}", dataTinhB02["t_bhtt_noi"].ToString());
                 /* X72 = {cột T T_BHTT_NGOAI bảng B02_TOANQUOC } */
-                tailieu.Add("{X72}", dataTinhB02["t_bhtt_ngoai"].formatNumberVN());
+                tailieu.Add("{X72}", dataTinhB02["t_bhtt_ngoai"].ToString());
                 /* X73 Lấy tên tỉnh */
                 tmp = $"{AppHelper.dbSqliteMain.getValue($"SELECT ten FROM dmTinh WHERE id='{matinh.sqliteGetValueField()}'")}";
                 tailieu.Add("{X73}", tmp);
@@ -226,7 +229,7 @@ namespace ToolBaoCao.Controllers
                             tmp = run.ToString();
                             // Sử dụng Regex để tìm tất cả các match
                             MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
-                            foreach (Match match in matches) { tmp = tmp.Replace(match.Value, tailieu.getValue(match.Value, "")); }
+                            foreach (Match match in matches) { tmp = tmp.Replace(match.Value, tailieu.getValue(match.Value, "", true)); }
                             run.SetText(tmp, 0);
                         }
                     }
@@ -255,15 +258,15 @@ namespace ToolBaoCao.Controllers
             var keys = new List<string>();
             for(int i = iKey; i <= (iKey + 6); i++) { keys.Add("{X" + i.ToString() + "}"); }
             /* X33 = Chi bình quân nội trú X33={Cột K (CHI_BQ_NOI), dòng MA_TINH=10}; */
-            d.Add(keys[0], rowTinh[fieldChiBQ].formatNumberVN()); /* "chi_bq_noi" */
+            d.Add(keys[0], rowTinh[fieldChiBQ].ToString()); /* "chi_bq_noi" */
             /* X34 = bình quân toàn quốc X34={cột K (CHI_BQ_NOI), dòng MA_TINH=00}; */
-            d.Add(keys[1], rowTQ[fieldChiBQ].formatNumberVN());
+            d.Add(keys[1], rowTQ[fieldChiBQ].ToString());
             /* X35 = Số chênh lệch X35={đoạn văn tùy thuộc X33> hay < X34. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             d.Add(keys[2], "bằng");
             var so1 = double.Parse(d[keys[0]]);
             var so2 = double.Parse(d[keys[1]]);
-            if (so1 > so2) { d[keys[2]] = $"cao hơn {(so1 - so2).formatNumberVN()}"; }
-            else { if (so1 < so2) { d[keys[2]] = $"thấp hơn {(so2 - so1).formatNumberVN()}"; } }
+            if (so1 > so2) { d[keys[2]] = $"cao hơn {(so1 - so2).ToString()}"; }
+            else { if (so1 < so2) { d[keys[2]] = $"thấp hơn {(so2 - so1).ToString()}"; } }
             /* X36= xếp thứ so toàn quốc X36={Sort cột K CHI_BQ_NOI cao xuống thấp và lấy thứ tự}; */
             d.Add(keys[3], getPosition("", matinh, fieldChiBQ, data));
             /* X37 = Bình quân vùng X37={tính toán: A-Tổng chi nội trú các tỉnh cùng mã vùng / B- Tổng lượt kcb nội trú của các tỉnh cùng mã vùng. A=Total  (cột K (CHI_BQ_NOI) * cột F (TONG_LUOT_NOI)) của tất cả các tỉnh cùng MA_VUNG với tỉnh báo cáo. B= Total cột F (TONG_LUOT_NOI) của các tỉnh có MA_VUNG cùng mã vùng của tỉnh báo cáo}; */
@@ -272,14 +275,14 @@ namespace ToolBaoCao.Controllers
             if (so2 != 0)
             {
                 so1 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => (r.Field<double>(fieldChiBQ) * r.Field<long>(fieldTongLuot)));
-                d[keys[4]] = (so1 / so2).formatNumberVN();
+                d[keys[4]] = (so1 / so2).ToString();
             }
             /* X38 = số chênh lệch X38 ={đoạn văn tùy thuộc X33 > hay < X37. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             d.Add(keys[5], "bằng");
             so1 = double.Parse(d[keys[0]]);
             so2 = double.Parse(d[keys[4]]);
-            if (so1 > so2) { d[keys[5]] = $"cao hơn {(so1 - so2).formatNumberVN()}"; }
-            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {(so2 - so1).formatNumberVN()}"; } }
+            if (so1 > so2) { d[keys[5]] = $"cao hơn {(so1 - so2).ToString()}"; }
+            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {(so2 - so1).ToString()}"; } }
             /* X39 đứng thứ so với vùng X39= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột K (CHI_BQ_NOI) cao –thấp và lấy thứ tự} */
             d.Add(keys[6], getPosition(mavung, matinh, fieldChiBQ, data));
             return d;
@@ -290,12 +293,12 @@ namespace ToolBaoCao.Controllers
             string key1 = "{X" + iKey.ToString() + "}", key2 = "{X" + (iKey + 1).ToString() + "}", key3 = "{X" + (iKey + 2).ToString() + "}";
             /* X46 Bình quân cột [x] dòng có mã tỉnh = 10}; */
             var x = (double)row[field1];
-            d.Add(key1, row[field1].formatNumberVN());
+            d.Add(key1, row[field1].ToString());
             /* X47 số tương đối X47={nếu cột [x+1] dòng có mã tỉnh=10 là số dương, “tăng “ & cột [x+1] & “%”, không thì “giảm “ & cột [x+1] %}; */
             d.Add(key2, "bằng");
             var x1 = (double)row[field2]; /* s */
-            if (x1 > 0) { d[key2] = $"tăng {x1.formatNumberVN()}%"; }
-            else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).formatNumberVN()}%"; } }
+            if (x1 > 0) { d[key2] = $"tăng {x1.ToString()}%"; }
+            else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).ToString()}%"; } }
             /* X48 số tuyệt đối X48={nếu cột [x+1] là dương, “tăng “ & [cột [x] - (cột [x] / (cột [x+1] +100) *100 )] & “ đồng”, không thì “giảm “ & [cột [x]- (cột [x] / (cột [x+1]+100) *100 )] & “ đồng”} */
             d.Add(key3, "bằng");
             if (x1 > 0) { d[key3] = "tăng " + (x - (x / (x1 + 100) * 100)).ToString("#,##0.00", AppHelper.cul.NumberFormat) + " đồng"; }
@@ -308,12 +311,12 @@ namespace ToolBaoCao.Controllers
             string key1 = "{X" + iKey.ToString() + "}", key2 = "{X" + (iKey + 1).ToString() + "}", key3 = "{X" + (iKey + 2).ToString() + "}";
             /* X61 Chỉ định xét nghiệm X61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
             var so1 = ((double)row[field1] * 100);
-            d.Add(key1, so1.formatNumberVN());
+            d.Add(key1, so1.ToString());
             /* X62 số tương đối X62={cột AE dòng có mã tỉnh=10 & “%”}; */
-            d.Add(key2, row["chi_dinh_xn_tang"].formatNumberVN() + "%");
+            d.Add(key2, row["chi_dinh_xn_tang"].ToString() + "%");
             /* X63 = số tuyệt đối X63 {tính toán: [X61 trừ đi (X61 chia (cột AE+100)*100)] & “bệnh nhân”} */
             var so2 = (double)row[field2];
-            d.Add(key3, (so1 - (so1 / (so2 + 100) * 100)).formatNumberVN());
+            d.Add(key3, (so1 - (so1 / (so2 + 100) * 100)).ToString());
             return d;
         }
     }

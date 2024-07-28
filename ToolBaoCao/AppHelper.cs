@@ -41,26 +41,33 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
         public static CultureInfo cul = CultureInfo.GetCultureInfo("vi-VN");
-        public static string formatNumberVN(this string NumberUS, int Decimal = 3)
+        public static string FormatCultureVN(this string numberUS, int decimalDigits = 2)
         {
-            if (Regex.IsMatch(NumberUS, "^[0-9]+$|^[-][0-9]+$"))
+            // Kiểm tra định dạng số hợp lệ theo kiểu số âm hoặc dương, có hoặc không có phần thập phân
+            if (Regex.IsMatch(numberUS, @"^-?\d+(\.\d+)?$")) { return numberUS; }
+            // Xác định kiểu văn hóa (culture) cho Việt Nam
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
+            // Tạo định dạng số dựa trên kiểu văn hóa
+            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
+            // Chuyển đổi chuỗi thành số thập phân
+            if (Decimal.TryParse(numberUS, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal parsedNumber))
             {
-                long v = long.Parse(NumberUS);
-                if (v < 0) { return "-" + Math.Abs(v).ToString("#,##0", cul.NumberFormat); }
-                return v.ToString("#,##0", cul.NumberFormat);
+                // Định dạng số theo kiểu văn hóa và độ chính xác thập phân
+                string formattedNumber = parsedNumber.ToString($"N{decimalDigits}", formatInfo);
+
+                // Loại bỏ toàn bộ số 0 đằng sau phần thập phân nếu có
+                if (formattedNumber.Contains(","))
+                {
+                    string[] parts = formattedNumber.Split(',');
+                    // Loại bỏ các số 0 không cần thiết ở phần thập phân
+                    string decimalPart = parts[1].TrimEnd('0');
+                    if (decimalPart.Length > 0) { return parts[0] + "," + decimalPart; }
+                    return parts[0]; // Trường hợp chỉ có phần nguyên
+                }
+                return formattedNumber; // Không có phần thập phân
             }
-            if (Regex.IsMatch(NumberUS, "^[0-9][.][0-9]+$^[-][0-9][.][0-9]+$"))
-            {
-                var l = new List<string>();
-                if (Decimal > 0) { for (int i = 0; i < Decimal; i++) { l.Add("0"); } }
-                var f = l.Count == 0 ? "#,##0.#" : "#,##0." + string.Join("", l);
-                double v = double.Parse(NumberUS);
-                if (v < 0) { return "-" + Math.Abs(v).ToString(f, cul.NumberFormat); }
-                return v.ToString(f, cul.NumberFormat);
-            }
-            return NumberUS;
+            return numberUS;
         }
-        public static string formatNumberVN(this object NumberUS, int Decimal = 3) => NumberUS.ToString().formatNumberVN(Decimal);
         public static List<string> GetTableNameFromTsql(string tsql)
         { 
             var matches = Regex.Matches(tsql, @"\b(FROM|JOIN|UPDATE)\s+([a-zA-Z0-9_.\[\]]+)", RegexOptions.IgnoreCase);
@@ -365,9 +372,9 @@ namespace ToolBaoCao
             return items;
         }
 
-        public static string getValue(this Dictionary<string, string> data, string key, string defaultValue = "")
+        public static string getValue(this Dictionary<string, string> data, string key, string defaultValue = "", bool formatVN = false)
         {
-            if (data.ContainsKey(key)) { return data[key]; }
+            if (data.ContainsKey(key)) {  return formatVN ? data[key].FormatCultureVN(): data[key]; }
             return defaultValue;
         }
 
