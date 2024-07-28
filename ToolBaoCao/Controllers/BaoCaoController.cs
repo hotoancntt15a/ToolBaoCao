@@ -52,7 +52,9 @@ namespace ToolBaoCao.Controllers
                 string thoigian = ngayTime.ToString("yyyyMMdd");
                 string thang = ngayTime.ToString("MM");
                 string nam = ngayTime.ToString("yyyy");
-                var tailieu = new Dictionary<string, string>(); double so1 = 0; double so2 = 0;
+                var tailieu = new Dictionary<string, string>(); 
+                
+                double so1 = 0; double so2 = 0;
                 var tmpD = new Dictionary<string, string>();
 
                 /* Bỏ qua các vùng */
@@ -85,12 +87,13 @@ namespace ToolBaoCao.Controllers
                 /* X1 = {cột R (T-BHTT) bảng B02_TOANQUOC } */
                 tailieu.Add("{X1}", dataTinhB02["t_bhtt"].ToString());
                 /* X2 = {“ Quyết định số: Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
-                tailieu.Add("{X2}", "0");
+                tailieu.Add("{X2}", Request.getValue("x2"));
                 /* X3 = {Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay} */
-                tailieu.Add("{X3}", "0");
+                tailieu.Add("{X3}", Request.getValue("x3"));
                 /* X4={X1/X2 %} So sánh với dự toán, tỉnh đã sử dụng */
-                if (tailieu["{X2}"] == "0") { tailieu.Add("{X4}", "0"); }
-                else { tailieu.Add("{X4}", (double.Parse(tailieu["{X1}"]) / double.Parse(tailieu["{X2}"])).ToString()); }
+                so2 = Regex.IsMatch(tailieu["{X2}"], "^[0-9]+$") ? double.Parse(tailieu["{X2}"]) : 0;
+                if (so2 == 0) { tailieu.Add("{X4}", "0"); }
+                else { tailieu.Add("{X4}", (double.Parse(tailieu["{X1}"]) / so2).ToString()); }
 
                 /* X5 = {Cột tyle_noitru, dòng MA_TINH=10} bảng B02_TOANQUOC */
                 tailieu.Add("{X5}", dataTinhB02["tyle_noitru"].ToString());
@@ -201,13 +204,13 @@ namespace ToolBaoCao.Controllers
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
 
                 /* X67 Công tác kiểm soát chi X67={lần đầu lập BC sẽ rỗng, người dùng tự trình bày văn bản, lưu lại ở bảng dữ liệu kết quả báo cáo, kỳ sau sẽ tự động lấy từ kỳ trước, để người dùng kế thừa, sửa và lưu dùng cho kỳ này và kỳ sau} */
-                tailieu.Add("{X67}", "Công tác kiểm soát chi X67={lần đầu lập BC sẽ rỗng, người dùng tự trình bày văn bản, lưu lại ở bảng dữ liệu kết quả báo cáo, kỳ sau sẽ tự động lấy từ kỳ trước, để người dùng kế thừa, sửa và lưu dùng cho kỳ này và kỳ sau}");
+                tailieu.Add("{X67}", Request.getValue("x67"));
                 /* X68 Công tác thanh, quyết toán năm X68={tương tự X67} */
-                tailieu.Add("{X68}", "Công tác thanh, quyết toán năm X68={tương tự X67}");
+                tailieu.Add("{X68}", Request.getValue("x68"));
                 /* X69 Phương hướng kỳ tiếp theo X69={tương tự X67} */
-                tailieu.Add("{X69}", "Phương hướng kỳ tiếp theo X69={tương tự X67}");
+                tailieu.Add("{X69}", Request.getValue("x69"));
                 /* X70 Khó khăn, vướng mắc, đề xuất (nếu có) X70={tương tự X67} */
-                tailieu.Add("{X70}", "Khó khăn, vướng mắc, đề xuất (nếu có) X70={tương tự X67}");
+                tailieu.Add("{X70}", Request.getValue("x70"));
 
                 /* X71 = {cột S T_BHTT_NOI bảng B02_TOANQUOC } */
                 tailieu.Add("{X71}", dataTinhB02["t_bhtt_noi"].ToString());
@@ -218,6 +221,8 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X73}", tmp);
                 /* X74 Lấy ngày chọn báo cáo */
                 tailieu.Add("{X74}", ngay);
+                
+                /* Inert into baocaotuan */
 
                 using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.ReadWrite))
                 {

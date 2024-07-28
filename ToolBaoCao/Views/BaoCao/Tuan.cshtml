@@ -50,6 +50,42 @@
                             </td>
                         </tr>
                         <tr>
+                            <td class="text-right">@Html.Label("x2", "Quyết định số:")</td>
+                            <td>
+                                <input type="text" name="x2" id="x2" value="" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("x3", "Tổng tiền")</td>
+                            <td>
+                                <input type="text" name="x3" id="x3" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x67", "Công tác kiểm soát chi:");
+                                <textarea name="x67"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x68", "Công tác thanh, quyết toán năm:");
+                                <textarea name="x68"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x69", "Phương hướng kỳ tiếp theo:");
+                                <textarea name="x69"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có):");
+                                <textarea name="x70"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
                             <td colspan="2">
                                 <a href="javascript:baocao();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
                                 <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về docx</a>
