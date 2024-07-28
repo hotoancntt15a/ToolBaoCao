@@ -40,33 +40,56 @@ namespace ToolBaoCao
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
-        public static CultureInfo cul = CultureInfo.GetCultureInfo("vi-VN");
         public static string FormatCultureVN(this string numberUS, int decimalDigits = 2)
         {
-            // Kiểm tra định dạng số hợp lệ theo kiểu số âm hoặc dương, có hoặc không có phần thập phân
-            if (Regex.IsMatch(numberUS, @"^-?\d+(\.\d+)?$")) { return numberUS; }
-            // Xác định kiểu văn hóa (culture) cho Việt Nam
-            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            // Tạo định dạng số dựa trên kiểu văn hóa
+            if (Regex.IsMatch(numberUS, @"^-?\d+(\.\d+)?$") == false) { return numberUS; } 
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN"); 
             NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
-            // Chuyển đổi chuỗi thành số thập phân
             if (Decimal.TryParse(numberUS, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal parsedNumber))
             {
-                // Định dạng số theo kiểu văn hóa và độ chính xác thập phân
                 string formattedNumber = parsedNumber.ToString($"N{decimalDigits}", formatInfo);
-
-                // Loại bỏ toàn bộ số 0 đằng sau phần thập phân nếu có
                 if (formattedNumber.Contains(","))
                 {
                     string[] parts = formattedNumber.Split(',');
-                    // Loại bỏ các số 0 không cần thiết ở phần thập phân
                     string decimalPart = parts[1].TrimEnd('0');
                     if (decimalPart.Length > 0) { return parts[0] + "," + decimalPart; }
-                    return parts[0]; // Trường hợp chỉ có phần nguyên
+                    return parts[0];
                 }
-                return formattedNumber; // Không có phần thập phân
+                return formattedNumber;
             }
             return numberUS;
+        }
+        public static string FormatCultureVN(this long numberUS)
+        {
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
+            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
+            return numberUS.ToString($"N", formatInfo);
+        }
+        public static string FormatCultureVN(this int numberUS)
+        {
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
+            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
+            return numberUS.ToString($"N", formatInfo);
+        }
+        public static string FormatCultureVN(this double numberUS, int decimalDigits = 2)
+        {
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
+            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
+            string formattedNumber = numberUS.ToString($"N{decimalDigits}", formatInfo);
+            if (formattedNumber.Contains(","))
+            {
+                string[] parts = formattedNumber.Split(',');
+                string decimalPart = parts[1].TrimEnd('0');
+                if (decimalPart.Length > 0) { return parts[0] + "," + decimalPart; }
+                return parts[0];
+            }
+            return formattedNumber;
+        }
+        public static string FormatCultureVN(this decimal numberUS, int decimalDigits = 2)
+        {
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
+            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
+            return numberUS.ToString($"N{decimalDigits}", formatInfo);
         }
         public static List<string> GetTableNameFromTsql(string tsql)
         { 

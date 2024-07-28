@@ -100,8 +100,8 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X7}", "bằng");
                 so1 = (double)dataTinhB02["tyle_noitru"];
                 so2 = (double)dataTQB02["tyle_noitru"];
-                if (so1 > so2) { tailieu["{X7}"] = $"cao hơn {(so1 - so2).ToString()}"; }
-                else { if (so1 < so2) { tailieu["{X7}"] = $"thấp hơn {(so2 - so1).ToString()}"; } }
+                if (so1 > so2) { tailieu["{X7}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+                else { if (so1 < so2) { tailieu["{X7}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
                 /* X8={Sort cột G (TYLE_NOITRU) cao xuống thấp và lấy thứ tự}; */
                 var sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
                 int position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1;
@@ -118,8 +118,8 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X10}", "bằng");
                 so1 = (double)dataTinhB02["tyle_noitru"];
                 so2 = double.Parse(tailieu["{X9}"]); tailieu["{X9}"] = tailieu["{X9}"].ToString();
-                if (so1 > so2) { tailieu["{X10}"] = $"cao hơn {(so1 - so2).ToString()}"; }
-                else { if (so1 < so2) { tailieu["{X10}"] = $"thấp hơn {(so2 - so1).ToString()}"; } }
+                if (so1 > so2) { tailieu["{X10}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+                else { if (so1 < so2) { tailieu["{X10}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
                 /* X11= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort cột G (TYLE_NOITRU ) cao –thấp và lấy thứ tự} */
                 sortedRows = b02TQ.Where(r => r.Field<string>("ma_vung") == mavung)
                     .OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
@@ -134,8 +134,8 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X14}", "bằng");
                 so1 = (double)dataTinhB02["ngay_dtri_bq"];
                 so2 = (double)dataTQB02["ngay_dtri_bq"];
-                if (so1 > so2) { tailieu["{X14}"] = $"cao hơn {(so1 - so2).ToString("0.###")}"; }
-                else { if (so1 < so2) { tailieu["{X14}"] = $"thấp hơn {(so2 - so1).ToString("0.###")}"; } }
+                if (so1 > so2) { tailieu["{X14}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+                else { if (so1 < so2) { tailieu["{X14}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
                 /* X15 = xếp thứ so toàn quốc X15={Sort cột H (NGAY_DTRI_BQ) cao xuống thấp và lấy thứ tự}; */
                 sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("ngay_dtri_bq")).ToList();
                 position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1;
@@ -152,8 +152,8 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X17}", "bằng");
                 so1 = (double)dataTinhB02["ngay_dtri_bq"];
                 so2 = double.Parse(tailieu["{X16}"]); tailieu["{X16}"] = tailieu["{X16}"].ToString();
-                if (so1 > so2) { tailieu["{X17}"] = $"cao hơn {(so1 - so2).ToString()}"; }
-                else { if (so1 < so2) { tailieu["{X17}"] = $"thấp hơn {(so2 - so1).ToString()}"; } }
+                if (so1 > so2) { tailieu["{X17}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+                else { if (so1 < so2) { tailieu["{X17}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
                 /* X18 = đứng thứ so với vùng X18 = {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột H (NGAY_DTRI_BQ) cao –thấp và lấy thứ tự} */
                 sortedRows = b02TQ.Where(r => r.Field<string>("ma_vung") == mavung)
                     .OrderByDescending(row => row.Field<double>("ngay_dtri_bq")).ToList();
@@ -281,8 +281,8 @@ namespace ToolBaoCao.Controllers
             d.Add(keys[5], "bằng");
             so1 = double.Parse(d[keys[0]]);
             so2 = double.Parse(d[keys[4]]);
-            if (so1 > so2) { d[keys[5]] = $"cao hơn {(so1 - so2).ToString()}"; }
-            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {(so2 - so1).ToString()}"; } }
+            if (so1 > so2) { d[keys[5]] = $"cao hơn {(so1 - so2).ToString().FormatCultureVN()}"; }
+            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {(so2 - so1).ToString().FormatCultureVN()}"; } }
             /* X39 đứng thứ so với vùng X39= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột K (CHI_BQ_NOI) cao –thấp và lấy thứ tự} */
             d.Add(keys[6], getPosition(mavung, matinh, fieldChiBQ, data));
             return d;
@@ -301,8 +301,8 @@ namespace ToolBaoCao.Controllers
             else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).ToString()}%"; } }
             /* X48 số tuyệt đối X48={nếu cột [x+1] là dương, “tăng “ & [cột [x] - (cột [x] / (cột [x+1] +100) *100 )] & “ đồng”, không thì “giảm “ & [cột [x]- (cột [x] / (cột [x+1]+100) *100 )] & “ đồng”} */
             d.Add(key3, "bằng");
-            if (x1 > 0) { d[key3] = "tăng " + (x - (x / (x1 + 100) * 100)).ToString("#,##0.00", AppHelper.cul.NumberFormat) + " đồng"; }
-            else { if (x1 < 0) { d[key3] = "giảm " + (x - (x / (x1 + 100) * 100)).ToString("#,##0.00", AppHelper.cul.NumberFormat) + " đồng"; } }
+            if (x1 > 0) { d[key3] = "tăng " + (x - (x / (x1 + 100) * 100)).ToString().FormatCultureVN() + " đồng"; }
+            else { if (x1 < 0) { d[key3] = "giảm " + (x - (x / (x1 + 100) * 100)).ToString().FormatCultureVN() + " đồng"; } }
             return d;
         }
         private Dictionary<string, string> build02B26(int iKey, string field1, string field2, DataRow row)
@@ -313,7 +313,7 @@ namespace ToolBaoCao.Controllers
             var so1 = ((double)row[field1] * 100);
             d.Add(key1, so1.ToString());
             /* X62 số tương đối X62={cột AE dòng có mã tỉnh=10 & “%”}; */
-            d.Add(key2, row["chi_dinh_xn_tang"].ToString() + "%");
+            d.Add(key2, row["chi_dinh_xn_tang"].ToString().FormatCultureVN() + "%");
             /* X63 = số tuyệt đối X63 {tính toán: [X61 trừ đi (X61 chia (cột AE+100)*100)] & “bệnh nhân”} */
             var so2 = (double)row[field2];
             d.Add(key3, (so1 - (so1 / (so2 + 100) * 100)).ToString());
