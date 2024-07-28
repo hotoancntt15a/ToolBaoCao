@@ -1,4 +1,6 @@
 ﻿using Microsoft.Ajax.Utilities;
+using NPOI.HSSF.Record.Chart;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,6 +8,7 @@ using System.Data.SQLite;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web.UI.WebControls.WebParts;
 
 namespace ToolBaoCao
 {
@@ -102,18 +105,6 @@ namespace ToolBaoCao
             }
             if(fileCache != "") { data.WriteXml(fileCache); }
             return data;
-        }
-
-        public string CheckCamXNC(string maDinhDanh, int ngayCap = 0)
-        {
-            var items = getDataTable($"SELECT * FROM danhSachCam WHERE maDinhDanh = @id AND ngayCamOADate >= {ngayCap} AND (denNgayOADate = 0 OR denNgayOADate <= {ngayCap}) ORDER BY ngayCamOADate DESC LIMIT 1", new KeyValuePair<string, string>("@id", maDinhDanh));
-            if (items.Rows.Count > 0)
-            {
-                var item = items.Rows[0];
-                var tmp = $"{item["denNgayOADate"]}" == "0" ? "" : $" đến hết ngày {item["denNgay"]}";
-                return $"Mã định danh (CMT/CCCD) {maDinhDanh}; {item["hoTen"]} sinh ngày {item["ngaySinh"]} giới tính {item["gioiTinh"]} đã cấm XNC từ ngày {item["ngayCam"]}{tmp}, lý do {item["lyDo"]}";
-            }
-            return "";
         }
 
         public int Execute(string query, object parameters = null)
@@ -244,7 +235,6 @@ namespace ToolBaoCao
             }
             throw new Exception($"Hiện phần mềm chưa hỗ trợ phụ hồi từ tập tin có kiểu '{ext}'");
         }
-
         public int Update(string tableName, Dictionary<string, string> data, string where = "")
         {
             if (string.IsNullOrEmpty(tableName)) { return 0; }
@@ -252,12 +242,23 @@ namespace ToolBaoCao
             var tsql = "";
             var fields = new List<string>();
             List<SQLiteParameter> par = new List<SQLiteParameter>();
-            if (string.IsNullOrEmpty(where))
+            if (string.IsNullOrEmpty(where) || where.ToLower() == "replace" || where.ToLower() == "ignore")
             {
                 /* Addnew */
                 var parV = new List<string>();
                 foreach (var v in data) { fields.Add($"{v.Key}"); parV.Add($"@{v.Key}"); par.Add(new SQLiteParameter($"@{v.Key}", v.Value)); }
-                tsql = $"INSERT INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                switch (where.ToLower())
+                {
+                    case "replace":
+                        tsql = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                        break;
+                    case "ignore":
+                        tsql = $"INSERT OR IGNORE INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                        break;
+                    default:
+                        tsql = $"INSERT INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                        break;
+                }
             }
             else
             {
@@ -267,6 +268,52 @@ namespace ToolBaoCao
                 tsql = $"UPDATE {tableName} SET {string.Join(",", fields)} WHERE {where}";
             }
             return Execute(tsql, par.ToArray());
+        }
+        public int Insert(string tableName, DataTable data, string orRepalceIgnore = "", int packetSize = 1000)
+        {
+            if (string.IsNullOrEmpty(tableName)) { return 0; }
+            if (data.Rows.Count == 0) { return 0; }
+            var tsql = "";
+            int rs = 0;
+            var fields = new List<string>();
+            foreach (DataColumn c in data.Columns) { fields.Add($"[{c.ColumnName}]"); }
+            var tsqlInert = "";
+            switch (orRepalceIgnore.ToLower())
+            {
+                case "replace":
+                    tsqlInert = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", fields)}) VALUES ";
+                    break;
+                case "ignore":
+                    tsqlInert = $"INSERT OR IGNORE INTO {tableName} ({string.Join(",", fields)}) VALUES ";
+                    break;
+                default:
+                    tsqlInert = $"INSERT INTO {tableName} ({string.Join(",", fields)}) VALUES ";
+                    break;
+            }
+            var values = new List<string>();
+            foreach (DataRow row in data.Rows)
+            {
+                if (values.Count >= packetSize)
+                {
+                    tsql = tsqlInert + string.Join(", ", values);
+                    values = new List<string>();
+                    rs = Execute(tsql);
+                }
+                var v = new List<string>();
+                foreach (var f in fields)
+                {
+                    if (row[f] is DBNull) { v.Add("NULL"); continue; }
+                    if (row.Table.Columns[f].DataType == typeof(DateTime)) { v.Add($"'{row[f]:yyyy-MM-dd H:m:s}'"); continue; }
+                    v.Add("'" + $"{row[f]}".sqliteGetValueField() + "'");
+                }
+                values.Add($"({string.Join(",", v)})");
+            }
+            if (values.Count > 0)
+            {
+                tsql = tsqlInert + string.Join(", ", values);
+                rs = Execute(tsql);
+            }
+            return rs;
         }
 
         public Dictionary<string, object> getItem(string query, object parameters = null)

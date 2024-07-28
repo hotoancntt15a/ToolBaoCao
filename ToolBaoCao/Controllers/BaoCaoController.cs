@@ -52,8 +52,7 @@ namespace ToolBaoCao.Controllers
                 string thoigian = ngayTime.ToString("yyyyMMdd");
                 string thang = ngayTime.ToString("MM");
                 string nam = ngayTime.ToString("yyyy");
-                var tailieu = new Dictionary<string, string>(); 
-                
+                var tailieu = new Dictionary<string, string>();                 
                 double so1 = 0; double so2 = 0;
                 var tmpD = new Dictionary<string, string>();
 
@@ -221,8 +220,12 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X73}", tmp);
                 /* X74 Lấy ngày chọn báo cáo */
                 tailieu.Add("{X74}", ngay);
-                
-                /* Inert into baocaotuan */
+
+                tailieu.Add("ma_bc", thoigian);
+                tailieu.Add("userid", $"{Session["iduser"]}");
+                var dbBaoCaoTuan = BuildDatabase.getDbSQLiteBaoCao();
+                dbBaoCaoTuan.Update("bctuandocx", tailieu, "replace");
+                dbBaoCaoTuan.Close();
 
                 using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.ReadWrite))
                 {
