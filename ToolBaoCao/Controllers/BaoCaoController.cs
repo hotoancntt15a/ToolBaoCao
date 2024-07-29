@@ -16,9 +16,47 @@ namespace ToolBaoCao.Controllers
         {
             return View();
         }
+        public ActionResult TruyVanBCTuan(string matinh, string ngay1, string ngay2, string mode)
+        { 
+            long time1 = 0, time2 = 0;
+            try
+            {
+                if (string.IsNullOrEmpty(mode)) { throw new Exception("Tham số thực thi không đúng"); }
+                if (mode != "truyvan") { throw new Exception("Tham số thực thi không đúng"); }
+                if (string.IsNullOrEmpty(matinh)) { throw new Exception("Bạn chưa chọn tỉnh làm việc"); }
+                if (string.IsNullOrEmpty(ngay1)) { throw new Exception("Bạn chưa chọn từ ngày"); }
+                if (string.IsNullOrEmpty(ngay2)) { throw new Exception("Bạn chưa chọn đến ngày"); }
+                if (ngay1.isDateVN() == false) { throw new Exception($"Từ ngày {ngay1} không đúng định dạng ngày/Tháng/Năm"); }
+                if (ngay2.isDateVN() == false) { throw new Exception($"Đến ngày {ngay2} không đúng định dạng ngày/Tháng/Năm"); }
+                time1 = ngay1.getFromDateVN().toTimestamp();
+                time2 = ngay2.getFromDateVN().toTimestamp();
+                if (time2 < time1) { throw new Exception($"Từ ngày {ngay1} phải nhỏ hơn đến ngày {ngay2}"); }
+                if (time2 == 0) { throw new Exception($"Ngày không hợp lệ {ngay2}"); }
+                if (Regex.IsMatch(matinh, @"^\d+$") == false) { throw new Exception($"Mã tỉnh '{matinh}' làm việc không hợp lệ"); }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; return View(); }
+            try {
+                ViewBag.ngay1 = ngay1;
+                ViewBag.ngay2 = ngay2;
+                ViewBag.matinh = matinh;
+                var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
+                var data = dbBaoCao.getDataTable($"SELECT id, ma_tinh, userid, date(ngay, 'auto', '+7 hours') AS ngayGMT7, datetime(timecreate, 'auto', '+7 hours') AS taoLanCuoi FROM bctuandocx WHERE ma_tinh='{matinh}' AND (ngay >= {time1} AND ngay <= {time2})");
+                ViewBag.data = data;
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.getLineHTML(); return View();
+            }
+            return View();
+        }
         public ActionResult CreateBCTuan()
         {
-
+            string tmp = $"{Session["idtinh"]}".Trim();
+            ViewBag.tinhSelect = tmp;
+            tmp = $"{Session["nhom"]}".Trim() == "0" ? "" : $" WHERE id = '{tmp}'";
+            var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh{tmp} ORDER BY tt, ten");
+            if (dmTinh.Rows.Count == 0) { ViewBag.Error = "Bạn chưa chọn hoặc được cấp tỉnh hoạt động"; return View(); }
+            ViewBag.dmTinh = dmTinh;
             return View(); 
         }
         public ActionResult Tuan()
@@ -34,7 +72,7 @@ namespace ToolBaoCao.Controllers
             {
                 tmp = $"{Session["idtinh"]}".Trim();
                 ViewBag.tinhSelect = tmp;
-                tmp = $"{Session["nhom"]}".Trim() == "0" ? "" : $" WHERE idtinh = '{tmp}'";
+                tmp = $"{Session["nhom"]}".Trim() == "0" ? "" : $" WHERE id = '{tmp}'";
                 var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh{tmp} ORDER BY tt, ten");
                 if (dmTinh.Rows.Count == 0) { ViewBag.Error = "Bạn chưa chọn hoặc được cấp tỉnh hoạt động"; return View(); }
                 ViewBag.dmTinh = dmTinh;
@@ -360,7 +398,10 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X74}", ngayTime.ToString("dd/MM/yyyy"));
 
                 tailieu.Add("id", $"{thoigian}|{iduser}");
+                tailieu.Add("ma_tinh", matinh);
                 tailieu.Add("userid", iduser);
+                tailieu.Add("ngay", ngayTime.toTimestamp().ToString());
+                tailieu.Add("timecreate", DateTime.Now.toTimestamp().ToString());
                 var dbBaoCaoTuan = BuildDatabase.getDbSQLiteBaoCao();
                 dbBaoCaoTuan.Update("bctuandocx", tailieu, "replace");
                 dbBaoCaoTuan.Close();

@@ -2679,6 +2679,7 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
     <Content Include="Views\Home\TaiKhoan.cshtml" />
     <Content Include="Views\BaoCao\CreateBCTuan.cshtml" />
+    <Content Include="Views\BaoCao\TruyVanBCTuan.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

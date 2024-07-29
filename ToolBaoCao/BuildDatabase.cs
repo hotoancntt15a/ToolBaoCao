@@ -131,8 +131,11 @@ namespace ToolBaoCao
                     ,x73 text not null default '' /* Tên tỉnh/thành phố lập BC Lấy biến hệ thống khởi tạo khi User đăng nhập */
                     ,x74 text not null default '' /* THOI_GIAN_BC Chuỗi ký tự ngày lập BC. mặc định từ ô C3 biểu B26 khi khởi tạo 1 báo cáo	Có ô cho nhập, sửa */
                     ,userid text not null default '' /* Lưu ID của người dùng */
+                    ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
+                    ,ngay integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
                     ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */
                     );");
+                tsql.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
                 db.Execute(string.Join(Environment.NewLine, tsql));
             }
             return db;

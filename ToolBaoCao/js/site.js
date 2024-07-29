@@ -166,7 +166,7 @@ function postform(fromID, urlPost, targetID, callback) {
     else if (typeof (targetID) == "object") {
         if ($(targetID).attr("id") == "") { idtarget = "idtarget" + timestamp; $(targetID).attr("id", idtarget); }
     }
-    idtarget = getElementJquery(idtarget);
+    idtarget = getElementJquery(targetID);
 
     /** Lấy id From truyền dữ liệu */
     var idform = "";

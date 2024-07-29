@@ -1,7 +1,7 @@
 ﻿@{
     ViewBag.Title = "Danh sách báo cáo tuần";
     var idForm = "idfrm" + DateTime.Now.toTimestamp().ToString();
-    var idResult = "rs" + DateTime.Now.toTimestamp().ToString(); ;
+    var idResult = "rs" + DateTime.Now.toTimestamp().ToString();
     System.Data.DataTable dmTinh = new System.Data.DataTable();
     if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
     string tinhSelect = $"{ViewBag.tinhSelect}";
@@ -11,13 +11,45 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Thông tin</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Thông tin <a class="btn btn-primary btn-sm" href="javascript:showgeturl('@Url.Action("CreateBCTuan", "BaoCao", new { area = "", layout="null" })');"><i class="fa fa-plus"></i> Tạo báo cáo </a> </h6>
     </div>
     <div class="card-body">
         <!-- Form tìm kiếm báo cáo -->
-        @using (Html.BeginForm("TruyVanBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+        @using (Html.BeginForm("TruyVanBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm }))
         {
-
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td style="width: 150px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
+                        <td>
+                            <select name="matinh" id="matinh">
+                                @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                {
+                                    if (tinhSelect == row[0].ToString())
+                                    {
+                                        <option value="@row[0]" selected>@row[1]</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@row[0]">@row[1]</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Từ ngày</td>
+                        <td> <input class="clsdate" name="ngay1" id="ngay1" value="" /> đến ngày <input class="clsdate" name="ngay2" id="ngay2" value="@DateTime.Now.ToString("dd/MM/yyyy")" /> </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="javascript:postform('@idForm', '', '@idResult');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="hidden" name="mode" value="truyvan" />
+            <input type="hidden" name="layout" value="null" />
         }
         <!-- Danh sách báo cáo sau truy vấn -->
         <div id="@idResult"> </div>

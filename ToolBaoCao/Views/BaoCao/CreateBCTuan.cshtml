@@ -9,6 +9,10 @@
         Layout = "~/Views/Shared/_Layout.cshtml";
     }
 
+    var idForm = "idcbct" + DateTime.Now.toTimestamp().ToString();
+    System.Data.DataTable dmTinh = new System.Data.DataTable();
+    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
+    string tinhSelect = $"{ViewBag.tinhSelect}";
 }
 
 <h2>@ViewBag.Title</h2>
