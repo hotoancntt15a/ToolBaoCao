@@ -1,14 +1,10 @@
-﻿using Microsoft.Ajax.Utilities;
-using NPOI.HSSF.Record.Chart;
-using NPOI.SS.Formula.Functions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web.UI.WebControls.WebParts;
 
 namespace ToolBaoCao
 {
@@ -17,7 +13,9 @@ namespace ToolBaoCao
         public SQLiteConnectionStringBuilder connectString = new SQLiteConnectionStringBuilder();
         private SQLiteConnection connection = new SQLiteConnection();
         private string fileDataName = "";
+
         public long getTimestamp(DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
+
         public dbSQLite(string pathOrConnectionString = "main.data", string password = "")
         {
             var cs = new SQLiteConnectionStringBuilder();
@@ -42,7 +40,9 @@ namespace ToolBaoCao
             return cs.ConnectionString;
         }
 
-        public string getValueField(string valueField) { if (string.IsNullOrEmpty(valueField)) { return ""; } return valueField.Replace("'", "''"); }
+        public string getValueField(string valueField)
+        { if (string.IsNullOrEmpty(valueField)) { return ""; } return valueField.Replace("'", "''"); }
+
         public string getPathDataFile() => connectString.DataSource;
 
         public void checkTableViewExists()
@@ -77,21 +77,22 @@ namespace ToolBaoCao
         {
             SQLiteParameter[] par = ConvertObjectToParameter(parameters);
             DataTable data = new DataTable("DataTable");
-            if(string.IsNullOrEmpty(query)) { return data; }
+            if (string.IsNullOrEmpty(query)) { return data; }
             var parstring = new List<string>();
-            if(par != null) { foreach(var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
+            if (par != null) { foreach (var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
             var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}");
-            if(fileCache != "")
+            if (fileCache != "")
             {
-                try { 
-                    if (File.Exists(fileCache)) { 
+                try
+                {
+                    if (File.Exists(fileCache))
+                    {
                         data.ReadXml(fileCache);
                         return data;
                     }
                 }
                 catch { try { File.Delete(fileCache); } catch { } }
-                
-            }            
+            }
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
             {
@@ -103,7 +104,7 @@ namespace ToolBaoCao
                     data = dataset.Tables[0];
                 }
             }
-            if(fileCache != "") { data.WriteXml(fileCache); }
+            if (fileCache != "") { data.WriteXml(fileCache); }
             return data;
         }
 
@@ -235,40 +236,56 @@ namespace ToolBaoCao
             }
             throw new Exception($"Hiện phần mềm chưa hỗ trợ phụ hồi từ tập tin có kiểu '{ext}'");
         }
+
         public int Update(string tableName, Dictionary<string, string> data, string where = "")
         {
             if (string.IsNullOrEmpty(tableName)) { return 0; }
             if (data.Count == 0) { return 0; }
-            var tsql = "";
+            var tsql = ""; string tmp = "";
             var fields = new List<string>();
             List<SQLiteParameter> par = new List<SQLiteParameter>();
             if (string.IsNullOrEmpty(where) || where.ToLower() == "replace" || where.ToLower() == "ignore")
             {
                 /* Addnew */
+
                 var parV = new List<string>();
-                foreach (var v in data) { fields.Add($"{v.Key}"); parV.Add($"@{v.Key}"); par.Add(new SQLiteParameter($"@{v.Key}", v.Value)); }
+                foreach (var v in data)
+                {
+                    tmp = Regex.Replace(v.Key, "[{}]", "");
+                    fields.Add($"{tmp}");
+                    parV.Add($"@{tmp}");
+                    par.Add(new SQLiteParameter($"@{tmp}", v.Value));
+                }
                 switch (where.ToLower())
                 {
                     case "replace":
-                        tsql = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                        tsql = $"INSERT OR REPLACE INTO {tableName} ({string.Join(", ", fields)}) VALUES ({string.Join(", ", parV)});";
                         break;
+
                     case "ignore":
-                        tsql = $"INSERT OR IGNORE INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                        tsql = $"INSERT OR IGNORE INTO {tableName} ({string.Join(", ", fields)}) VALUES ({string.Join(", ", parV)});";
                         break;
+
                     default:
-                        tsql = $"INSERT INTO {tableName} ({string.Join(",", fields)}) VALUES ({string.Join(", ", parV)});";
+                        tsql = $"INSERT INTO {tableName} ({string.Join(", ", fields)}) VALUES ({string.Join(", ", parV)});";
                         break;
                 }
             }
             else
             {
                 /* Update */
-                foreach (var v in data) { fields.Add($"{v.Key} = @{v.Key}"); par.Add(new SQLiteParameter($"@{v.Key}", v.Value)); }
+                foreach (var v in data)
+                {
+                    tmp = Regex.Replace(v.Key, "[{}]", "");
+                    fields.Add($"{tmp} = @{tmp}");
+                    par.Add(new SQLiteParameter($"@{tmp}", v.Value));
+                }
                 where = where.Trim(); if (Regex.IsMatch(where, "^where", RegexOptions.IgnoreCase)) { where = where.Substring(5).Trim(); }
                 tsql = $"UPDATE {tableName} SET {string.Join(",", fields)} WHERE {where}";
             }
             return Execute(tsql, par.ToArray());
         }
+
         public int Insert(string tableName, DataTable data, string orRepalceIgnore = "", int packetSize = 1000)
         {
             if (string.IsNullOrEmpty(tableName)) { return 0; }
@@ -283,9 +300,11 @@ namespace ToolBaoCao
                 case "replace":
                     tsqlInert = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", fields)}) VALUES ";
                     break;
+
                 case "ignore":
                     tsqlInert = $"INSERT OR IGNORE INTO {tableName} ({string.Join(",", fields)}) VALUES ";
                     break;
+
                 default:
                     tsqlInert = $"INSERT INTO {tableName} ({string.Join(",", fields)}) VALUES ";
                     break;
@@ -370,7 +389,7 @@ namespace ToolBaoCao
 
         public void ExportDataToSqlFile(string outputFilePath, string version = "")
         {
-            if(string.IsNullOrEmpty(version)) { version = DateTime.Now.ToString("yyyyMMdd"); }
+            if (string.IsNullOrEmpty(version)) { version = DateTime.Now.ToString("yyyyMMdd"); }
             /* Lấy danh sách các bảng trong cơ sở dữ liệu */
             var tables = getAllTables();
             using (StreamWriter writer = new StreamWriter(outputFilePath, false, Encoding.UTF8))

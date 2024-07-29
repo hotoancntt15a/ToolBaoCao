@@ -54,8 +54,8 @@ namespace ToolBaoCao
             {
                 var tsql = new List<string>();
                 /* BaoCaoTuanDocx */
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS bctuandocx (id INTEGER primary key AUTOINCREMENT
-                    ,ma_bc text not null /* Mã hóa rút gọn và gợi nhớ cho mỗi lần lập BC tuần Dùng trình bày danh sách báo cáo đã lập để tiện cho chọn và xử lý thao tác: Khóa và mở khóa báo cáo/ xóa báo cáo/ xem/in lại */
+                tsql.Add(@"CREATE TABLE IF NOT EXISTS bctuandocx (
+                    id text not null primary key /* Mã hóa rút gọn và gợi nhớ cho mỗi lần lập BC tuần Dùng trình bày danh sách báo cáo đã lập để tiện cho chọn và xử lý thao tác: Khóa và mở khóa báo cáo/ xóa báo cáo/ xem/in lại */
                     ,x1 real not null default 0 /* Tổng tiền các CSKCB đã đề nghị bảo hiểm thanh toán (T_BHTT): X1={cột R (T-BHTT) bảng B02_TOANQUOC }. Làm tròn đến triệu đồng */
                     ,x2 real not null default 0 /* Số của Quyết định giao dự toán: X2={“ Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy thì  lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
                     ,x3 real not null default 0 /* X3={Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay} */
@@ -129,8 +129,9 @@ namespace ToolBaoCao
                     ,x71 real not null default 0 /* Trong đó: Nội trú X71 = {cột S T_BHTT_NOI bảng B02_TOANQUOC }; */
                     ,x72 real not null default 0 /* Ngoại trú X72={cột T T_BHTT_NGOAI bảng B02_TOANQUOC } */
                     ,x73 text not null default '' /* Tên tỉnh/thành phố lập BC Lấy biến hệ thống khởi tạo khi User đăng nhập */
-                    ,x74 integer not null default 0 /* THOI_GIAN_BC Chuỗi ký tự ngày lập BC. mặc định từ ô C3 biểu B26 khi khởi tạo 1 báo cáo	Có ô cho nhập, sửa */
+                    ,x74 text not null default '' /* THOI_GIAN_BC Chuỗi ký tự ngày lập BC. mặc định từ ô C3 biểu B26 khi khởi tạo 1 báo cáo	Có ô cho nhập, sửa */
                     ,userid text not null default '' /* Lưu ID của người dùng */
+                    ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */
                     );");
                 db.Execute(string.Join(Environment.NewLine, tsql));
             }

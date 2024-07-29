@@ -32,7 +32,7 @@ namespace ToolBaoCao
             {
                 if (((System.Web.HttpException)httpException.InnerException).WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge)
                 {
-                    Response.Write("Too big a file, dude");
+                    Response.Write("Tập tin đẩy lên lơn hơn " + WebConfigHelper.GetMaxAllowedContentLengthMB() + "MB");
                 }
             }            
             if (httpException.GetHttpCode() == 404) { Response.Redirect("~/Error"); }

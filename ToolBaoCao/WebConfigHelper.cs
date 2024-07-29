@@ -6,14 +6,14 @@ namespace ToolBaoCao
 {
     public class WebConfigHelper
     {
-        public static int GetMaxRequestLength()
+        public static int GetMaxRequestLengthMB()
         {
             System.Configuration.Configuration config = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
             var section = (HttpRuntimeSection)config.GetSection("system.web/httpRuntime");
             return section != null ? (int)(section.MaxRequestLength / 1024) : 4;
         }
 
-        public static int GetMaxAllowedContentLength()
+        public static int GetMaxAllowedContentLengthMB()
         {
             string webConfigPath = HttpContext.Current.Server.MapPath("~/web.config");
             XmlDocument xmlDoc = new XmlDocument();
