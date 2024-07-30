@@ -1,5 +1,10 @@
 ﻿@{
     ViewBag.Title = "Danh sách báo cáo tuần";
+    if(ViewBag.Error !=  null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+        return;
+    }
     var idForm = "idfrm" + DateTime.Now.toTimestamp().ToString();
     var idResult = "rs" + DateTime.Now.toTimestamp().ToString();
     System.Data.DataTable dmTinh = new System.Data.DataTable();

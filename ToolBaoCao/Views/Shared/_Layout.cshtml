@@ -15,7 +15,7 @@
     <link href="~/css/sb-admin-2.min.css" rel="stylesheet" />
     <link href="~/vendor/datepicker/bootstrap-datepicker.min.css" rel="stylesheet" />
     <link href="~/vendor/datepicker/jquery.timepicker.min.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/site.css?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/css/site.css")).ToOADate())" rel="stylesheet" />
     <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon">
 </head>
 <body id="page-top">

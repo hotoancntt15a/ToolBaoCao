@@ -16,6 +16,7 @@ namespace ToolBaoCao.Controllers
         {
             return View();
         }
+
         public ActionResult TruyVanBCTuan(string matinh, string ngay1, string ngay2, string mode)
         {
             if (Session["iduser"] == null)
@@ -40,7 +41,8 @@ namespace ToolBaoCao.Controllers
                 if (Regex.IsMatch(matinh, @"^\d+$") == false) { throw new Exception($"Mã tỉnh '{matinh}' làm việc không hợp lệ"); }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; return View(); }
-            try {
+            try
+            {
                 ViewBag.ngay1 = ngay1;
                 ViewBag.ngay2 = ngay2;
                 ViewBag.matinh = matinh;
@@ -48,19 +50,13 @@ namespace ToolBaoCao.Controllers
                 var data = dbBaoCao.getDataTable($"SELECT id, ma_tinh, userid, date(ngay, 'auto', '+7 hours') AS ngayGMT7, datetime(timecreate, 'auto', '+7 hours') AS taoLanCuoi FROM bctuandocx WHERE ma_tinh='{matinh}' AND (ngay >= {time1} AND ngay <= {time2})");
                 ViewBag.data = data;
             }
-            catch (Exception ex)
-            {
-                ViewBag.Error = ex.getLineHTML(); return View();
-            }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); return View(); }
             return View();
         }
+
         public ActionResult CreateBCTuan(string objectid)
         {
-            if (Session["iduser"] == null)
-            {
-                ViewBag.Error = keyMSG.ErrorNotLoginAccess;
-                return View();
-            }
+            if (Session["iduser"] == null) { ViewBag.Error = keyMSG.ErrorNotLoginAccess; return View(); }
             try
             {
                 string tmp = $"{Session["idtinh"]}".Trim();
@@ -80,13 +76,10 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); return View(); }
             return View();
         }
+
         public ActionResult Tuan()
         {
-            if (Session["iduser"] == null)
-            {
-                ViewBag.Error = keyMSG.ErrorNotLoginAccess;
-                return View();
-            }
+            if ($"{Session["iduser"]}" == "") { ViewBag.Error = keyMSG.ErrorNotLoginAccess; return View(); }
             var mode = Request.getValue("mode");
             string tmp = "";
             if (mode == "")
@@ -243,7 +236,7 @@ namespace ToolBaoCao.Controllers
         private Dictionary<string, string> buildBaoCaoTuan(DateTime ngayTime, string matinh, string iduser, string x2, string x3, string x67, string x68, string x69, string x70)
         {
             var tailieu = new Dictionary<string, string>();
-            try 
+            try
             {
                 if (Regex.IsMatch(x2, @"^\d+(\.\d+)?$") == false) { x2 = "0"; }
                 if (Regex.IsMatch(x3, @"^\d+(\.\d+)?$") == false) { x3 = "0"; }

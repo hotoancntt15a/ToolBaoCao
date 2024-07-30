@@ -2,5 +2,6 @@
     font-size: 1.4em;
     background-color: greenyellow;
 }
-.clsdate { width: 50px; }
+.clsdate { width: 100px; }
 .clstime { width: 50px; }
+.clsnumber { text-align: right; }
