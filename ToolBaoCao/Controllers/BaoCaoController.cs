@@ -17,7 +17,12 @@ namespace ToolBaoCao.Controllers
             return View();
         }
         public ActionResult TruyVanBCTuan(string matinh, string ngay1, string ngay2, string mode)
-        { 
+        {
+            if (Session["iduser"] == null)
+            {
+                ViewBag.Error = keyMSG.ErrorNotLoginAccess;
+                return View();
+            }
             long time1 = 0, time2 = 0;
             try
             {
@@ -49,15 +54,31 @@ namespace ToolBaoCao.Controllers
             }
             return View();
         }
-        public ActionResult CreateBCTuan()
+        public ActionResult CreateBCTuan(string objectid)
         {
-            string tmp = $"{Session["idtinh"]}".Trim();
-            ViewBag.tinhSelect = tmp;
-            tmp = $"{Session["nhom"]}".Trim() == "0" ? "" : $" WHERE id = '{tmp}'";
-            var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh{tmp} ORDER BY tt, ten");
-            if (dmTinh.Rows.Count == 0) { ViewBag.Error = "Bạn chưa chọn hoặc được cấp tỉnh hoạt động"; return View(); }
-            ViewBag.dmTinh = dmTinh;
-            return View(); 
+            if (Session["iduser"] == null)
+            {
+                ViewBag.Error = keyMSG.ErrorNotLoginAccess;
+                return View();
+            }
+            try
+            {
+                string tmp = $"{Session["idtinh"]}".Trim();
+                ViewBag.tinhSelect = tmp;
+                tmp = $"{Session["nhom"]}".Trim() == "0" ? "WHERE id NOT IN ('', '00')" : $"WHERE id = '{tmp}'";
+                var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh {tmp} ORDER BY tt, ten");
+                if (dmTinh.Rows.Count == 0) { ViewBag.Error = "Bạn chưa chọn hoặc được cấp tỉnh hoạt động"; return View(); }
+                ViewBag.dmTinh = dmTinh;
+                if (string.IsNullOrEmpty(objectid) == false)
+                {
+                    var db = BuildDatabase.getDbSQLiteBaoCao();
+                    var data = db.getDataTable($"SELECT * FROM bctuandocx WHERE id='{objectid.sqliteGetValueField()}';");
+                    if (data.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có mã '{objectid}' không tồn tại hoặc bị xoá trên hệ thống"; return View(); }
+                    ViewBag.data = data.Rows[0];
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); return View(); }
+            return View();
         }
         public ActionResult Tuan()
         {
@@ -72,8 +93,8 @@ namespace ToolBaoCao.Controllers
             {
                 tmp = $"{Session["idtinh"]}".Trim();
                 ViewBag.tinhSelect = tmp;
-                tmp = $"{Session["nhom"]}".Trim() == "0" ? "" : $" WHERE id = '{tmp}'";
-                var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh{tmp} ORDER BY tt, ten");
+                tmp = $"{Session["nhom"]}".Trim() == "0" ? "WHERE id NOT IN ('', '00')" : $"WHERE id = '{tmp}'";
+                var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh {tmp} ORDER BY tt, ten");
                 if (dmTinh.Rows.Count == 0) { ViewBag.Error = "Bạn chưa chọn hoặc được cấp tỉnh hoạt động"; return View(); }
                 ViewBag.dmTinh = dmTinh;
                 return View();

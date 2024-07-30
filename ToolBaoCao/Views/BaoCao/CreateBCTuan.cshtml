@@ -1,118 +1,217 @@
 ﻿@{
     ViewBag.Title = "Tạo báo cáo tuần";
-    if (Request.getValue("layout") == "null")
-    {
-        Layout = null;
-    }
-    else
-    {
-        Layout = "~/Views/Shared/_Layout.cshtml";
-    }
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    else { Layout = "~/Views/Shared/_Layout.cshtml"; }
 
     var idForm = "idcbct" + DateTime.Now.toTimestamp().ToString();
     System.Data.DataTable dmTinh = new System.Data.DataTable();
     if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
     string tinhSelect = $"{ViewBag.tinhSelect}";
+    if (ViewBag.Error != null)
+    {
+        <h2>@ViewBag.Title</h2>
+        <div class="alert alert-warning">@ViewBag.Error</div>
+        return;
+    }
+    var id = Request.getValue("objectid");
+    if (id == "")
+    {
+        ViewBag.Title = "Tạo báo cáo tuần";
+        <h2>@ViewBag.Title</h2>
+        <div class="table-responsive">
+            @using (Html.BeginForm("Tuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            {
+                <input type="hidden" name="mode" value="taive" />
+                <input type="hidden" name="id" value="@id" />
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
+                            <td>
+                                <select name="matinh" id="matinh">
+                                    @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                    {
+                                        if (tinhSelect == row[0].ToString())
+                                        {
+                                            <option value="@row[0]" selected>@row[1]</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@row[0]">@row[1]</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("thoigian", "Thời gian")</td>
+                            <td>
+                                <input type="text" name="thoigian" id="thoigian" value="@DateTime.Now.ToString("dd/MM/yyyy")" class="clsdate" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán:")</td>
+                            <td>
+                                <input type="text" name="x2" id="x2" value="" class="form-control" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay")</td>
+                            <td>
+                                <input type="text" name="x3" id="x3" value="" class="form-control" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x67", "Công tác kiểm soát chi:")
+                                <br />
+                                <textarea name="x67" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x68", "Công tác thanh, quyết toán năm:")
+                                <br />
+                                <textarea name="x68" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x69", "Phương hướng kỳ tiếp theo:")
+                                <br />
+                                <textarea name="x69" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có):")
+                                <br />
+                                <textarea name="x70" class="form-control"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <a href="javascript:baocao('thuchien');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về docx</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+    }
+    else
+    {
+        System.Data.DataRow item = ViewBag.data as System.Data.DataRow;
+        var ngayCreate = AppHelper.fromTimestamp((long)item["timecreate"]).ToString("dd/MM/yyyy H:m:s");
+        ViewBag.Title = $"Sửa báo cáo tuần ngày {item["x74"]} có ID {id} vào lúc ";
+        tinhSelect = item["ma_tinh"].ToString().Trim();
+        var listNoShow = new List<string>() { "ngay", "userid", "ma_tinh", "timecreate", "x74", "x67", "x68", "x69", "x70", "id" };
+        <div class="alert alert-info">@ViewBag.Title</div>
+        <div class="table-responsive">
+            @using (Html.BeginForm("Tuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            {
+                <input type="hidden" name="mode" value="taive" />
+                <input type="hidden" name="id" value="@id" />
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
+                            <td>
+                                <select name="matinh" id="matinh">
+                                    @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                    {
+                                        if (tinhSelect == row[0].ToString())
+                                        {
+                                            <option value="@row[0]" selected>@row[1]</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@row[0]">@row[1]</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("thoigian", "Thời gian")</td>
+                            <td>
+                                <input type="text" name="thoigian" id="thoigian" value="@item["x74"]" class="clsdate" />
+                            </td>
+                        </tr>
+                        @for (int i = 0; i < item.Table.Columns.Count; i++)
+                        {
+                            if (listNoShow.Contains(item.Table.Columns[i].ColumnName)) { continue; }
+                            <tr>
+                                <td class="text-right">@Html.Label(item.Table.Columns[i].ColumnName, item.Table.Columns[i].ColumnName)</td>
+                                <td>
+                                    <input type="text" name="@item.Table.Columns[i].ColumnName" id="@item.Table.Columns[i].ColumnName" value="@item[i]" />
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán:")</td>
+                            <td>
+                                <input type="text" name="x2" id="x2" value="" class="form-control" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay")</td>
+                            <td>
+                                <input type="text" name="x3" id="x3" value="" class="form-control" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x67", "Công tác kiểm soát chi:")
+                                <br />
+                                <textarea name="x67" class="form-control">@item["x67"]</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x68", "Công tác thanh, quyết toán năm:")
+                                <br />
+                                <textarea name="x68" class="form-control">@item["x68"]</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x69", "Phương hướng kỳ tiếp theo:")
+                                <br />
+                                <textarea name="x69" class="form-control">@item["x69"]</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có):")
+                                <br />
+                                <textarea name="x70" class="form-control">@item["x70"]</textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <a href="javascript:baocao('thuchien');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về docx</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+    }
 }
 
-<h2>@ViewBag.Title</h2>
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-warning">@ViewBag.Error</div>
-}
-else
-{
-    <div class="table-responsive">
-        @using (Html.BeginForm("Tuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
-        {
-            <input type="hidden" name="mode" value="taive" />
-            <table class="table table-hover">
-                <tbody>
-                    <tr>
-                        <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
-                        <td>
-                            <select name="matinh" id="matinh">
-                                @foreach (System.Data.DataRow row in dmTinh.Rows)
-                                {
-                                    if (tinhSelect == row[0].ToString())
-                                    {
-                                        <option value="@row[0]" selected>@row[1]</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@row[0]">@row[1]</option>
-                                    }
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-right">@Html.Label("thoigian", "Thời gian")</td>
-                        <td>
-                            <input type="text" name="thoigian" id="thoigian" value="@DateTime.Now.ToString("dd/MM/yyyy")" class="clsdate" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán:")</td>
-                        <td>
-                            <input type="text" name="x2" id="x2" value="" class="form-control" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay")</td>
-                        <td>
-                            <input type="text" name="x3" id="x3" value="" class="form-control" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            @Html.Label("x67", "Công tác kiểm soát chi:")
-                            <br />
-                            <textarea name="x67" class="form-control"></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            @Html.Label("x68", "Công tác thanh, quyết toán năm:")
-                            <br />
-                            <textarea name="x68" class="form-control"></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            @Html.Label("x69", "Phương hướng kỳ tiếp theo:")
-                            <br />
-                            <textarea name="x69" class="form-control"></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có):")
-                            <br />
-                            <textarea name="x70" class="form-control"></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <a href="javascript:baocao();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
-                            <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về docx</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        }
-    </div>
-    <script>
-    function baocao(sender) {
-        var tmp = $('#thoigian').val();
-        if (/^[0-3][0-9]\/[0-1][0-9]\/[2-3][0-9]{3}$/.test(tmp) == false) {
-            messageBox('<i class="fa fa-warning"></i> Thông báo lỗi', `Thời gian không đúng định dạng ngày/tháng/năm '${tmp}'`);
-            return;
-        }
-        var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
-        var idform = '#@idForm';
-        $(idform).find("input[name='mode']").val(mode);
-        $(idform).submit();
+<script>
+function baocao(sender) {
+    var tmp = $('#thoigian').val();
+    if (/^[0-3][0-9]\/[0-1][0-9]\/[2-3][0-9]{3}$/.test(tmp) == false) {
+        messageBox('<i class="fa fa-warning"></i> Thông báo lỗi', `Thời gian không đúng định dạng ngày/tháng/năm '${tmp}'`);
+        return;
     }
-    </script>
+    var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
+    var idform = '#@idForm';
+    $(idform).find("input[name='mode']").val(mode);
+    $(idform).submit();
 }
+</script>

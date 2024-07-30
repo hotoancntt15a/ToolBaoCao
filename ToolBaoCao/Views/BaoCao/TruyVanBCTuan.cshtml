@@ -18,25 +18,27 @@
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
         return;
     }
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                @foreach (System.Data.DataColumn c in data.Columns)
-                {
-                <th>@c.ColumnName</th>
-                }
-            </tr> 
-        </thead>
-        <tbody>
-            @foreach (System.Data.DataRow r in data.Rows)
+}
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            @for (int i = 1; i < data.Columns.Count; i++)
             {
-                <tr data-id="@r[0]">
-                    @foreach (System.Data.DataColumn c in data.Columns)
-                    {
-                        <td>@r[c.ColumnName]</td>
-                    }
-                </tr>
+                <th>@data.Columns[i].ColumnName</th>
             }
-        </tbody>
-    </table>
-    }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (System.Data.DataRow r in data.Rows)
+        {
+            <tr data-id="@r[0]">
+                <td><a href="#" onclick="showgeturl('@Url.Action("CreateBCTuan", "BaoCao", new { area = "", objectid = r[0], layout = "null" })');">@r[1]</a></td>
+                @for (int i = 2; i < data.Columns.Count; i++)
+                {
+                    <td>@r[i]</td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
