@@ -108,7 +108,7 @@
         var listNoShow = new List<string>() { "ngay", "userid", "ma_tinh", "timecreate", "x74", "x67", "x68", "x69", "x70", "id" };
         <div class="alert alert-info">@ViewBag.Title</div>
         <div class="table-responsive">
-            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "", objectid=id }, FormMethod.Post, new { id = idForm, target = "_blank" }))
             {
                 <input type="hidden" name="mode" value="taive" />
                 <input type="hidden" name="id" value="@id" />
@@ -143,7 +143,7 @@
                             <td>
                                 Tổng tiền các CSKCB đã đề nghị bảo hiểm thanh toán {X1} <input type="text" class="clsnumber form-control-sm" name="x1" value="@item["x1"]" />.
                                 <br />Trong đó: Nội trú {X71} <input type="text" class="clsnumber form-control-sm" name="x71" value="@item["x71"]" /> đồng;
-                                <br />Ngoại trú {X72} <input type="text" class="clsnumber form-control-sm" name="x71" value="@item["x72"]" /> đồng.
+                                <br />Ngoại trú {X72} <input type="text" class="clsnumber form-control-sm" name="x72" value="@item["x72"]" /> đồng.
                                 <br /> Dự toán năm: {X2}<input type="text" class="clsnumber form-control-sm" name="x2" value="@item["x2"]" /> là: {X3}<input type="text" class="clsnumber form-control-sm" name="x3" value="@item["x3"]" /> đồng.
                                 <br />So sánh với dự toán, tỉnh đã sử dụng {X4}<input type="text" class="clsnumber form-control-sm" name="x4" value="@item["x4"]" />  %.
                             </td>
@@ -266,7 +266,6 @@
                         <tr>
                             <td colspan="2">
                                 <a href="javascript:baocao('save');" class="btn btn-primary btn-sm"><i class="fa fa-save"></i> Lưu lại</a>
-                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Lưu lại và tải về docx</a>
                             </td>
                         </tr>
                     </tbody>
@@ -284,6 +283,18 @@ function baocao(sender) {
     }
     var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
     var idform = '#@idForm';
+    /** Soát lỗi */
+    $(idform).find("input.clsnumber").each(function () {
+        var v = $(this).val();
+        if (v == "") { $(this).val("0"); }
+        else {
+            if (isNaN(v)) {
+                $(this).focus();
+                messageBox(`<i class="fa fa-warning"></i> Lỗi`, `Vui lòng kiểm tra lại các trường dạng số: ${v}`);
+                return false;
+            }
+        }
+    });
     var urlPost = mode == "taive" ? "/BaoCao/Tuan" : "";
         $(idform).find("input[name='mode']").val(mode);
     if (mode == "taive") { $(idform).submit(); return; }

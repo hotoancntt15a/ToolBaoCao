@@ -35,9 +35,10 @@ namespace ToolBaoCao
         public static string getTimeRun(this DateTime timeStart)
         {
             var t = DateTime.Now - timeStart;
+            if(t.Days > 0) { return $"{t.Days} ngày {t.Hours}:{t.Minutes}:{t.Seconds}"; }
             if(t.Hours > 0) { return $"{t.Hours}:{t.Minutes}:{t.Seconds}"; }
             if(t.Minutes > 0) { return $"{t.Minutes}:{t.Seconds}"; }
-            if (t.Seconds > 0) { return $"{t.Seconds},{t.Milliseconds} giây"; }
+            if (t.Seconds > 0) { return $"{t.Seconds},{t.Milliseconds.ToString().Substring(0, 2)} giây"; }
             return $"0,{t.Milliseconds} giây";
         }
 

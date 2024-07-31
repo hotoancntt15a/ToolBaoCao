@@ -1,4 +1,5 @@
 ﻿using NPOI.XWPF.UserModel;
+using Org.BouncyCastle.Asn1.Ocsp;
 using SixLabors.ImageSharp.Metadata;
 using System;
 using System.Collections.Generic;
@@ -66,41 +67,19 @@ namespace ToolBaoCao.Controllers
             {
                 if (mode == "save")
                 {
-                    string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
-                    if (System.IO.File.Exists(pathFileTemplate) == false)
+                    if (string.IsNullOrEmpty(objectid) == false) { ViewBag.Error = "Không có tham số cập nhật"; }
+                    var tailieu = new   Dictionary<string, string>();
+                    var v = new List<string>();
+                    foreach(var key in Request.Form.AllKeys)
                     {
-                        ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data";
-                        return View();
+                        if(Regex.IsMatch(key, @"^x\d+$")) { 
+                            tailieu[key] = Request.Form[key];
+                            v.Add($"{key}='{Request.Form[key].sqliteGetValueField()}'");
+                        }
                     }
-                    tmp = Request.getValue("x2");
-                    if (Regex.IsMatch(tmp, @"^\d+$"))
-                    {
-                        ViewBag.Error = $"Số của quyết định giao dự toán không đúng {tmp}";
-                        return View();
-                    }
-                    tmp = Request.getValue("x3");
-                    if (Regex.IsMatch(tmp, @"^\d+$"))
-                    {
-                        ViewBag.Error = $"Tổng số tiền các dòng quyết định năm nay không đúng {tmp}";
-                        return View();
-                    }
-                    string matinh = Request.getValue("matinh");
-                    string ngay = Request.getValue("thoigian");
-                    if (ngay.isDateVN() == false)
-                    {
-                        ViewBag.Error = $"Thời gian không đúng định dạng ngày/tháng/năm '{ngay}'";
-                        return View();
-                    }
-                    DateTime ngayTime = ngay.getFromDateVN();
-                    string thoigian = ngayTime.ToString("yyyyMMdd");
-
-                    var tailieu = buildBaoCaoTuan(ngayTime, matinh, $"{Session["iduser"]}", Request.getValue("x2"), Request.getValue("x3"), Request.getValue("x67"), Request.getValue("x68"), Request.getValue("x69"), Request.getValue("x70"));
-                    if (tailieu.ContainsKey("Error"))
-                    {
-                        ViewBag.Error = tailieu["Error"];
-                        return View();
-                    }
-                    return Content($"<div class=\"alert alert-info\">Lưu thành công ({timeStart.getTimeRun()})</div>");
+                    tailieu["timecreate"] = DateTime.Now.toTimestamp().ToString();
+                    var tsql = $"UPDATE bctuandocx SET {string.Join(", ", v)} WHERE id='{objectid.sqliteGetValueField()}'";
+                    return Content($"<div class=\"alert alert-info\">Lưu thành công ({timeStart.getTimeRun()}): {tsql}</div>");
                 }
                 tmp = $"{Session["idtinh"]}".Trim();
                 ViewBag.tinhSelect = tmp;
