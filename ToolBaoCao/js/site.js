@@ -27,6 +27,35 @@ Number.prototype.formatVN = function (n = 0, x = 3) {
     re = (this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,')).replace(/[.]/g, '|').replace(/[,]/g, '.');
     return re.replace(/[|]/g, ',');
 };
+function formatNumberVN(number) { return number.toLocaleString('vi-VN'); }
+function setTooltip() {
+    // Select input fields with the class 'clsnumber' and apply tooltip
+    $('input[type="text"].clsnumber').tooltip({
+        items: 'input[type="text"].clsnumber', // Apply tooltip to specific input fields
+        content: function () {
+            // Get the current value of the input field
+            let value = $(this).val();
+            // Check if the value is a valid number
+            if ($.isNumeric(value)) { return formatNumberVN(parseFloat(value)); }
+            // Return empty string if the value is not a number
+            return '';
+        },
+        track: true // Follow the mouse pointer with the tooltip
+    });
+    // Add input event listener for input fields
+    $('input[type="text"].clsnumber').on('input', function () {
+        // Manually update the tooltip content on input event
+        $(this).tooltip('option', 'content', function () {
+            let value = $(this).val();
+            if ($.isNumeric(value)) {
+                return formatNumberVN(parseFloat(value));
+            }
+            return '';
+        });
+        // Refresh the tooltip display to reflect the updated content
+        $(this).tooltip('open');
+    });
+}
 function formatNumberVNTarget(eInput, eTarget) {
     var tg = $(eInput).parent().find(eTarget);
     var v = $(eInput).val();
@@ -202,9 +231,10 @@ function postform(fromID, urlPost, targetID, callback) {
                     }, false);
                 }
                 return xhr;
-            }})
+            }
+        })
             .done(function (response) { ajaxSuccess(response, true, idtarget, callback); })
-            .fail(function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); } );
+            .fail(function (jqXHR, textStatus, errorThrown) { ajaxFail(jqXHR, textStatus, errorThrown, idtarget); });
     }
     else {
         var dataform = $(idform).serialize();
@@ -222,8 +252,8 @@ function ajaxSuccess(response, isUpload, idtarget, callback) {
         else { messageBox('Thông báo', response); }
         /* $(idmsg).modal('hide'); */
     }
-    if (typeof (callback) == 'function') { callback(); }
-    fixAllClass();
+    if (typeof fixAllClass === 'function') { fixAllClass(); }
+    if (typeof (callback) === 'function') { callback(); }
 }
 function ajaxFail(jqXHR, textStatus, errorThrown, idtarget) {
     var tmp = `<div class="alert alert-danger"> JS Lỗi trong quá trình truyền nhận dữ liệu: ${jqXHR.status}: ${textStatus}; ${errorThrown} </div>`;
@@ -241,8 +271,8 @@ function showgeturl(url, idtarget, callback) {
     $.get(url, function (response) {
         if (modalshow) { messageBox('Thông báo', response); }
         else { $(idtarget).html(response); }
-        if (typeof (callback) == 'function') { callback(); }
-        fixAllClass();
+        if (typeof fixAllClass === 'function') { fixAllClass(); }
+        if (typeof (callback) === 'function') { callback(); }
     }).fail(function () {
         if (modalshow) { messageBox('Thông báo', 'Lỗi trong quá trình truyền nhận dữ liệu'); return; }
         $(idtarget).html('Lỗi trong quá trình truyền nhận dữ liệu');

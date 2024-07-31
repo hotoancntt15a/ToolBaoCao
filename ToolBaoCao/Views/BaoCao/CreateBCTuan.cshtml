@@ -19,10 +19,9 @@
         ViewBag.Title = "Tạo báo cáo tuần";
         <h2>@ViewBag.Title</h2>
         <div class="table-responsive">
-            @using (Html.BeginForm("Tuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
             {
                 <input type="hidden" name="mode" value="taive" />
-                <input type="hidden" name="id" value="@id" />
                 <table class="table table-hover">
                     <tbody>
                         <tr>
@@ -109,7 +108,7 @@
         var listNoShow = new List<string>() { "ngay", "userid", "ma_tinh", "timecreate", "x74", "x67", "x68", "x69", "x70", "id" };
         <div class="alert alert-info">@ViewBag.Title</div>
         <div class="table-responsive">
-            @using (Html.BeginForm("Tuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
             {
                 <input type="hidden" name="mode" value="taive" />
                 <input type="hidden" name="id" value="@id" />
@@ -130,7 +129,7 @@
                                         }
                                     }
                                 </select>
-                                @Html.Label("thoigian", "Thời gian {X74}") <input type="text" name="thoigian" id="thoigian" value="@item["x74"]" class="clsdate form-control-sm" />
+                                @Html.Label("thoigian", "Thời gian {X74}") <input type="text" id="thoigian" value="@item["x74"]" class="clsdate form-control-sm" readonly />
                             </td>
                         </tr>
                         <tr>
@@ -208,46 +207,48 @@
                         </tr>
                         <tr>
                             <td>
-                                3.1 Chi xét nghiệm
-                                Bình quân {X40} đồng/lượt KCB. So kỳ trước: số tương đối {X41}, số tuyệt đối {X42}.
-                                Chỉ định xét nghiệm: {X61}/100 bệnh nhân. So kỳ trước: số tương đối {X62}, số tuyệt đối {X63}.
+                                3.1 Chi xét nghiệm: Bình quân {X40}<input type="text" class="clsnumber form-control-sm" name="x40" value="@item["x40"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X41}<input type="text" class="clsnumber form-control-sm" name="x41" value="@item["x41"]" />, số tuyệt đối {X42}<input type="text" class="form-control-sm" name="x42" value="@item["x42"]" />.
+                                Chỉ định xét nghiệm: {X61}<input type="text" class="clsnumber form-control-sm" name="x61" value="@item["x61"]" />/100 bệnh nhân.
+                                <br />So kỳ trước: số tương đối {X62}<input type="text" class="form-control-sm" name="x62" value="@item["x62"]" />, số tuyệt đối {X63}<input type="text" class="form-control-sm" name="x63" value="@item["x63"]" />.
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                3.2 Chi chẩn đoán hình ảnh
-                                <br />Bình quân {X43} đồng/lượt KCB. So kỳ trước: số tương đối {X44}, số tuyệt đối {X45}.
-                                <br />Chỉ định CĐHA: {X64}/100 bệnh nhân. So kỳ trước: số tương đối {X65}, số tuyệt đối {X66}.
+                                3.2 Chi chẩn đoán hình ảnh: Bình quân {X43}<input type="text" class="clsnumber form-control-sm" name="x43" value="@item["x43"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X44}<input type="text" class="form-control-sm" name="x44" value="@item["x44"]" />, số tuyệt đối {X45}<input type="text" class="form-control-sm" name="x45" value="@item["x45"]" />.
+                                <br />Chỉ định CĐHA: {X64}<input type="text" class="clsnumber form-control-sm" name="x64" value="@item["x64"]" />/100 bệnh nhân.
+                                <br />So kỳ trước: số tương đối {X65}<input type="text" class="form-control-sm" name="x65" value="@item["x65"]" />, số tuyệt đối {X66}<input type="text" class="form-control-sm" name="x66" value="@item["x66"]" />.
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                3.3 Chi thuốc
-                                <br />Bình quân {X46} đồng/lượt KCB. So kỳ trước: số tương đối {X47}, số tuyệt đối {X48}.
+                                3.3 Chi thuốc: Bình quân {X46}<input type="text" class="clsnumber form-control-sm" name="x46" value="@item["x46"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X47}<input type="text" class="form-control-sm" name="x47" value="@item["x47"]" />, số tuyệt đối {X48}<input type="text" class="form-control-sm" name="x48" value="@item["x48"]" />.
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                3.4 Chi phẫu thuật
-                                <br />Bình quân {X49} đồng/lượt KCB. So kỳ trước: số tương đối {X50}, số tuyệt đối {X51}.
+                                3.4 Chi phẫu thuật: Bình quân {X49}<input type="text" class="clsnumber form-control-sm" name="x49" value="@item["x49"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X50}<input type="text" class="form-control-sm" name="x50" value="@item["x50"]" />, số tuyệt đối {X51}<input type="text" class="form-control-sm" name="x51" value="@item["x51"]" />.
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                3.5. Chi thủ thuật
-                                <br />Bình quân {X52} đồng/lượt KCB. So kỳ trước: số tương đối {X53}, số tuyệt đối {X54}.
+                                3.5. Chi thủ thuật: Bình quân {X52}<input type="text" class="clsnumber form-control-sm" name="x52" value="@item["x52"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X53}<input type="text" class="form-control-sm" name="x53" value="@item["x53"]" />, số tuyệt đối {X54}<input type="text" class="form-control-sm" name="x54" value="@item["x54"]" />.
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                3.6 Chi vật tư y tế
-                                <br />Bình quân {X55} đồng/lượt KCB. So kỳ trước: số tương đối {X56}, số tuyệt đối {X57}.
+                                3.6 Chi vật tư y tế: Bình quân {X55}<input type="text" class="clsnumber form-control-sm" name="x55" value="@item["x55"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X56}<input type="text" class="form-control-sm" name="x56" value="@item["x56"]" />, số tuyệt đối {X57}<input type="text" class="form-control-sm" name="x57" value="@item["x57"]" />.
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                3.7 Chi tiền giường
-                                <br />Bình quân {X58} đồng/lượt KCB. So kỳ trước: số tương đối {X59}, số tuyệt đối {X60}.
+                                3.7 Chi tiền giường: Bình quân {X58}<input type="text" class="clsnumber form-control-sm" name="x58" value="@item["x58"]" /> đồng/lượt KCB.
+                                <br />So kỳ trước: số tương đối {X59}<input type="text" class="form-control-sm" name="x59" value="@item["x59"]" />, số tuyệt đối {X60}<input type="text" class="form-control-sm" name="x60" value="@item["x60"]" />.
                             </td>
                         </tr>
                         <tr>
@@ -264,8 +265,8 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <a href="javascript:baocao('thuchien');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
-                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về docx</a>
+                                <a href="javascript:baocao('save');" class="btn btn-primary btn-sm"><i class="fa fa-save"></i> Lưu lại</a>
+                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Lưu lại và tải về docx</a>
                             </td>
                         </tr>
                     </tbody>
@@ -274,7 +275,6 @@
         </div>
     }
 }
-
 <script>
 function baocao(sender) {
     var tmp = $('#thoigian').val();
@@ -284,7 +284,9 @@ function baocao(sender) {
     }
     var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
     var idform = '#@idForm';
-    $(idform).find("input[name='mode']").val(mode);
-    $(idform).submit();
+    var urlPost = mode == "taive" ? "/BaoCao/Tuan" : "";
+        $(idform).find("input[name='mode']").val(mode);
+    if (mode == "taive") { $(idform).submit(); return; }
+    postform(idform, urlPost);
 }
 </script>

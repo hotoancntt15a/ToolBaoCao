@@ -1,10 +1,12 @@
 ﻿using NPOI.XWPF.UserModel;
+using SixLabors.ImageSharp.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
@@ -57,9 +59,50 @@ namespace ToolBaoCao.Controllers
         public ActionResult CreateBCTuan(string objectid)
         {
             if (Session["iduser"] == null) { ViewBag.Error = keyMSG.ErrorNotLoginAccess; return View(); }
+            DateTime timeStart = DateTime.Now;
+            string tmp = "";
+            string mode = Request.getValue("mode");
             try
             {
-                string tmp = $"{Session["idtinh"]}".Trim();
+                if (mode == "save")
+                {
+                    string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
+                    if (System.IO.File.Exists(pathFileTemplate) == false)
+                    {
+                        ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data";
+                        return View();
+                    }
+                    tmp = Request.getValue("x2");
+                    if (Regex.IsMatch(tmp, @"^\d+$"))
+                    {
+                        ViewBag.Error = $"Số của quyết định giao dự toán không đúng {tmp}";
+                        return View();
+                    }
+                    tmp = Request.getValue("x3");
+                    if (Regex.IsMatch(tmp, @"^\d+$"))
+                    {
+                        ViewBag.Error = $"Tổng số tiền các dòng quyết định năm nay không đúng {tmp}";
+                        return View();
+                    }
+                    string matinh = Request.getValue("matinh");
+                    string ngay = Request.getValue("thoigian");
+                    if (ngay.isDateVN() == false)
+                    {
+                        ViewBag.Error = $"Thời gian không đúng định dạng ngày/tháng/năm '{ngay}'";
+                        return View();
+                    }
+                    DateTime ngayTime = ngay.getFromDateVN();
+                    string thoigian = ngayTime.ToString("yyyyMMdd");
+
+                    var tailieu = buildBaoCaoTuan(ngayTime, matinh, $"{Session["iduser"]}", Request.getValue("x2"), Request.getValue("x3"), Request.getValue("x67"), Request.getValue("x68"), Request.getValue("x69"), Request.getValue("x70"));
+                    if (tailieu.ContainsKey("Error"))
+                    {
+                        ViewBag.Error = tailieu["Error"];
+                        return View();
+                    }
+                    return Content($"<div class=\"alert alert-info\">Lưu thành công ({timeStart.getTimeRun()})</div>");
+                }
+                tmp = $"{Session["idtinh"]}".Trim();
                 ViewBag.tinhSelect = tmp;
                 tmp = $"{Session["nhom"]}".Trim() == "0" ? "WHERE id NOT IN ('', '00')" : $"WHERE id = '{tmp}'";
                 var dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id,ten FROM dmtinh {tmp} ORDER BY tt, ten");
@@ -92,14 +135,46 @@ namespace ToolBaoCao.Controllers
                 ViewBag.dmTinh = dmTinh;
                 return View();
             }
+            if(mode == "download")
+            {
+                try
+                {
+                    tmp = Request.getValue("idobject");
+                    var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
+                    var data = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{tmp.sqliteGetValueField()}'");
+                    if(data.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{tmp}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
+                    var tailieu = new Dictionary<string, string>();
+                    foreach (DataColumn c in data.Columns) {
+                        tailieu.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c]}");
+                    }
+                    string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
+                    if (System.IO.File.Exists(pathFileTemplate) == false) { ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"; return View();
+                    }
+                    string thoigian = ((long)data.Rows[0]["ngay"]).fromTimestamp().ToString("yyyyMMdd");
+                    using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
+                    {
+                        var document = new XWPFDocument(fileStream);
+                        foreach (var paragraph in document.Paragraphs)
+                        {
+                            foreach (var run in paragraph.Runs)
+                            {
+                                tmp = run.ToString();
+                                // Sử dụng Regex để tìm tất cả các match
+                                MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
+                                foreach (Match match in matches) { tmp = tmp.Replace(match.Value, tailieu.getValue(match.Value, "", true)); }
+                                run.SetText(tmp, 0);
+                            }
+                        }
+                        MemoryStream memoryStream = new MemoryStream();
+                        document.Write(memoryStream);
+                        memoryStream.Position = 0;
+                        return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
+                    }
+                }
+               catch(Exception ex) { ViewBag.Error = ex.getLineHTML(); return View(); }
+            }
             if (mode == "taive")
             {
-                string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
-                if (System.IO.File.Exists(pathFileTemplate) == false)
-                {
-                    ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data";
-                    return View();
-                }
                 tmp = Request.getValue("x2");
                 if (Regex.IsMatch(tmp, @"^\d+$"))
                 {
@@ -126,6 +201,12 @@ namespace ToolBaoCao.Controllers
                 if (tailieu.ContainsKey("Error"))
                 {
                     ViewBag.Error = tailieu["Error"];
+                    return View();
+                }
+                string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
+                if (System.IO.File.Exists(pathFileTemplate) == false)
+                {
+                    ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data";
                     return View();
                 }
                 using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
@@ -163,7 +244,7 @@ namespace ToolBaoCao.Controllers
             return (s.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1).ToString();
         }
 
-        private Dictionary<string, string> buildB02(int iKey, string fieldChiBQ, string fieldTongLuot, string fieldChiBQChung, string mavung, string matinh, DataRow rowTinh, DataRow rowTQ, List<DataRow> data)
+        private Dictionary<string, string> buildBCTuanB02(int iKey, string fieldChiBQ, string fieldTongLuot, string fieldChiBQChung, string mavung, string matinh, DataRow rowTinh, DataRow rowTQ, List<DataRow> data)
         {
             var d = new Dictionary<string, string>();
             var keys = new List<string>();
@@ -199,7 +280,7 @@ namespace ToolBaoCao.Controllers
             return d;
         }
 
-        private Dictionary<string, string> buildB26(int iKey, string field1, string field2, DataRow row)
+        private Dictionary<string, string> buildBCTuanB26(int iKey, string field1, string field2, DataRow row)
         {
             var d = new Dictionary<string, string>();
             string key1 = "{X" + iKey.ToString() + "}", key2 = "{X" + (iKey + 1).ToString() + "}", key3 = "{X" + (iKey + 2).ToString() + "}";
@@ -218,7 +299,7 @@ namespace ToolBaoCao.Controllers
             return d;
         }
 
-        private Dictionary<string, string> build02B26(int iKey, string field1, string field2, DataRow row)
+        private Dictionary<string, string> buildBCTuan02B26(int iKey, string field1, string field2, DataRow row)
         {
             var d = new Dictionary<string, string>();
             string key1 = "{X" + iKey.ToString() + "}", key2 = "{X" + (iKey + 1).ToString() + "}", key3 = "{X" + (iKey + 2).ToString() + "}";
@@ -229,7 +310,7 @@ namespace ToolBaoCao.Controllers
             d.Add(key2, row["chi_dinh_xn_tang"].ToString().FormatCultureVN() + "%");
             /* X63 = số tuyệt đối X63 {tính toán: [X61 trừ đi (X61 chia (cột AE+100)*100)] & “bệnh nhân”} */
             var so2 = (double)row[field2];
-            d.Add(key3, (so1 - (so1 / (so2 + 100) * 100)).ToString());
+            d.Add(key3, (so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
             return d;
         }
 
@@ -353,43 +434,43 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("{X18}", position.ToString());
 
                 /* X19 = Chi bình quân chung X19={Cột I (CHI_BQ_CHUNG), dòng MA_TINH=10}; */
-                tmpD = buildB02(19, "chi_bq_chung", "tong_luot", "chi_bq_chung", mavung, matinh, dataTinhB02, dataTQB02, b02TQ);
+                tmpD = buildBCTuanB02(19, "chi_bq_chung", "tong_luot", "chi_bq_chung", mavung, matinh, dataTinhB02, dataTQB02, b02TQ);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X26 = Chi bình quân ngoại trú X26={Cột J (CHI_BQ_NGOAI), dòng MA_TINH=10}; */
-                tmpD = buildB02(26, "chi_bq_ngoai", "tong_luot_ngoai", "chi_bq_chung", mavung, matinh, dataTinhB02, dataTQB02, b02TQ);
+                tmpD = buildBCTuanB02(26, "chi_bq_ngoai", "tong_luot_ngoai", "chi_bq_chung", mavung, matinh, dataTinhB02, dataTQB02, b02TQ);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X33 = Chi bình quân nội trú X33={Cột K (CHI_BQ_NOI), dòng MA_TINH=10}; */
-                tmpD = buildB02(33, "chi_bq_noi", "tong_luot_noi", "chi_bq_chung", mavung, matinh, dataTinhB02, dataTQB02, b02TQ);
+                tmpD = buildBCTuanB02(33, "chi_bq_noi", "tong_luot_noi", "chi_bq_chung", mavung, matinh, dataTinhB02, dataTQB02, b02TQ);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
 
                 /* ----- Dữ liệu X40 trở lên lọc dữ liệu tù B26 ------- */
                 /* X40 = Bình quân xét nghiệm X40= {cột P (bq_xn) dòng có mã tỉnh = 10}; B26 */
-                tmpD = buildB26(40, "bq_xn", "bq_xn_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(40, "bq_xn", "bq_xn_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X43 Bình quân CĐHA X43= {cột R(bq_cdha) dòng có mã tỉnh =10}; */
-                tmpD = buildB26(43, "bq_cdha", "bq_cdha_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(43, "bq_cdha", "bq_cdha_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X46 Bình quân thuốc X46= {cột T(bq_thuoc) dòng có mã tỉnh =10}; */
-                tmpD = buildB26(46, "bq_thuoc", "bq_thuoc_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(46, "bq_thuoc", "bq_thuoc_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X49 Bình quân chi phẫu thuật X49= {cột V(bq_pt) dòng có mã tỉnh =10}; */
-                tmpD = buildB26(49, "bq_pt", "bq_pt_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(49, "bq_pt", "bq_pt_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X52 Bình quân chi thủ thuật X52= {cột X(bq_tt) dòng có mã tỉnh =10}; */
-                tmpD = buildB26(52, "bq_tt", "bq_tt_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(52, "bq_tt", "bq_tt_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X55 Bình quân chi vật tư y tế X55= {cột Z(bq_vtyt) dòng có mã tỉnh =10}; */
-                tmpD = buildB26(55, "bq_vtyt", "bq_vtyt_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(55, "bq_vtyt", "bq_vtyt_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X58 Bình quân chi tiền giường X58= {cột AB(bq_giuong) dòng có mã tỉnh =10}; */
-                tmpD = buildB26(58, "bq_giuong", "bq_giuong_tang", dataTinhB26);
+                tmpD = buildBCTuanB26(58, "bq_giuong", "bq_giuong_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
 
                 /* X61 Chỉ định xét nghiệm X61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-                tmpD = build02B26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26);
+                tmpD = buildBCTuan02B26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
                 /* X64 =  Chỉ định CĐHA X64={cột AF, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-                tmpD = build02B26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26);
+                tmpD = buildBCTuan02B26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26);
                 foreach (var d in tmpD) { tailieu.Add(d.Key, d.Value); }
 
                 /* X67 Công tác kiểm soát chi X67={lần đầu lập BC sẽ rỗng, người dùng tự trình bày văn bản, lưu lại ở bảng dữ liệu kết quả báo cáo, kỳ sau sẽ tự động lấy từ kỳ trước, để người dùng kế thừa, sửa và lưu dùng cho kỳ này và kỳ sau} */

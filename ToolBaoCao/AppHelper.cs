@@ -32,6 +32,15 @@ namespace ToolBaoCao
             return new DateTime(1970, 1, 1);
         }
 
+        public static string getTimeRun(this DateTime timeStart)
+        {
+            var t = DateTime.Now - timeStart;
+            if(t.Hours > 0) { return $"{t.Hours}:{t.Minutes}:{t.Seconds}"; }
+            if(t.Minutes > 0) { return $"{t.Minutes}:{t.Seconds}"; }
+            if (t.Seconds > 0) { return $"{t.Seconds},{t.Milliseconds} giây"; }
+            return $"0,{t.Milliseconds} giây";
+        }
+
         public static List<string> listKeyConfigCrypt = new List<string>() { "" };
         private static readonly string keyMD5 = typeof(AppHelper).Namespace;
         public static AppConfig appConfig = new AppConfig();
