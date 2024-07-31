@@ -5,11 +5,3 @@
 .clsdate { width: 100px; }
 .clstime { width: 50px; }
 .clsnumber { text-align: right; }
-/* Style for tooltips */
-.ui-tooltip {
-    font-size: 14px;
-    background: #f9f9f9;
-    color: #333;
-    border: 1px solid #ccc;
-    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
-}

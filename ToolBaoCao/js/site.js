@@ -27,33 +27,36 @@ Number.prototype.formatVN = function (n = 0, x = 3) {
     re = (this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,')).replace(/[.]/g, '|').replace(/[,]/g, '.');
     return re.replace(/[|]/g, ',');
 };
-function formatNumberVN(number) { return number.toLocaleString('vi-VN'); }
-function setTooltip() {
-    // Select input fields with the class 'clsnumber' and apply tooltip
-    $('input[type="text"].clsnumber').tooltip({
-        items: 'input[type="text"].clsnumber', // Apply tooltip to specific input fields
-        content: function () {
-            // Get the current value of the input field
-            let value = $(this).val();
-            // Check if the value is a valid number
-            if ($.isNumeric(value)) { return formatNumberVN(parseFloat(value)); }
-            // Return empty string if the value is not a number
-            return '';
-        },
-        track: true // Follow the mouse pointer with the tooltip
-    });
-    // Add input event listener for input fields
-    $('input[type="text"].clsnumber').on('input', function () {
-        // Manually update the tooltip content on input event
-        $(this).tooltip('option', 'content', function () {
-            let value = $(this).val();
-            if ($.isNumeric(value)) {
-                return formatNumberVN(parseFloat(value));
-            }
-            return '';
+function formatNumberToVn(num) { 
+    num = num.replace(/,/g, '');
+    if (!isNaN(num) && num !== '') { 
+        return new Intl.NumberFormat('vi-VN').format(num);
+    }
+    return '';
+}
+function setClsNumberTooltip() {
+    // Kích hoạt tooltip cho các input có class clsnumber
+    $('input[type="text"].clsnumber').each(function () {
+        var titleTooltip = formatNumberToVn($(this).val()); // Định dạng lại giá trị
+        $(this).tooltip({
+            title: titleTooltip, // Nội dung tooltip
+            placement: "auto", // Tự động chọn vị trí tốt nhất
+            trigger: "hover focus", // Tooltip sẽ xuất hiện khi di chuột hoặc focus
+            animation: true // Bật hiệu ứng chuyển động
         });
-        // Refresh the tooltip display to reflect the updated content
-        $(this).tooltip('open');
+
+        // Bắt sự kiện khi người dùng nhập vào input
+        $(this).on('input', function () {
+            var inputVal = $(this).val(); // Lấy giá trị hiện tại của input
+            var formattedVal = formatNumberToVn(inputVal); // Định dạng lại giá trị
+            // Cập nhật nội dung tooltip với giá trị đã định dạng
+            $(this).tooltip('dispose').tooltip({
+                title: formattedVal,
+                placement: "auto", // Tự động chọn vị trí tốt nhất
+                trigger: "hover focus", // Tooltip sẽ xuất hiện khi di chuột hoặc focus
+                animation: true // Bật hiệu ứng chuyển động
+            }).tooltip('show');
+        });
     });
 }
 function formatNumberVNTarget(eInput, eTarget) {

@@ -86,7 +86,7 @@
             if ($('.clstime').length > 0) { $('.clstime').timepicker({ 'timeFormat': 'H:i:s' }); }
             $(".clsnumberint").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9]/g)) return false; });
             $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.]/g)) return false; });
-            setTooltip();
+            setClsNumberTooltip();
         }
         $(document).ready(function () {
             fixAllClass();

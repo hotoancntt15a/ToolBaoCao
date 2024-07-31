@@ -758,6 +758,7 @@
     <Content Include="App_Data\DM_COSOKCB.xlsx" />
     <Content Include="App_Data\DM_BENHYHCT.xls" />
     <Content Include="App_Data\DM_ICD.xls" />
+    <Content Include="App_Data\MoTaLapBieuBCTuan.docx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
