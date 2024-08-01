@@ -3,7 +3,7 @@
     if (Request.getValue("layout") == "null") { Layout = null; }
     else { Layout = "~/Views/Shared/_Layout.cshtml"; }
 
-    var idForm = "idcbct" + DateTime.Now.toTimestamp().ToString();
+    var idFormBCT = "idbct" + DateTime.Now.toTimestamp().ToString();
     System.Data.DataTable dmTinh = new System.Data.DataTable();
     if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
     string tinhSelect = $"{ViewBag.tinhSelect}";
@@ -19,7 +19,7 @@
         ViewBag.Title = "Tạo báo cáo tuần";
         <h2>@ViewBag.Title</h2>
         <div class="table-responsive">
-            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
             {
                 <input type="hidden" name="mode" value="taive" />
                 <table class="table table-hover">
@@ -51,13 +51,13 @@
                         <tr>
                             <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán:")</td>
                             <td>
-                                <input type="text" name="x2" id="x2" value="" class="form-control" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                                <input type="text" name="x2" id="x2" value="" class="clsnumber form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
                             </td>
                         </tr>
                         <tr>
                             <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay")</td>
                             <td>
-                                <input type="text" name="x3" id="x3" value="" class="form-control" />
+                                <input type="text" name="x3" id="x3" value="" class="clsnumber form-control-sm" />
                             </td>
                         </tr>
                         <tr>
@@ -91,7 +91,7 @@
                         <tr>
                             <td colspan="2">
                                 <a href="javascript:baocao('thuchien');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
-                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Tải về docx</a>
+                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Thực hiện và tải về docx</a>
                             </td>
                         </tr>
                     </tbody>
@@ -105,13 +105,13 @@
         var ngayCreate = AppHelper.fromTimestamp((long)item["timecreate"]).ToString("dd/MM/yyyy H:m:s");
         ViewBag.Title = $"Sửa báo cáo tuần ngày {item["x74"]} có ID {id} vào lúc ";
         tinhSelect = item["ma_tinh"].ToString().Trim();
-        var listNoShow = new List<string>() { "ngay", "userid", "ma_tinh", "timecreate", "x74", "x67", "x68", "x69", "x70", "id" };
         <div class="alert alert-info">@ViewBag.Title</div>
         <div class="table-responsive">
-            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "", objectid=id }, FormMethod.Post, new { id = idForm, target = "_blank" }))
+            @using (Html.BeginForm("CreateBCTuan", "BaoCao", new { area = "", objectid = id }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
             {
                 <input type="hidden" name="mode" value="taive" />
                 <input type="hidden" name="id" value="@id" />
+                <input type="hidden" name="ngay" value="@item["ngay"]" />
                 <table class="table table-hover">
                     <tbody>
                         <tr>
@@ -123,13 +123,9 @@
                                         {
                                             <option value="@row[0]" selected>@row[1]</option>
                                         }
-                                        else
-                                        {
-                                            <option value="@row[0]">@row[1]</option>
-                                        }
                                     }
                                 </select>
-                                @Html.Label("thoigian", "Thời gian {X74}") <input type="text" id="thoigian" value="@item["x74"]" class="clsdate form-control-sm" readonly />
+                                @Html.Label("thoigian", "Thời gian {X74}") <input type="text" id="thoigian" value="@item["x74"]" class="form-control-sm" readonly />
                             </td>
                         </tr>
                         <tr>
@@ -275,29 +271,33 @@
     }
 }
 <script>
-function baocao(sender) {
-    var tmp = $('#thoigian').val();
-    if (/^[0-3][0-9]\/[0-1][0-9]\/[2-3][0-9]{3}$/.test(tmp) == false) {
-        messageBox('<i class="fa fa-warning"></i> Thông báo lỗi', `Thời gian không đúng định dạng ngày/tháng/năm '${tmp}'`);
-        return;
-    }
-    var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
-    var idform = '#@idForm';
-    /** Soát lỗi */
-    $(idform).find("input.clsnumber").each(function () {
-        var v = $(this).val();
-        if (v == "") { $(this).val("0"); }
-        else {
-            if (isNaN(v)) {
-                $(this).focus();
-                messageBox(`<i class="fa fa-warning"></i> Lỗi`, `Vui lòng kiểm tra lại các trường dạng số: ${v}`);
-                return false;
-            }
+    var idform = '#@idFormBCT';
+    function baocao(sender) {
+        var tmp = $('#thoigian').val();
+        if (/^[0-3][0-9]\/[0-1][0-9]\/[2-3][0-9]{3}$/.test(tmp) == false) {
+            messageBox('<i class="fa fa-warning"></i> Thông báo lỗi', `Thời gian không đúng định dạng ngày/tháng/năm '${tmp}'`);
+            return;
         }
-    });
-    var urlPost = mode == "taive" ? "/BaoCao/Tuan" : "";
+        var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
+        /** Soát lỗi */
+        $(idform).find("input.clsnumber").each(function () {
+            var v = $(this).val();
+            if (v == "") { $(this).val("0"); }
+            else {
+                if (isNaN(v)) {
+                    $(this).focus();
+                    messageBox(`<i class="fa fa-warning"></i> Lỗi`, `Vui lòng kiểm tra lại các trường dạng số: ${v}`);
+                    return false;
+                }
+            }
+        });
+        var urlPost = mode == "taive" ? "/BaoCao/Tuan" : "@Url.Action("CreateBCTuan", "BaoCao", new { area = "", objectid=id, layout = "null"})";
         $(idform).find("input[name='mode']").val(mode);
-    if (mode == "taive") { $(idform).submit(); return; }
-    postform(idform, urlPost);
-}
+        $(idform).attr("action", urlPost);
+        if (mode == "taive") {
+            $(idform).submit();
+            return;
+        }
+        postform(idform, urlPost);
+    }
 </script>
