@@ -17,7 +17,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        public ActionResult TruyVanBCTuan(string matinh, string ngay1, string ngay2, string mode)
+        public ActionResult BCTuanTruyVan(string matinh, string ngay1, string ngay2, string mode)
         {
             if (Session["iduser"] == null)
             {
@@ -54,7 +54,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        public ActionResult CreateBCTuan(string objectid)
+        public ActionResult BCTuanCreate(string objectid)
         {
             if (Session["iduser"] == null) { ViewBag.Error = keyMSG.ErrorNotLoginAccess; return View(); }
             DateTime timeStart = DateTime.Now;

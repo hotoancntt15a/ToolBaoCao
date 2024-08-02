@@ -84,8 +84,8 @@
         function fixAllClass() {
             if ($('.clsdate').length > 0) { $('.clsdate').datepicker({ language: "vi", autoclose: true, todayHighlight: true }); }
             if ($('.clstime').length > 0) { $('.clstime').timepicker({ 'timeFormat': 'H:i:s' }); }
-            $(".clsnumberint").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9]/g)) return false; });
-            $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.]/g)) return false; });
+            $(".clsnumberint").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9-]/g)) return false; });
+            $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.-]/g)) return false; });
             setClsNumberTooltip();
         }
         $(document).ready(function () {

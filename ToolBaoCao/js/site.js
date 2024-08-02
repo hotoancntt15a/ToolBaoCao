@@ -27,9 +27,9 @@ Number.prototype.formatVN = function (n = 0, x = 3) {
     re = (this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,')).replace(/[.]/g, '|').replace(/[,]/g, '.');
     return re.replace(/[|]/g, ',');
 };
-function formatNumberToVn(num) { 
+function formatNumberToVn(num) {
     num = num.replace(/,/g, '');
-    if (!isNaN(num) && num !== '') { 
+    if (!isNaN(num) && num !== '') {
         return new Intl.NumberFormat('vi-VN').format(num);
     }
     return '';
@@ -202,8 +202,13 @@ function postform(fromID, urlPost, targetID, callback) {
 
     /** Lấy id From truyền dữ liệu */
     var idform = "";
-    if (typeof (fromID) == "object") { if ($(fromID).attr("id") == "") { idform = "idform" + timestamp; $(fromID).attr("id", idform); } }
-    var idform = getIdJquery(fromID);
+    if (typeof (fromID) == "object") {
+        if ($(fromID).attr("id") == "") {
+            idform = "idform" + timestamp;
+            $(fromID).attr("id", idform);
+        }
+    }
+    if (idform == "") { idform = getIdJquery(fromID); }
 
     /** Lấy Url Post */
     var url = "";
@@ -213,7 +218,11 @@ function postform(fromID, urlPost, targetID, callback) {
         if (url == "") { url = window.location.href; }
     }
     if (idform == '') { messageBox('<div class="alert alert-danger">Thông báo lỗi', '<div class="alert alert-danger">Không có nguồn Form để thao tác</div>'); return; }
-    if ($(idform).length == 0) { messageBox('<div class="alert alert-danger">Thông báo lỗi', `<div class="alert alert-danger">Không tìm thấy Form có id: ${idform} để thao tác</div>`); return; }
+    if ($(idform).length == 0) {
+        if (idf)
+            messageBox('<div class="alert alert-danger">Thông báo lỗi', `<div class="alert alert-danger">Không tìm thấy Form có id: ${idform} để thao tác</div>`);
+        return;
+    }
     if ($(idform).attr('enctype') == 'multipart/form-data') {
         var dataform = new FormData(document.getElementById(idform.replace('#', '')));
         if (idtarget != '') { $(idtarget).html('Đang thực hiện <img src="/images/loader.gif" alt="" />'); }

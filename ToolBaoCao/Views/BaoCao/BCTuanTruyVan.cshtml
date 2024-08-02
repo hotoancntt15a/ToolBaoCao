@@ -12,7 +12,7 @@
         return;
     }
     <div class="alert alert-info">Thông tin truy vấn: Tỉnh @ViewBag.matinh; từ ngày @ViewBag.ngay1 đến @ViewBag.ngay2</div>
-    System.Data.DataTable data = ViewBag.data as System.Data.DataTable;
+    var data = ViewBag.data as System.Data.DataTable;
     if (data.Rows.Count == 0)
     {
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
@@ -34,7 +34,7 @@
         {
             <tr data-id="@r[0]">
                 <td><a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0] })"> <i class="fa fa-download"></i> </a></td>
-                <td><a href="#" onclick="showgeturl('@Url.Action("CreateBCTuan", "BaoCao", new { area = "", objectid = r[0], layout = "null" })');">@r[1]</a></td>
+                <td><a href="#" onclick="showgeturl('@Url.Action("BCTuanCreate", "BaoCao", new { area = "", objectid = r[0], layout = "null" })');">@r[1]</a></td>
                 @for (int i = 2; i < data.Columns.Count; i++)
                 {
                     <td>@r[i]</td>

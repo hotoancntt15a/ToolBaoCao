@@ -16,11 +16,11 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Thông tin <a class="btn btn-primary btn-sm" href="javascript:showgeturl('@Url.Action("CreateBCTuan", "BaoCao", new { area = "", layout="null" })');"><i class="fa fa-plus"></i> Tạo báo cáo </a> </h6>
+        <h6 class="m-0 font-weight-bold text-primary">Thông tin <a class="btn btn-primary btn-sm" href="javascript:showgeturl('@Url.Action("BCTuanCreate", "BaoCao", new { area = "", layout="null" })');"><i class="fa fa-plus"></i> Tạo báo cáo </a> </h6>
     </div>
     <div class="card-body">
         <!-- Form tìm kiếm báo cáo -->
-        @using (Html.BeginForm("TruyVanBCTuan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm }))
+        @using (Html.BeginForm("BCTuanTruyVan", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idForm }))
         {
             <table class="table table-hover">
                 <tbody>
