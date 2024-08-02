@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
-using MathNet.Numerics;
-using Newtonsoft.Json;
 
 namespace ToolBaoCao
 {

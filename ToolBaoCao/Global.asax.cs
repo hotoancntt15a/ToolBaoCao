@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using System.Web.Security;
-using System.Web.SessionState;
 
 namespace ToolBaoCao
 {
@@ -25,17 +21,30 @@ namespace ToolBaoCao
 
         protected void Application_Error()
         {
-            var ex = Server.GetLastError();
-            var httpException = ex as HttpException ?? ex.InnerException as HttpException;
+            var exS = Server.GetLastError();
+            var httpException = exS as HttpException ?? exS.InnerException as HttpException;
             if (httpException == null) return;
-            if(httpException.InnerException != null)
+            try
             {
-                if (((System.Web.HttpException)httpException.InnerException).WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge)
+                if (httpException.InnerException != null)
                 {
-                    Response.Write("Tập tin đẩy lên lơn hơn " + WebConfigHelper.GetMaxAllowedContentLengthMB() + "MB");
+                    var innerHttpException = httpException.InnerException as HttpException;
+                    if (innerHttpException != null && innerHttpException.WebEventCode == System.Web.Management.WebEventCodes.RuntimeErrorPostTooLarge)
+                    {
+                        string message = $"Tập tin đẩy lên lớn hơn {WebConfigHelper.GetMaxAllowedContentLengthMB()}MB";
+                        throw new Exception($"Message={HttpUtility.UrlEncode(message)}");
+                    }
                 }
-            }            
-            if (httpException.GetHttpCode() == 404) { Response.Redirect("~/Error"); }
+                if (httpException.GetHttpCode() == 404) { throw new Exception($"UrlNotFound={HttpUtility.UrlEncode("Không tìm thấy trang " + HttpContext.Current.Request.Url.PathAndQuery)}"); }
+                string errorMessage = $"Message={HttpUtility.UrlEncode(httpException.Message)}" +
+                                      $"&Source={HttpUtility.UrlEncode(httpException.Source ?? "Unknown")}" +
+                                      $"&StackTrace={HttpUtility.UrlEncode(httpException.StackTrace ?? "No stack trace")}" +
+                                      $"&WebEventCode={httpException.WebEventCode}" +
+                                      $"&ErrorCode={httpException.ErrorCode}";
+                throw new Exception(errorMessage);
+            }
+            catch (Exception ex) { Response.Redirect($"~/Error?{ex.Message}"); }
+            finally { Server.ClearError(); }
         }
 
         private void Session_Start(object sender, EventArgs e)
@@ -57,6 +66,7 @@ namespace ToolBaoCao
             if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Contains(",")) { ipAddress = ipAddress.Split(',')[0].Trim(); }
             return ipAddress;
         }
+
         private string GetUserBrowserInfo()
         {
             string userAgent = HttpContext.Current.Request.UserAgent;
