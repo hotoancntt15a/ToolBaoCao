@@ -1,15 +1,15 @@
 ﻿@{
     if (Request.getValue("layout") == "null") { Layout = null; }
     ViewBag.Title = "Thêm mới menu";
-    var item = new Dictionary<string, string>(); 
+    var item = new Dictionary<string, string>();
     var id = $"{ViewBag.id}";
-    var idReadOnly = "";
-    if(id != "") {
+    if (id != "")
+    {
         ViewBag.Title = $"Cập nhật menu có ID: {id}";
-        idReadOnly = "readonly=\"readonly\"";
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
     var idfrom = $"frm{DateTime.Now.toTimestamp()}";
+    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin", layout = "null" });
 }
 <h2>@ViewBag.Title</h2>
 <form id="@idfrom" name="@idfrom" method="post">
@@ -17,7 +17,7 @@
     <input type="hidden" name="idobject" value="@ViewBag.id" />
     <div class="form-group">
         <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="@Url.Action("Select", "Menu", new { area = "", layout="null" })"> Chọn </a>]</div></div>
+            <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="#" onclick="showgeturl('@urlSelectFather')"> Chọn </a>]</div></div>
             <input type="number" name="idfather" id="idfather" class="form-control" maxlength="255" value="@item.getValue("idfather")" />
         </div>
         <div class="input-group input-group-sm">
@@ -42,12 +42,10 @@
         </div>
     </div>
     <div class="col-12">
-        <button class="btn btn-primary btn-sm" type="button" onclick="postform('@idfrom', '@Url.Action("Update", "Menu", new { mode = "update" })');"> <i class="fa fa-fw fa-save"></i> Lưu lại </button>
-        @{
-            if (id != "")
-            {
-                <button class="btn btn-primary btn-sm" type="button" onclick="postform('@idfrom', '@Url.Action("Update", "Menu", new { mode="delete" })');"> <i class="fa fa-fw fa-recycle"></i> Xóa </button>
-            }
+        <a class="btn btn-primary btn-sm" href="javacsript:postform('@idfrom', '@Url.Action("Update", "Menu", new { area = "Admin", mode = "update" })');"> <i class="fa fa-fw fa-save"></i> Lưu lại </a>
+        @if (id != "")
+        {
+            <a class="btn btn-primary btn-sm" href="javacsript:postform('@idfrom', '@Url.Action("Update", "Menu", new { area = "Admin", mode = "delete" })');"> <i class="fa fa-fw fa-recycle"></i> Xóa </a>
         }
     </div>
 </form>

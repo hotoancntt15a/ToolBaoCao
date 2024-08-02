@@ -1,5 +1,5 @@
 ﻿@{
-    var linkHome = Url.Action("Index", "Home", new { area = "" });
+    var linkHome = Url.Action("Index", "Home", new { area = "Admin" });
     var tmp = $"{Session["nhom"]}";
 }
 <!-- Sidebar -->
@@ -11,7 +11,7 @@
             <div class="sidebar-brand-text mx-3">@AppHelper.getConfig("App.Title")</div>
         </a>
     </li>
-    @if (System.Text.RegularExpressions.Regex.IsMatch(tmp, "^[01]$"))
+    @if (tmp == "0")
     {
         <li class="nav-item">
             <!-- Divider -->
@@ -19,7 +19,13 @@
         </li>
         <!-- Nav Item - Dashboard -->
         <li class="nav-item">
-            <a class="nav-link" href="@Url.Action("Index", "TaiKhoan", new { area = "" })"> <i class="fas fa-fw fa-tachometer-alt"></i> <span>Tài khoản</span> </a>
+            <a class="nav-link" href="@Url.Action("Index", "TaiKhoan", new { area = "Admin" })"> <i class="fas fa-fw fa-tachometer-alt"></i> <span>Tài khoản</span> </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Index", "Menu", new { area = "Admin" })"> <i class="fas fa-fw fa-tachometer-alt"></i> <span>Menu</span> </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Index", "Data", new { area = "Admin" })"> <i class="fas fa-fw fa-tachometer-alt"></i> <span>Menu</span> </a>
         </li>
     }
     <li class="nav-item">
@@ -33,27 +39,13 @@
     </li>
     <!-- Nav Item - Chức năng Collapse Menu -->
     <li class="nav-item">
-        <a class="nav-link" href="@Url.Action("Index", "Task", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Tiến trình</span> </a>
+        <a class="nav-link" href="@Url.Action("Index", "Task", new { area = "Admin" })"> <i class="fas fa-fw fa-list"></i> <span>Tiến trình</span> </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="@Url.Action("Index", "ImportExcel", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Từ Excel</span> </a>
+        <a class="nav-link" href="@Url.Action("Index", "ImportExcel", new { area = "Admin" })"> <i class="fas fa-fw fa-list"></i> <span>Từ Excel</span> </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="@Url.Action("Index", "ImportSQLite", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Từ SQLite (*.db)</span> </a>
-    </li>
-
-    <li class="nav-item">
-        <!-- Divider -->
-        <hr class="sidebar-divider d-none d-md-block" />
-    </li>
-
-    <li class="nav-item">
-        <!-- Heading -->
-        <div class="sidebar-heading"> Báo cáo</div>
-    </li>
-    <!-- Nav Item - Chức năng Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link" href="@Url.Action("Tuan", "BaoCao", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Tuần</span> </a>
+        <a class="nav-link" href="@Url.Action("Index", "ImportSQLite", new { area = "Admin" })"> <i class="fas fa-fw fa-list"></i> <span>Từ SQLite (*.db)</span> </a>
     </li>
     <li class="nav-item">
         <!-- Divider -->

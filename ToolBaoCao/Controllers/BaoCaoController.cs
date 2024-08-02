@@ -82,19 +82,19 @@ namespace ToolBaoCao.Controllers
                 {
                     if (string.IsNullOrEmpty(objectid) == false) { ViewBag.Error = "Không có tham số cập nhật"; }
                     var tailieu = new Dictionary<string, string>();
-                    foreach (var key in Request.Form.AllKeys) { if (Regex.IsMatch(key, @"^x\d+$")) { tailieu[key] = Request.Form[key].Trim();  } }
+                    foreach (var key in Request.Form.AllKeys) { if (Regex.IsMatch(key, @"^x\d+$")) { tailieu[key] = Request.Form[key].Trim(); } }
                     /* kiểm tra dữ liệu trong cơ sở dữ liệu */
                     var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
                     var item = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{objectid}'");
                     foreach (DataColumn c in item.Columns)
-                    { 
+                    {
                         /*  Kiểm tra trường số */
                         if (c.ColumnName.StartsWith("x"))
                         {
-                            if(tailieu.ContainsKey(c.ColumnName) && (c.DataType == typeof(long) || c.DataType == typeof(double)))
+                            if (tailieu.ContainsKey(c.ColumnName) && (c.DataType == typeof(long) || c.DataType == typeof(double)))
                             {
                                 if (tailieu[c.ColumnName] == "") { tailieu[c.ColumnName] = "0"; }
-                                else if (Regex.IsMatch(tailieu[c.ColumnName], @"^-?\d+([.]\d+)?$") == false) 
+                                else if (Regex.IsMatch(tailieu[c.ColumnName], @"^-?\d+([.]\d+)?$") == false)
                                 {
                                     ViewBag.Error = $"Trường số {c.ColumnName} không đúng: '{tailieu[c.ColumnName]}'";
                                     return View();
@@ -105,16 +105,30 @@ namespace ToolBaoCao.Controllers
                     }
                     /*  Kiểm tra trường ngày */
                     tailieu["timecreate"] = DateTime.Now.toTimestamp().ToString();
+                    /* X4 = X1/X2 %*/
+                    tailieu["x4"] = tailieu["x2"] == "0" ? "0" : (double.Parse(tailieu["x1"]) / double.Parse(tailieu["x2"])).ToString("0.###");
                     if (item.Rows.Count == 0)
                     {
+                        tailieu["x74"] = Request.getValue("thoigian");
+                        if (tailieu["x74"].isDateVN() == false)
+                        {
+                            ViewBag.Error = $"Ngày không đúng định dạng Ngày/Tháng/Năm x74: {tailieu["x74"]}";
+                            return View();
+                        }
+                        tailieu["ngay"] = tailieu["x74"].getFromDateVN().toTimestamp().ToString();
                         tailieu["userid"] = $"{Session["iduser"]}";
-                        tailieu["ma_tinh"] = Request.getValue("ma_tinh").Trim();
+                        tailieu["ma_tinh"] = Request.getValue("matinh").Trim();
                         tailieu["id"] = objectid;
+                        dbBaoCao.Update("bctuandocx", tailieu, "replace");
                     }
-                    var v = new List<string>();
-                    foreach (var key in tailieu.Keys) { v.Add($"{key}='{tailieu[key].sqliteGetValueField()}'"); }
-                    var tsql = $"UPDATE bctuandocx SET {string.Join(", ", v)} WHERE id='{objectid.sqliteGetValueField()}'";
-                    return Content($"<div class=\"alert alert-info\">Lưu thành công ({timeStart.getTimeRun()}): {tsql}</div>");
+                    else
+                    {
+                        var v = new List<string>();
+                        foreach (var key in tailieu.Keys) { v.Add($"{key}='{tailieu[key].sqliteGetValueField()}'"); }
+                        var tsql = $"UPDATE bctuandocx SET {string.Join(", ", v)} WHERE id='{objectid.sqliteGetValueField()}'";
+                        dbBaoCao.Execute(tsql);
+                    }
+                    return Content($"<div class=\"alert alert-info\">Lưu thành công ({timeStart.getTimeRun()})</div>");
                 }
                 tmp = $"{Session["idtinh"]}".Trim();
                 ViewBag.tinhSelect = tmp;

@@ -338,6 +338,11 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\DataController.cs" />
+    <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
+    <Compile Include="Areas\Admin\Controllers\MenuController.cs" />
+    <Compile Include="Areas\Admin\Controllers\TaiKhoanController.cs" />
     <Compile Include="BuildDatabase.cs" />
     <Compile Include="CaptchaImage.cs" />
     <Compile Include="Controllers\BaoCaoController.cs" />
@@ -346,7 +351,6 @@
     <Compile Include="Controllers\ImportExcelController.cs" />
     <Compile Include="Controllers\ImportSQLiteController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
-    <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\TaiKhoanController.cs" />
     <Compile Include="Controllers\TaskController.cs" />
     <Compile Include="Convert.cs" />
@@ -759,6 +763,14 @@
     <Content Include="App_Data\DM_BENHYHCT.xls" />
     <Content Include="App_Data\DM_ICD.xls" />
     <Content Include="App_Data\MoTaLapBieuBCTuan.docx" />
+    <Content Include="Areas\Admin\Views\web.config" />
+    <Content Include="Areas\Admin\Views\Shared\_AdminMenuUserInfo.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_Admin.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\_AdminMenuLeft.cshtml" />
+    <Content Include="Areas\Admin\Views\TaiKhoan\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\TaiKhoan\Update.cshtml" />
+    <Content Include="Areas\Admin\Views\Home\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -2473,7 +2485,6 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
@@ -2664,8 +2675,8 @@
     <Content Include="Views\Error\Index.cshtml" />
     <Content Include="Views\TaiKhoan\Index.cshtml" />
     <Content Include="Views\TaiKhoan\Update.cshtml" />
-    <Content Include="Views\Menu\Index.cshtml" />
-    <Content Include="Views\Menu\Update.cshtml" />
+    <Content Include="Areas\Admin\Views\Menu\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Menu\Update.cshtml" />
     <Content Include="Views\ImportExcel\Index.cshtml" />
     <Content Include="Views\ImportExcel\Update.cshtml" />
     <Content Include="Views\Task\Index.cshtml" />
@@ -2686,6 +2697,8 @@
     <Content Include="Views\BaoCao\BCTuanTruyVan.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Areas\Admin\Data\" />
+    <Folder Include="Areas\Admin\Views\Data\" />
     <Folder Include="cache\" />
     <Folder Include="Models\" />
     <Folder Include="temp\data\" />

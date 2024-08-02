@@ -6,15 +6,13 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
 
-namespace ToolBaoCao.Controllers
+namespace ToolBaoCao.Areas.Admin.Controllers
 {
     public class MenuController : Controller
     {
-        /* GET: QuanTri */
-
+        // GET: Admin/Menu
         public ActionResult Index()
         {
-            ViewBag.Title = "Quản lý Menu";
             try
             {
                 var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu ORDER BY link");
@@ -48,31 +46,33 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Select()
         {
-            return View();
+            try {
+                var dataMenu = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu");
+                return Content(showMenuTree(dataMenu));
+            }
+            catch(Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }
 
         public ActionResult Update(string id = "")
         {
+            var timeStart = DateTime.Now;
             ViewBag.id = id;
-            var idObject = Request.getValue("idobject");
+            var objectid = Request.getValue("objectid");
             try
             {
                 var mode = Request.getValue("mode");
                 if (mode == "delete")
                 {
-                    /* Kiểm tra tài khoản đã sử dụng chưa, Nếu đã sử dụng thì không thể xóa */
-                    if (idObject == "") { throw new Exception("Tham số tài khoản không đúng"); }
-                    var listAccoutNotRemove = new List<string>() { "admin", "administrator" };
-                    if (listAccoutNotRemove.Contains(idObject.ToLower())) { throw new Exception("Tài khoản có tên đăng nhập đặc biệt không thể xóa"); }
-                    AppHelper.dbSqliteMain.Execute("DELETE FROM taikhoan WHERE iduser=@iduser", new KeyValuePair<string, string>("@iduser", idObject));
+                    if(Regex.IsMatch(objectid, @"^\d+$") == false) { throw new Exception($"ID menu không đúng {objectid}"); }
+                    AppHelper.dbSqliteMain.Execute($"DELETE FROM wmenu WHERE id={objectid}");
                     /* Xóa tài khoản */
-                    return Content($"<div class=\"alert alert-info\">Xóa tài khoản {idObject} thành công</div>");
+                    return Content($"<div class=\"alert alert-info\">Xóa menu có ID '{objectid}' thành công ({timeStart.getTimeRun()})</div>");
                 }
                 if (mode != "update")
                 {
                     if (id != "")
                     {
-                        DataTable items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan WHERE iduser = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
+                        DataTable items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu WHERE id = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
                         if (items.Rows.Count == 0) { throw new Exception($"Tài khoản có tên đăng nhập '{id}' đã bị xoá hoặc không tồn tại trên hệ thống"); }
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }

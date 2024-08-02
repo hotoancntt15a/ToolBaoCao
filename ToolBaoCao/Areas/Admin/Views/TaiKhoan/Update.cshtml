@@ -1,0 +1,81 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    ViewBag.Title = "Thêm mới tài khoản quản trị";
+    var item = new Dictionary<string, string>();
+    var id = $"{ViewBag.id}";
+    var idReadOnly = "";
+    if(id != "") {
+        ViewBag.Title = $"Cập nhập thông tin tài khoản {id}";
+        idReadOnly = "readonly=\"readonly\"";
+        if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
+    }
+    System.Data.DataTable dmTinh = ViewBag.dmTinh == null ? new System.Data.DataTable() : (System.Data.DataTable)ViewBag.dmTinh;
+}
+<h2>@ViewBag.Title</h2>
+<form id="frmUpdateQuanTri" name="frmUpdateQuanTri" method="post">
+    <input type="hidden" name="layout" value="null" />
+    <input type="hidden" name="idobject" value="@ViewBag.id" />
+    <div class="form-group">
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Tên đăng nhập</div></div>
+            <input type="text" name="iduser" id="iduser" class="form-control" maxlength="50" value="@ViewBag.id" @Html.Raw(idReadOnly) />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Mât khẩu</div></div>
+            <input type="text" name="mat_khau" id="mat_khau" class="form-control" maxlength="50" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Mã tỉnh làm việc</div></div>
+            <select name="idtinh" id="idtinh" class="form-select">
+                @foreach (System.Data.DataRow row in dmTinh.Rows)
+                {
+                    if (item.getValue("idtinh") == row[0].ToString())
+                    {
+                        <option value="@row[0]" selected>@row[1]</option>
+                    }
+                    else
+                    {
+                        <option value="@row[0]">@row[1]</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Tên hiển thị</div></div>
+            <input type="text" name="ten_hien_thi" id="ten_hien_thi" class="form-control" maxlength="255" value="@item.getValue("ten_hien_thi")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Giới tính</div></div>
+            <input type="text" name="gioi_tinh" id="gioi_tinh" class="form-control" maxlength="255" value="@item.getValue("gioi_tinh")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Ngày sinh</div></div>
+            <input type="text" name="ngay_sinh" id="ngay_sinh" class="form-control clsdate" maxlength="10" value="@item.getValue("ngay_sinh")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Email</div></div>
+            <input type="text" name="email" id="email" class="form-control" maxlength="50" value="@item.getValue("email")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Điện thoại</div></div>
+            <input type="text" name="dien_thoai" id="dien_thoai" class="form-control" maxlength="50" value="@item.getValue("dien_thoai")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Địa chỉ</div></div>
+            <input type="text" name="dia_chi" id="dia_chi" class="form-control" maxlength="255" value="@item.getValue("dia_chi")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
+            <input type="text" name="ghi_chu" id="ghi_chu" class="form-control" maxlength="255" value="@item.getValue("ghi_chu")" />
+        </div>
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary btn-sm" type="button" onclick="postform('frmUpdateQuanTri', '@Url.Action("Update", "TaiKhoan", new { mode = "update" })');"> <i class="fa fa-fw fa-save"></i> Lưu lại </button>
+        @{
+            if (id != "")
+            {
+                <button class="btn btn-primary btn-sm" type="button" onclick="postform('frmUpdateQuanTri', '@Url.Action("Update", "TaiKhoan", new { mode="delete" })');"> <i class="fa fa-fw fa-recycle"></i> Khóa tài khoản </button>
+            }
+        }
+    </div>
+</form>

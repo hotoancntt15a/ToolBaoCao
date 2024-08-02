@@ -1,5 +1,6 @@
 ﻿@{
     if (AppHelper.CheckIsLogin() == false) { Response.Redirect("~/Login/Index"); }
+    if ($"{Session["nhom"]}" != "0") { Response.Redirect("~/Error?Message=" + Url.Encode("Khu vực quản trị hệ thống. Bạn không có quyền")); }
 }
 <!DOCTYPE html>
 <html>
@@ -27,14 +28,14 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
         <!-- Sidebar -->
-        @Html.Partial("_MenuLeft")
+        @Html.Partial("_AdminMenuLeft")
         <!-- End of Sidebar -->
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
             <!-- Main Content -->
             <div id="content">
                 <!-- Topbar -->
-                @Html.Partial("_MenuUserInfo")
+                @Html.Partial("_AdminMenuUserInfo")
                 <!-- End of Topbar -->
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
@@ -80,7 +81,7 @@
     <script src="~/js/sb-admin-2.min.js"></script>
     <script src="~/js/site.js?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/js/site.js")).ToOADate())"></script>
     @RenderSection("scripts", required: false)
-<script>
+    <script>
         function fixAllClass() {
             if ($('.clsdate').length > 0) { $('.clsdate').datepicker({ language: "vi", autoclose: true, todayHighlight: true }); }
             if ($('.clstime').length > 0) { $('.clstime').timepicker({ 'timeFormat': 'H:i:s' }); }
@@ -93,6 +94,6 @@
             if ($('.apptitle').length > 0) { $('title').text($('.apptitle').first().text() + ' - @AppHelper.getConfig("App.Title")'); }
             setActiveLiMenu();
         });
-</script>
+    </script>
 </body>
 </html>

@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Mvc;
 
-namespace ToolBaoCao.Controllers
+namespace ToolBaoCao.Areas.Admin.Controllers
 {
     public class TaiKhoanController : Controller
     {
-        /* GET: QuanTri */
-
+        // GET: Admin/TaiKhoan
         public ActionResult Index()
         {
             ViewBag.Title = "Quản lý tài khoản";
             try
             {
-                string idtinh = $"{Session["idtinh"]}";
-                var data = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM taikhoan WHERE idtinh='{idtinh.sqliteGetValueField()}' ORDER BY iduser");
+                var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan ORDER BY iduser");
                 ViewBag.Data = data;
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
         }
-
+        // GET: Admin/TaiKhoan/Update
         public ActionResult Update(string id = "")
         {
             var tmp = $"{Session["nhom"]}";
@@ -31,7 +31,6 @@ namespace ToolBaoCao.Controllers
             var idObject = Request.getValue("idobject");
             try
             {
-                string idtinh = $"{Session["idtinh"]}";
                 var mode = Request.getValue("mode");
                 if (mode == "delete")
                 {
@@ -52,7 +51,7 @@ namespace ToolBaoCao.Controllers
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }
                         ViewBag.Data = data;
-                        ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten FROM dmTinh WHERE id='{idtinh.sqliteGetValueField()}' ORDER BY tt, ten");
+                        ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmTinh ORDER BY tt, ten");
                     }
                     return View();
                 }
@@ -66,7 +65,7 @@ namespace ToolBaoCao.Controllers
                     { "email", Request.getValue("email") },
                     { "dien_thoai", Request.getValue("dien_thoai") },
                     { "dia_chi", Request.getValue("dia_chi") },
-                    { "idtinh", idtinh },
+                    { "idtinh", Request.getValue("idtinh") },
                     { "ghi_chu", Request.getValue("ghi_chu") },
                     { "hinh_dai_dien", "" }
                 };

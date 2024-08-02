@@ -237,17 +237,16 @@ namespace ToolBaoCao
             throw new Exception($"Hiện phần mềm chưa hỗ trợ phụ hồi từ tập tin có kiểu '{ext}'");
         }
 
-        public int Update(string tableName, Dictionary<string, string> data, string where = "")
+        public int Update(string tableName, Dictionary<string, string> data, string whereOrReplaceIgnore = "")
         {
             if (string.IsNullOrEmpty(tableName)) { return 0; }
             if (data.Count == 0) { return 0; }
-            var tsql = ""; string tmp = "";
+            var tsql = ""; string tmp = ""; string where = whereOrReplaceIgnore;
             var fields = new List<string>();
             List<SQLiteParameter> par = new List<SQLiteParameter>();
             if (string.IsNullOrEmpty(where) || where.ToLower() == "replace" || where.ToLower() == "ignore")
             {
                 /* Addnew */
-
                 var parV = new List<string>();
                 foreach (var v in data)
                 {
