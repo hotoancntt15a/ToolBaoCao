@@ -60,7 +60,7 @@
                             Chọn dữ liệu thao tác <select name="data" class="custom-select-sm">
                                 @foreach (System.IO.FileInfo f in d.GetFiles("*.db"))
                                 {
-                                    <option value="@f.Name">@f.Name (@f.Length b)</option>
+                                    <option value="@f.Name">@f.Name (@f.Length.getFileSize())</option>
                                 }
                             </select>
                         </td>

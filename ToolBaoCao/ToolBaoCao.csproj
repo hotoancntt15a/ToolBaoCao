@@ -2698,7 +2698,6 @@
     <Content Include="Views\BaoCao\BCTuanTruyVan.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Areas\Admin\Data\" />
     <Folder Include="cache\" />
     <Folder Include="Models\" />
     <Folder Include="temp\data\" />

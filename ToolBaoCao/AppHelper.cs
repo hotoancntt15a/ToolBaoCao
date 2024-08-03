@@ -21,6 +21,23 @@ namespace ToolBaoCao
 {
     public static class AppHelper
     {
+        public static List<string> listKeyConfigCrypt = new List<string>() { "" };
+        private static readonly string keyMD5 = typeof(AppHelper).Namespace;
+        public static AppConfig appConfig = new AppConfig();
+        public static readonly string pathApp = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
+        public static readonly string projectName = typeof(AppHelper).Namespace;
+        public static dbSQLite dbSqliteMain = new dbSQLite();
+        public static dbSQLite dbSqliteWork = new dbSQLite();
+
+        public static string getFileSize(this long size)
+        {
+            if (size > 1073741824) { return $"{(size / 1048576):0.##}Gb"; }
+            if (size > 1048576) { return $"{(size / 1048576):0.##}Mb"; }
+            if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
+            return $"{size}b";
+        }
+
         public static long toTimestamp(this DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
 
         /* Việt Nam múi giờ GMT +7 */
@@ -36,25 +53,17 @@ namespace ToolBaoCao
         public static string getTimeRun(this DateTime timeStart)
         {
             var t = DateTime.Now - timeStart;
-            if(t.Days > 0) { return $"{t.Days} ngày {t.Hours}:{t.Minutes}:{t.Seconds}"; }
-            if(t.Hours > 0) { return $"{t.Hours}:{t.Minutes}:{t.Seconds}"; }
-            if(t.Minutes > 0) { return $"{t.Minutes}:{t.Seconds}"; }
+            if (t.Days > 0) { return $"{t.Days} ngày {t.Hours}:{t.Minutes}:{t.Seconds}"; }
+            if (t.Hours > 0) { return $"{t.Hours}:{t.Minutes}:{t.Seconds}"; }
+            if (t.Minutes > 0) { return $"{t.Minutes}:{t.Seconds}"; }
             if (t.Seconds > 0) { return $"{t.Seconds},{t.Milliseconds.ToString().Substring(0, 2)} giây"; }
             return $"0,{t.Milliseconds} giây";
         }
 
-        public static List<string> listKeyConfigCrypt = new List<string>() { "" };
-        private static readonly string keyMD5 = typeof(AppHelper).Namespace;
-        public static AppConfig appConfig = new AppConfig();
-        public static readonly string pathApp = AppDomain.CurrentDomain.BaseDirectory;
-        public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
-        public static readonly string projectName = typeof(AppHelper).Namespace;
-        public static dbSQLite dbSqliteMain = new dbSQLite();
-        public static dbSQLite dbSqliteWork = new dbSQLite();
         public static string FormatCultureVN(this string numberUS, int decimalDigits = 2)
         {
-            if (Regex.IsMatch(numberUS, @"^-?\d+(\.\d+)?$") == false) { return numberUS; } 
-            CultureInfo vietnamCulture = new CultureInfo("vi-VN"); 
+            if (Regex.IsMatch(numberUS, @"^-?\d+(\.\d+)?$") == false) { return numberUS; }
+            CultureInfo vietnamCulture = new CultureInfo("vi-VN");
             NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
             if (Decimal.TryParse(numberUS, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal parsedNumber))
             {
@@ -70,18 +79,21 @@ namespace ToolBaoCao
             }
             return numberUS;
         }
+
         public static string FormatCultureVN(this long numberUS)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
             NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
             return numberUS.ToString($"N", formatInfo);
         }
+
         public static string FormatCultureVN(this int numberUS)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
             NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
             return numberUS.ToString($"N", formatInfo);
         }
+
         public static string FormatCultureVN(this double numberUS, int decimalDigits = 2)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
@@ -96,14 +108,16 @@ namespace ToolBaoCao
             }
             return formattedNumber;
         }
+
         public static string FormatCultureVN(this decimal numberUS, int decimalDigits = 2)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
             NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
             return numberUS.ToString($"N{decimalDigits}", formatInfo);
         }
+
         public static List<string> GetTableNameFromTsql(string tsql)
-        { 
+        {
             var matches = Regex.Matches(tsql, @"\b(FROM|JOIN|UPDATE)\s+([a-zA-Z0-9_.\[\]]+)", RegexOptions.IgnoreCase);
             var tableNames = new List<string>();
             foreach (System.Text.RegularExpressions.Match match in matches) { tableNames.Add(match.Groups[2].Value); }
@@ -156,6 +170,7 @@ namespace ToolBaoCao
                 case CellType.Numeric:
                     if (DateUtil.IsCellDateFormatted(cell)) { return cell.DateCellValue?.ToString(formatDateTime); }
                     return cell.NumericCellValue.ToString().Replace(",", ".");
+
                 case CellType.Formula:
                     // Lấy giá trị tính toán của công thức nếu cần
                     switch (cell.CachedFormulaResultType)
@@ -163,6 +178,7 @@ namespace ToolBaoCao
                         case CellType.Numeric:
                             if (DateUtil.IsCellDateFormatted(cell)) { return cell.DateCellValue?.ToString(formatDateTime); }
                             return cell.NumericCellValue.ToString().Replace(",", ".");
+
                         case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
                         default: return $"{cell}";
                     }
@@ -188,11 +204,11 @@ namespace ToolBaoCao
             dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
             dbSqliteWork.buildDataCongViec();
             /* Check Folder Exists */
-            if(Directory.Exists(pathApp + "cache") == false) { Directory.CreateDirectory(pathApp + "cache"); }
+            if (Directory.Exists(pathApp + "cache") == false) { Directory.CreateDirectory(pathApp + "cache"); }
             if (Directory.Exists(pathApp + "temp") == false) { Directory.CreateDirectory(pathApp + "temp"); }
             if (Directory.Exists(pathApp + "temp\\data") == false) { Directory.CreateDirectory(pathApp + "temp\\data"); }
             if (Directory.Exists(pathApp + "temp\\excel") == false) { Directory.CreateDirectory(pathApp + "temp\\excel"); }
-            getDBUserOnline();           
+            getDBUserOnline();
         }
 
         public static void SapXepNgauNhien(this List<string> arr)
@@ -213,6 +229,7 @@ namespace ToolBaoCao
                 $"<div><div class=\"small text-gray-500\">{date}</div>" + (fontBold ? $"<span class=\"font-weight-bold\">{content}</span>" : content) +
                 "</div></a>";
         }
+
         public static dbSQLite getDBUserOnline()
         {
             string pathData = pathApp + "App_Data\\useronline.db";
@@ -233,6 +250,7 @@ namespace ToolBaoCao
             }
             return db;
         }
+
         public static bool CheckIsLogin()
         {
             var http = HttpContext.Current;
@@ -241,9 +259,10 @@ namespace ToolBaoCao
             int maxSeccondsOnline = 15 * 60;
             try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }
             var tmp = $"{http.Session["app.isLogin"]}";
-            if (tmp == "1") {
+            if (tmp == "1")
+            {
                 db.Execute($"UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}'");
-                return true; 
+                return true;
             }
             if (http.Request.Cookies.AllKeys.Any(p => p == "idobject") == false) { return false; }
             tmp = $"{http.Request.Cookies["idobject"]?.Value}";
@@ -382,6 +401,7 @@ namespace ToolBaoCao
             if (DateTime.TryParseExact(dateVN, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out date)) { return date.ToOADate(); }
             return 0;
         }
+
         public static DateTime getFromDateVN(this string dateVN)
         {
             var format = "dd/MM/yyyy"; dateVN = dateVN.Trim();
@@ -408,7 +428,7 @@ namespace ToolBaoCao
 
         public static string getValue(this Dictionary<string, string> data, string key, string defaultValue = "", bool formatVN = false)
         {
-            if (data.ContainsKey(key)) {  return formatVN ? data[key].FormatCultureVN(): data[key]; }
+            if (data.ContainsKey(key)) { return formatVN ? data[key].FormatCultureVN() : data[key]; }
             return defaultValue;
         }
 

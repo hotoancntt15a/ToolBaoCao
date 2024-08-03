@@ -10,8 +10,8 @@
     return;
 }
 @{
-    var items = new System.Data.DataTable();
-    if (ViewBag.Data != null) { items = ViewBag.Data as System.Data.DataTable; }
+    var items = new DataTable();
+    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
 }
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
@@ -38,7 +38,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (System.Data.DataRow r in items.Rows)
+                        @foreach (DataRow r in items.Rows)
                         {
                             <tr>
                                 <td><a href="@Url.Action("Update", "Menu", new { id=r["id"] })">@r["id"]</a></td>
