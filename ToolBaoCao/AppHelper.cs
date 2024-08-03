@@ -25,11 +25,11 @@ namespace ToolBaoCao
 
         /* Việt Nam múi giờ GMT +7 */
 
-        public static DateTime fromTimestamp(this long timestamp, int GMT = 7) => (DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime).AddHours(GMT);
+        public static DateTime toDateTime(this long timestamp, int GMT = 7) => (DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime).AddHours(GMT);
 
-        public static DateTime fromTimestamp(this string timestamp, int GMT = 7)
+        public static DateTime toDateTime(this string timestamp, int GMT = 7)
         {
-            if (Regex.IsMatch(timestamp, "^[0-9]+$")) { return (long.Parse(timestamp).fromTimestamp(7)); }
+            if (Regex.IsMatch(timestamp, "^[0-9]+$")) { return (long.Parse(timestamp).toDateTime(7)); }
             return new DateTime(1970, 1, 1);
         }
 

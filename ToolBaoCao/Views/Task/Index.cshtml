@@ -35,8 +35,8 @@
                         {
                             foreach (System.Data.DataRow r in items.Rows)
                             {
-                                DateTime t1 = $"{r["time_create"]}".fromTimestamp();
-                                DateTime t2 = $"{r["time_last_login"]}".fromTimestamp();
+                                DateTime t1 = $"{r["time_create"]}".toDateTime();
+                                DateTime t2 = $"{r["time_last_login"]}".toDateTime();
                             <tr>
                                 <td><a href="javascript:showgeturl('@Url.Action("Update", "Menu", new { id=r["id"], layout="null" })');">@r["id"]</a></td>
                                 <td>@r["title"]</td>

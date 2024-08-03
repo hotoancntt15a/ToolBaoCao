@@ -181,7 +181,7 @@ namespace ToolBaoCao.Controllers
                     {
                         ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"; return View();
                     }
-                    string thoigian = ((long)data.Rows[0]["ngay"]).fromTimestamp().ToString("yyyyMMdd");
+                    string thoigian = ((long)data.Rows[0]["ngay"]).toDateTime().ToString("yyyyMMdd");
                     using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
                     {
                         var document = new XWPFDocument(fileStream);

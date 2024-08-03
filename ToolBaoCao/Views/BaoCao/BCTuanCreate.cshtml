@@ -102,7 +102,7 @@
     else
     {
         System.Data.DataRow item = ViewBag.data as System.Data.DataRow;
-        var ngayCreate = AppHelper.fromTimestamp((long)item["timecreate"]).ToString("dd/MM/yyyy H:m:s");
+        var ngayCreate = ((long)item["timecreate"]).toDateTime().ToString("dd/MM/yyyy H:m:s");
         ViewBag.Title = $"Sửa báo cáo tuần ngày {item["x74"]} có ID {id} vào lúc ";
         tinhSelect = item["ma_tinh"].ToString().Trim();
         <div class="alert alert-info">@ViewBag.Title</div>
