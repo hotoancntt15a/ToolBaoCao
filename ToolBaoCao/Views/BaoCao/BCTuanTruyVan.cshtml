@@ -18,6 +18,12 @@
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
         return;
     }
+    var dField = new Dictionary<string, string>() {
+        { "ma_tinh", "Mã tỉnh" },
+         { "userid", "Tên đăng nhập" },
+         { "ngayGMT7", "Ngày báo cáo" },
+         { "taoLanCuoi", "Cập nhật lần cuối" }
+     };
 }
 <table class="table table-hover">
     <thead>
@@ -25,7 +31,7 @@
             <th>Tải về</th>
             @for (int i = 1; i < data.Columns.Count; i++)
             {
-                <th>@data.Columns[i].ColumnName</th>
+                <th>@dField.getValue(data.Columns[i].ColumnName, data.Columns[i].ColumnName)</th>
             }
         </tr>
     </thead>

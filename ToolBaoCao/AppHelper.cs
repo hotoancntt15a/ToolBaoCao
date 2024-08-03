@@ -276,7 +276,7 @@ namespace ToolBaoCao
                         if (items.Rows.Count == 0) { return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng"; }
                     }
                 }
-                if (http == null) { return keyMSG.ErrorHttpConnetNull; }
+                if (http == null) { return keyMSG.HttpConnetNull; }
                 http.Session.Clear();
                 http.Request.Cookies.Clear();
                 http.Session.Add("app.isLogin", "1");

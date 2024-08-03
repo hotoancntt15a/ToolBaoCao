@@ -21,7 +21,7 @@ namespace ToolBaoCao.Controllers
         {
             if (Session["iduser"] == null)
             {
-                ViewBag.Error = keyMSG.ErrorNotLoginAccess;
+                ViewBag.Error = keyMSG.NotLoginAccess;
                 return View();
             }
             long time1 = 0, time2 = 0;
@@ -56,7 +56,7 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult BCTuanCreate(string objectid)
         {
-            if (Session["iduser"] == null) { ViewBag.Error = keyMSG.ErrorNotLoginAccess; return View(); }
+            if (Session["iduser"] == null) { ViewBag.Error = keyMSG.NotLoginAccess; return View(); }
             DateTime timeStart = DateTime.Now;
             string tmp = "";
             string mode = Request.getValue("mode");
@@ -150,7 +150,7 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Tuan()
         {
-            if ($"{Session["iduser"]}" == "") { ViewBag.Error = keyMSG.ErrorNotLoginAccess; return View(); }
+            if ($"{Session["iduser"]}" == "") { ViewBag.Error = keyMSG.NotLoginAccess; return View(); }
             var mode = Request.getValue("mode");
             string tmp = "";
             if (mode == "")
