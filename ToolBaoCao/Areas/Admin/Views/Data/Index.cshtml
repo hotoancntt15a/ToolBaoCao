@@ -1,0 +1,51 @@
+﻿@{
+    ViewBag.Title = "Quản lý dữ liệu";
+    var idform = "frmad" + DateTime.Now.toTimestamp().ToString();
+    var d = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data"));
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<p class="mb-4"> Quản lý Menu. </p>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+    return;
+}
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách menu <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+    </div>
+    <div class="card-body">
+        <form id="@idform" , method="post">
+            <input name="layout" value="null" type="hidden" />
+            <input name="mode" value="tsql" type="hidden" />
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td>
+                            Chọn dữ liệu thao tác <select name="data" class="custom-select-sm">
+                                @foreach (System.IO.FileInfo f in d.GetFiles("*.db"))
+                                {
+                                    <option value="@f.Name">@f.Name (@f.Length b)</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            TSQL <br />
+                            <textarea name="tsql"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform', '', 'view_@idform');"></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <div id="view_@idform"></div>
+    </div>
+</div>
