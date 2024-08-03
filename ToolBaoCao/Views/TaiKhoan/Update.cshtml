@@ -26,7 +26,7 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mã tỉnh làm việc</div></div>
-            <select name="idtinh" id="idtinh" class="form-select">
+            <select name="idtinh" id="idtinh" class="custom-select-sm">
                 @foreach (DataRow row in dmTinh.Rows)
                 {
                     if (item.getValue("idtinh") == row[0].ToString())

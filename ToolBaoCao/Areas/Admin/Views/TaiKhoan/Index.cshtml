@@ -1,4 +1,5 @@
 ﻿@{ 
+    ViewBag.Title = "Quản lý tài khoản";
     var items = new DataTable();
     if(ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
 }
@@ -10,7 +11,7 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Danh sách tài khoản <a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { area = "", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách tài khoản <a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
     </div>
     <div class="card-body">
         <div class="table-responsive">

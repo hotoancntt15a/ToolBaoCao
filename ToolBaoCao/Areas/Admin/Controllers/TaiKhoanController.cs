@@ -13,7 +13,6 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         // GET: Admin/TaiKhoan
         public ActionResult Index()
         {
-            ViewBag.Title = "Quản lý tài khoản";
             try
             {
                 var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan ORDER BY iduser");
@@ -42,9 +41,10 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     /* Xóa tài khoản */
                     return Content($"<div class=\"alert alert-info\">Khóa tài khoản {idObject} thành công</div>");
                 }
-                ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmTinh ORDER BY tt, ten");
                 if (mode != "update")
                 {
+                    var dmTinh = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmTinh ORDER BY tt, ten");
+                    ViewBag.dmTinh = dmTinh;
                     if (id != "")
                     {
                         var items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan WHERE iduser = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));

@@ -12,7 +12,6 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Index()
         {
-            ViewBag.Title = "Quản lý tài khoản";
             try
             {
                 string idtinh = $"{Session["idtinh"]}";
@@ -45,6 +44,7 @@ namespace ToolBaoCao.Controllers
                 }
                 if (mode != "update")
                 {
+                    ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten FROM dmTinh WHERE id='{idtinh.sqliteGetValueField()}' ORDER BY tt, ten");
                     if (id != "")
                     {
                         var items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan WHERE iduser = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
@@ -52,7 +52,6 @@ namespace ToolBaoCao.Controllers
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }
                         ViewBag.Data = data;
-                        ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten FROM dmTinh WHERE id='{idtinh.sqliteGetValueField()}' ORDER BY tt, ten");
                     }
                     return View();
                 }
