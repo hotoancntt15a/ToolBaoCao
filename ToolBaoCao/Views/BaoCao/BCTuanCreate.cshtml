@@ -4,8 +4,8 @@
     else { Layout = "~/Views/Shared/_Layout.cshtml"; }
 
     var idFormBCT = "idbct" + DateTime.Now.toTimestamp().ToString();
-    System.Data.DataTable dmTinh = new System.Data.DataTable();
-    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
+    DataTable dmTinh = new DataTable();
+    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as DataTable; }
     string tinhSelect = $"{ViewBag.tinhSelect}";
     if (ViewBag.Error != null)
     {
@@ -28,7 +28,7 @@
                             <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
                             <td>
                                 <select name="matinh" id="matinh">
-                                    @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                    @foreach (DataRow row in dmTinh.Rows)
                                     {
                                         if (tinhSelect == row[0].ToString())
                                         {
@@ -101,7 +101,7 @@
     }
     else
     {
-        System.Data.DataRow item = ViewBag.data as System.Data.DataRow;
+        DataRow item = ViewBag.data as DataRow;
         var ngayCreate = ((long)item["timecreate"]).toDateTime().ToString("dd/MM/yyyy H:m:s");
         ViewBag.Title = $"Sửa báo cáo tuần ngày {item["x74"]} có ID {id} vào lúc ";
         tinhSelect = item["ma_tinh"].ToString().Trim();
@@ -117,7 +117,7 @@
                         <tr>
                             <td>
                                 @Html.Label("matinh", "Tỉnh {X73}") <select name="matinh" id="matinh">
-                                    @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                    @foreach (DataRow row in dmTinh.Rows)
                                     {
                                         if (tinhSelect == row[0].ToString())
                                         {

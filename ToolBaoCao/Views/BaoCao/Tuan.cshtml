@@ -7,8 +7,8 @@
     }
     var idForm = "idfrm" + DateTime.Now.toTimestamp().ToString();
     var idResult = "rs" + DateTime.Now.toTimestamp().ToString();
-    System.Data.DataTable dmTinh = new System.Data.DataTable();
-    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as System.Data.DataTable; }
+    DataTable dmTinh = new DataTable();
+    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as DataTable; }
     string tinhSelect = $"{ViewBag.tinhSelect}";
 }
 <!-- Page Heading -->
@@ -28,7 +28,7 @@
                         <td style="width: 150px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
                         <td>
                             <select name="matinh" id="matinh">
-                                @foreach (System.Data.DataRow row in dmTinh.Rows)
+                                @foreach (DataRow row in dmTinh.Rows)
                                 {
                                     if (tinhSelect == row[0].ToString())
                                     {

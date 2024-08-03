@@ -1,6 +1,6 @@
 ﻿@{ 
-    var items = new System.Data.DataTable();
-    if(ViewBag.Data != null) { items = ViewBag.Data as System.Data.DataTable; }
+    var items = new DataTable();
+    if(ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
     var idForm = $"frm{DateTime.Now.toTimestamp()}";
 
 }

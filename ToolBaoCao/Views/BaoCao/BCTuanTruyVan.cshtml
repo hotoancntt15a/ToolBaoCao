@@ -12,7 +12,7 @@
         return;
     }
     <div class="alert alert-info">Thông tin truy vấn: Tỉnh @ViewBag.matinh; từ ngày @ViewBag.ngay1 đến @ViewBag.ngay2</div>
-    var data = ViewBag.data as System.Data.DataTable;
+    var data = ViewBag.data as DataTable;
     if (data.Rows.Count == 0)
     {
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
@@ -36,7 +36,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (System.Data.DataRow r in data.Rows)
+        @foreach (DataRow r in data.Rows)
         {
             <tr data-id="@r[0]">
                 <td><a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0] })"> <i class="fa fa-download"></i> </a></td>

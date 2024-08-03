@@ -1,6 +1,6 @@
 ﻿@{ 
-    var items = new System.Data.DataTable();
-    if(ViewBag.Data != null) { items = ViewBag.Data as System.Data.DataTable; }
+    var items = new DataTable();
+    if(ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
 }
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
@@ -33,7 +33,7 @@
                         }
                         else
                         {
-                            foreach (System.Data.DataRow r in items.Rows)
+                            foreach (DataRow r in items.Rows)
                             {
                                 DateTime t1 = $"{r["time_create"]}".toDateTime();
                                 DateTime t2 = $"{r["time_last_login"]}".toDateTime();
