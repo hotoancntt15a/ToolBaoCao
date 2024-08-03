@@ -5,6 +5,7 @@ using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -123,7 +124,7 @@ namespace ToolBaoCao
                     var tablesCache = new List<string> { "phanquyen", "nhomquyen", "w_menu", "wmenu", "taikhoan", "system_var" };
                     if (tablesCache.Contains(tables[0])) { fileCache = tsql.GetMd5Hash(); }
                 }
-                if (!string.IsNullOrEmpty(fileCache)) { fileCache = $"{pathApp}/cache/d{dataName}_{tables[0]}_query_{fileCache}.xml"; }
+                if (!string.IsNullOrEmpty(fileCache)) { fileCache = Path.Combine(pathApp, $"cache\\d{dataName}_{tables[0]}_query_{fileCache}.xml"); }
             }
             return fileCache;
         }
@@ -139,7 +140,7 @@ namespace ToolBaoCao
         public static void DeleteCache(string nameStartWith, string dataName)
         {
             if (string.IsNullOrEmpty(nameStartWith)) return;
-            var files = Directory.GetFiles($"{pathApp}/cache/", $"d{dataName}_{nameStartWith}*");
+            var files = Directory.GetFiles(Path.Combine(pathApp, "cache"), $"d{dataName}_{nameStartWith}*");
             foreach (var file in files)
             {
                 if (File.Exists(file)) { try { File.Delete(file); } catch { } }

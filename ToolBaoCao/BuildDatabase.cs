@@ -28,7 +28,7 @@ namespace ToolBaoCao
             }
             if (tables.Contains("wmenu") == false)
             {
-                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS wmenu(id INTEGER primary key, title text not null default '', link text not null default '', idfather integer not null default -1, path text not null default '', postion INTEGER NOT NULL DEFAULT 0, note text not null default '');");
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS wmenu(id integer PRIMARY KEY, title text NOT NULL DEFAULT '', link text NOT NULL DEFAULT '', idfather integer NOT NULL DEFAULT -1, paths text NOT NULL DEFAULT '', postion integer NOT NULL DEFAULT 0, note text NOT NULL DEFAULT '', css text NOT NULL DEFAULT '' );");
             }
             /* Tạo cơ sở dữ liệu */
             try { tsql = string.Join(" ", tsqlCreate); connect.Execute(tsql); } catch (Exception ex) { ex.saveError(tsql); }

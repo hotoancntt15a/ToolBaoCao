@@ -172,7 +172,8 @@ function showMessageUp(message, url) {
     showMessage({ body: body, footer: footer });
 }
 function messageBox(title, body) { showMessage({ title: title, body: body }); }
-
+function messageClose() { $(idmsg).modal('hide'); }
+function messageShow(title, body) { messageBox(title, body); }
 function getIdJquery(idObject) {
     if (idObject == undefined) { return ''; }
     if (typeof (idObject) == 'object') { if ($(idObject).length == 0) { return ''; } return idObject; }

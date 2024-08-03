@@ -9,24 +9,20 @@
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
     var idfrom = $"frm{DateTime.Now.toTimestamp()}";
-    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin", layout = "null" });
+    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin" });
 }
 <h2>@ViewBag.Title</h2>
 <form id="@idfrom" name="@idfrom" method="post">
     <input type="hidden" name="layout" value="null" />
-    <input type="hidden" name="idobject" value="@ViewBag.id" />
+    <input type="hidden" name="id" value="@ViewBag.id" />
     <div class="form-group">
         <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="#" onclick="showgeturl('@urlSelectFather')"> Chọn </a>]</div></div>
-            <input type="number" name="idfather" id="idfather" class="form-control" maxlength="255" value="@item.getValue("idfather")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Menu cha</div></div>
-            <input type="number" name="postion" id="postion" class="form-control" maxlength="255" value="@item.getValue("postion")" />
+            <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="javascript:showgeturl('@urlSelectFather');"> Chọn </a>]</div></div>
+            <input type="number" name="idfather" id="idfather" class="form-control" value="@item.getValue("idfather")" />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Tiêu đề</div></div>
-            <input type="text" name="iduser" id="iduser" class="form-control" maxlength="50" value="@ViewBag.id" />
+            <input type="text" name="title" id="title" class="form-control" maxlength="255" value="@item.getValue("title")" />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Link</div></div>
@@ -34,7 +30,15 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Đường dẫn</div></div>
-            <input type="text" name="path" id="path" class="form-control" maxlength="255" value="@item.getValue("path")" />
+            <input type="text" name="path" id="path" class="form-control" maxlength="255" value="@item.getValue("paths")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Class</div></div>
+            <input type="text" name="css" id="css" class="form-control" maxlength="255" value="@item.getValue("css")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Thứ tự hiển thị</div></div>
+            <input type="number" name="postion" id="postion" class="form-control clsnumber" value="@item.getValue("postion")" />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
@@ -42,10 +46,13 @@
         </div>
     </div>
     <div class="col-12">
-        <a class="btn btn-primary btn-sm" href="javacsript:postform('@idfrom', '@Url.Action("Update", "Menu", new { area = "Admin", mode = "update" })');"> <i class="fa fa-fw fa-save"></i> Lưu lại </a>
+        <a class="btn btn-primary btn-sm" href="javascript:postform('@idfrom','@Url.Action("Update", "Menu", new { area = "Admin", mode = "update" })')"> <i class="fa fa-fw fa-save"></i> Lưu lại </a>
         @if (id != "")
         {
-            <a class="btn btn-primary btn-sm" href="javacsript:postform('@idfrom', '@Url.Action("Update", "Menu", new { area = "Admin", mode = "delete" })');"> <i class="fa fa-fw fa-recycle"></i> Xóa </a>
+            <a class="btn btn-primary btn-sm" href="javascript:postform('@idfrom','@Url.Action("Update", "Menu", new { area = "Admin", mode = "delete" })')"> <i class="fa fa-fw fa-recycle"></i> Xóa </a>
         }
     </div>
 </form>
+<script>
+    function selectMenu(e, v) { $('#idfather').val(v); messageClose(); }
+</script>

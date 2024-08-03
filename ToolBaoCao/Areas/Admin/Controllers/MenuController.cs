@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
@@ -15,102 +14,106 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             try
             {
-                var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu ORDER BY link");
+                var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu");
                 ViewBag.Data = data;
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
         }
 
-        private string showMenuTree(DataTable dataMenu, int idMenuFather = -1, string jsfunction = "selectMenu", bool viewUrl = true)
+        private string showMenuTree(DataTable dataMenu, long idMenuFather = 0, string jsfunction = "selectMenu", bool viewUrl = true)
         {
-            if (dataMenu.Rows.Count == 0) { return ""; }
-            var dcopy = dataMenu.Copy(); dcopy.Rows.Clear();
-            string html = "<div class=\"viewmenutree\">";
-            if (idMenuFather == -1)
+            var li = new List<string>();
+            if (idMenuFather == 0)
             {
-                foreach (DataRow r in dataMenu.Rows)
+                string html = $"<div class=\"viewmenutree\"><li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>";
+                if (dataMenu.Rows.Count > 0)
                 {
-                    var childen = dataMenu.Select($"idfather={r["id"]}");
-                    var note = $"{r["note"]}".Trim(); if (note != "") { note = $" (<i>{note}</i>)"; }
-                    if (childen.Length == 0) { html += $"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\">{r["title"]}</a>{(note == "" ? "" : "")}"; continue; }
-                    dcopy.Rows.Add(childen);
-                    html += "<ul>";
-                    showMenuTree(dcopy, (int)r["id"], jsfunction, viewUrl);
-                    html += "</ul>";
+                    li.Add("<ul>");
+                    foreach (DataRow r in dataMenu.Rows)
+                    {
+                        var note = $"{r["note"]}".Trim();
+                        li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\"> <i class=\"{r["css"]}\"></i> {r["title"]}</a>");
+                        showMenuTree(dataMenu, (long)r["id"], jsfunction, viewUrl);
+                        li.Add("</li>");
+                    }
+                    li.Add("</ul>");
+                    html += string.Join("", li);
                 }
+                html += "</div>";
+                return html;
             }
-            html += "</div>";
-            return html;
+            var dcopy = dataMenu.AsEnumerable().Where(r => r.Field<long>("idfather") == 0).OrderBy(r => r.Field<long>("postion")).ToList();
+            if (dcopy.Count > 0)
+            {
+                li.Add("<ul>");
+                foreach (DataRow r in dcopy)
+                {
+                    var note = $"{r["note"]}".Trim();
+                    li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\"> <i class=\"{r["css"]}\"></i> {r["title"]}</a>");
+                    showMenuTree(dataMenu, (long)r["id"], jsfunction, viewUrl);
+                    li.Add("</li>");
+                }
+                li.Add("</ul>");
+                return string.Join("", li);
+            }
+            return "";
         }
 
         public ActionResult Select()
         {
-            try {
+            try
+            {
                 var dataMenu = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu");
                 return Content(showMenuTree(dataMenu));
             }
-            catch(Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
+            catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }
 
         public ActionResult Update(string id = "")
         {
             var timeStart = DateTime.Now;
             ViewBag.id = id;
-            var objectid = Request.getValue("objectid");
             try
             {
+                if (id != "") { if (Regex.IsMatch(id, @"^\d+$") == false) { throw new Exception($"ID menu không đúng {id}"); } }
                 var mode = Request.getValue("mode");
                 if (mode == "delete")
                 {
-                    if(Regex.IsMatch(objectid, @"^\d+$") == false) { throw new Exception($"ID menu không đúng {objectid}"); }
-                    AppHelper.dbSqliteMain.Execute($"DELETE FROM wmenu WHERE id={objectid}");
-                    /* Xóa tài khoản */
-                    return Content($"<div class=\"alert alert-info\">Xóa menu có ID '{objectid}' thành công ({timeStart.getTimeRun()})</div>");
+                    return Content($"<div class=\"alert alert-info\">Bạn có thực sự có muốn xoá Menu có ID '{id}' không?</div>");
+                }
+                if (mode == "forcedel")
+                {
+                    AppHelper.dbSqliteMain.Execute($"DELETE FROM wmenu WHERE id={id}"); /* Xóa tài khoản */
+                    return Content($"<div class=\"alert alert-info\">Xóa menu có ID '{id}' thành công ({timeStart.getTimeRun()})</div>");
                 }
                 if (mode != "update")
                 {
                     if (id != "")
                     {
-                        DataTable items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu WHERE id = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
-                        if (items.Rows.Count == 0) { throw new Exception($"Tài khoản có tên đăng nhập '{id}' đã bị xoá hoặc không tồn tại trên hệ thống"); }
+                        /* Lấy thông tin menu cần sửa */
+                        var items = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM wmenu WHERE id = {id}");
+                        if (items.Rows.Count == 0) { throw new Exception($"Menu có ID '{id}' không tồn tại hoặc bị xoá trong hệ thống"); }
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }
                         ViewBag.Data = data;
                     }
                     return View();
                 }
-                string where = "";
+                string where = id == "" ? "" : $"id={id}";
                 var item = new Dictionary<string, string>
                 {
-                    { "mat_khau", Request.getValue("mat_khau").Trim() },
-                    { "ten_hien_thi", Request.getValue("ten_hien_thi") },
-                    { "gioi_tinh", Request.getValue("gioi_tinh") },
-                    { "ngay_sinh", Request.getValue("ngay_sinh") },
-                    { "email", Request.getValue("email") },
-                    { "dien_thoai", Request.getValue("dien_thoai") },
-                    { "dia_chi", Request.getValue("dia_chi") },
-                    { "ghi_chu", Request.getValue("ghi_chu") },
-                    { "hinh_dai_dien", "" }
+                    { "title", Request.getValue("title").Trim() },
+                    { "link", Request.getValue("link").Trim() },
+                    { "idfather", Request.getValue("idfather") },
+                    { "paths", Request.getValue("paths").Trim() },
+                    { "postion", Request.getValue("postion") },
+                    { "note", Request.getValue("note").Trim() },
+                    { "css", Request.getValue("css").Trim() }
                 };
-                if (idObject == "")
-                {
-                    item.Add("iduser", Request.getValue("iduser"));
-                    if (item["iduser"] == "") { throw new Exception("Tên đăng nhập bỏ trống"); }
-                    if (Regex.IsMatch(item["iduser"], "^[a-z0-9@_.]+$", RegexOptions.IgnoreCase) == false) { throw new Exception("Tên đăng nhập có các ký tự không thuộc [a-z0-9@_.] các từ cho phép"); }
-                    if (item["mat_khau"] == "") { throw new Exception("Mật khẩu để trống"); }
-                    item.Add("time_create", DateTime.Now.toTimestamp().ToString());
-                    idObject = item["iduser"];
-                }
-                else { where = $"iduser = '{idObject.sqliteGetValueField()}'"; }
-                /* Kiểm tra dữ liệu đầu vào */
-                if (item["mat_khau"] != "") { item["mat_khau"] = item["mat_khau"].GetMd5Hash(); }
-                else { item.Remove("mat_khau"); }
-                if (item["ten_hien_thi"] == "") { throw new Exception("Tên hiển thị để trống"); }
-                if (item["ngay_sinh"] == "") { throw new Exception("Ngày sinh để trống"); }
-
-                AppHelper.dbSqliteMain.Update("taikhoan", item, where);
-                return Content($"<div class=\"alert alert-info\">Thao tác thành công với tài khoản '{idObject}'</div>");
+                AppHelper.dbSqliteMain.Update("wmenu", item, where);
+                where = where == "" ? "Thêm mới thành công " : $"Thay đổi thành công menu có ID '{id}'";
+                return Content($"<div class=\"alert alert-info\">{where} ({timeStart.getTimeRun()})</div>");
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getErrorSave()}</div>"); }
         }
