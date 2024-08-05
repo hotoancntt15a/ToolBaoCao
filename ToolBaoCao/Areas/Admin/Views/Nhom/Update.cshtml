@@ -9,15 +9,15 @@
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
     var idfrom = $"frm{DateTime.Now.toTimestamp()}";
-    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin" });
+    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin", father = "0", showtree = "0" });
 }
 <h2>@ViewBag.Title</h2>
 <form id="@idfrom" name="@idfrom" method="post">
     <input type="hidden" name="layout" value="null" />
     <div class="form-group">
         <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Thứ tự hiển thị</div></div>
-            <input type="number" name="objectid" id="objectid" class="form-control clsnumber" value="@id" />
+            <div class="input-group-append"><div class="input-group-text">ID</div></div>
+            <input type="number" name="objectid" id="objectid" class="form-control" style="width: 60px;" value="@id" />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Tên</div></div>
@@ -25,11 +25,11 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="javascript:showgeturl('@urlSelectFather');"> Chọn </a>]</div></div>
-            <input type="number" name="idmenu" id="idmenu" class="form-control" value="@item.getValue("idmenu")" />
+            <input type="number" name="idwmenu" id="idwmenu" class="form-control" value="@item.getValue("idwmenu")" />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
-            <input type="text" name="note" id="note" class="form-control" maxlength="255" value="@item.getValue("note")" />
+            <input type="text" name="ghichu" id="ghichu" class="form-control" maxlength="255" value="@item.getValue("ghichu")" />
         </div>
     </div>
     <div class="col-12">
@@ -41,5 +41,5 @@
     </div>
 </form>
 <script>
-    function selectMenu(e, v) { $('#idmenu').val(v); messageClose(); }
+    function selectMenu(e, v) { $('#idwmenu').val(v); messageClose(); }
 </script>

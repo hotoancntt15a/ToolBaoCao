@@ -21,37 +21,37 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             return View();
         }
 
-        private string showMenuTree(DataTable dataMenu, long idMenuFather = 0, string jsfunction = "selectMenu", bool viewUrl = true)
+        private string showMenuTree(DataTable dataMenu, long idMenuFather = 0, string jsfunction = "selectMenu", bool showTree = true)
         {
-            var li = new List<string>();
             if (idMenuFather == 0)
             {
-                string html = $"<div class=\"viewmenutree\"><li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>";
+                var html = new List<string>() { $"<div class=\"viewmenutree\">" };
+                if(showTree) { html.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>");  }
                 if (dataMenu.Rows.Count > 0)
                 {
-                    li.Add("<ul>");
+                    html.Add("<ul>");
                     foreach (DataRow r in dataMenu.Rows)
                     {
-                        var note = $"{r["note"]}".Trim();
-                        li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\"> <i class=\"{r["css"]}\"></i> {r["title"]}</a>");
-                        showMenuTree(dataMenu, (long)r["id"], jsfunction, viewUrl);
-                        li.Add("</li>");
+                        var link = $"{r["link"]}".Trim(); if (link != "") { link = $" ({link})"; }
+                        html.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\" title=\"{r["note"]}\"> <i class=\"{r["css"]}\"></i> {r["title"]}{link}</a>");
+                        if (showTree) { showMenuTree(dataMenu, (long)r["id"], jsfunction, showTree); }
+                        html.Add("</li>");
                     }
-                    li.Add("</ul>");
-                    html += string.Join("", li);
+                    html.Add("</ul>");
                 }
-                html += "</div>";
-                return html;
+                html.Add("</div>");
+                return string.Join("", html);
             }
+            var li = new List<string>();
             var dcopy = dataMenu.AsEnumerable().Where(r => r.Field<long>("idfather") == 0).OrderBy(r => r.Field<long>("postion")).ToList();
             if (dcopy.Count > 0)
             {
                 li.Add("<ul>");
                 foreach (DataRow r in dcopy)
                 {
-                    var note = $"{r["note"]}".Trim();
-                    li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\"> <i class=\"{r["css"]}\"></i> {r["title"]}</a>");
-                    showMenuTree(dataMenu, (long)r["id"], jsfunction, viewUrl);
+                    var link = $"{r["link"]}".Trim(); if (link != "") { link = $" ({link})"; }
+                    li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\" title=\"{r["note"]}\"> <i class=\"{r["css"]}\"></i> {r["title"]}{link}</a>");
+                    if (showTree) { showMenuTree(dataMenu, (long)r["id"], jsfunction, showTree); }
                     li.Add("</li>");
                 }
                 li.Add("</ul>");
@@ -64,8 +64,13 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             try
             {
-                var dataMenu = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM wmenu");
-                return Content(showMenuTree(dataMenu));
+                string idfather = Request.getValue("father");
+                if (idfather != "") { if (Regex.IsMatch(idfather, @"^\d+$") == false) { return Content($"<div class=\"alert alert-warning\">Tham số menu cha '{idfather}' không đứng</div>"); } }
+                string showtree = Request.getValue("showtree");
+                if (Regex.IsMatch(idfather, @"^\d+$") == false) { showtree = "1"; }
+                string where = idfather == "" ? "" : $"WHERE idfather={idfather}";
+                var dataMenu = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM wmenu {where}");
+                return Content(showMenuTree(dataMenu, long.Parse(idfather == "" ? "0" : idfather), showTree: showtree == "1"));
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }

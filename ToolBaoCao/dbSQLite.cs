@@ -80,7 +80,7 @@ namespace ToolBaoCao
             if (string.IsNullOrEmpty(query)) { return data; }
             var parstring = new List<string>();
             if (par != null) { foreach (var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
-            var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}");
+            var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}", this.fileDataName);
             if (fileCache != "")
             {
                 try

@@ -13,7 +13,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             try
             {
-                var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM nhom");
+                var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmnhom");
                 ViewBag.Data = data;
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
@@ -34,7 +34,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 }
                 if (mode == "forcedel")
                 {
-                    AppHelper.dbSqliteMain.Execute($"DELETE FROM nhom WHERE id={id}"); /* Xóa tài khoản */
+                    AppHelper.dbSqliteMain.Execute($"DELETE FROM dmnhom WHERE id={id}"); /* Xóa tài khoản */
                     return Content($"<div class=\"alert alert-info\">Xóa Nhóm có ID '{id}' thành công ({timeStart.getTimeRun()})</div>");
                 }
                 if (mode != "update")
@@ -42,7 +42,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     if (id != "")
                     {
                         /* Lấy thông tin nhóm cần sửa */
-                        var items = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM nhom WHERE id = {id}");
+                        var items = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM dmnhom WHERE id = {id}");
                         if (items.Rows.Count == 0) { throw new Exception($"Nhóm có ID '{id}' không tồn tại hoặc bị xoá trong hệ thống"); }
                         var data = new Dictionary<string, string>();
                         foreach (DataColumn c in items.Columns) { data.Add(c.ColumnName, items.Rows[0][c.ColumnName].ToString()); }
@@ -56,10 +56,10 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 {
                     { "id", objectid },
                     { "ten", Request.getValue("ten").Trim() },
-                    { "idmenu", Request.getValue("postidmenuion") },
-                    { "note", Request.getValue("note").Trim() }
+                    { "idwmenu", Request.getValue("idwmenu") },
+                    { "ghichu", Request.getValue("ghichu").Trim() }
                 };
-                AppHelper.dbSqliteMain.Update("nhom", item, "repalce");
+                AppHelper.dbSqliteMain.Update("dmnhom", item, "replace");
                 return Content($"<div class=\"alert alert-info\">Cập nhật thành công Nhóm có ID '{objectid}' ({timeStart.getTimeRun()})</div>");
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getErrorSave()}</div>"); }
