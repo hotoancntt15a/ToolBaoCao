@@ -1,0 +1,53 @@
+﻿@{
+    ViewBag.Title = "Danh sách nhóm quản lý";
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<p class="mb-4"> Quản lý Menu. </p>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+    return;
+}
+@{
+    var items = new DataTable();
+    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+}
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách menu <a href="@Url.Action("Update", "Nhom", new { area = "Admin" })" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            @if (items.Rows.Count == 0)
+            {
+                <div class="alert alert-warning">Không có dữ liệu phù hợp với truy vấn</div>
+            }
+            else
+            {
+                <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên nhóm</th>
+                            <th>Menu</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataRow r in items.Rows)
+                        {
+                            <tr>
+                                <td><a href="@Url.Action("Update", "Nhom", new { id=r["id"] })">@r["id"]</a></td>
+                                <td>@r["ten"]</td>
+                                <td>@r["idmenu"]</td>
+                                <td>@r["note"]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

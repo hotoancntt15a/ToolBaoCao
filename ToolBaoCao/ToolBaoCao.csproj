@@ -342,6 +342,7 @@
     <Compile Include="Areas\Admin\Controllers\DataController.cs" />
     <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\MenuController.cs" />
+    <Compile Include="Areas\Admin\Controllers\NhomController.cs" />
     <Compile Include="Areas\Admin\Controllers\TaiKhoanController.cs" />
     <Compile Include="BuildDatabase.cs" />
     <Compile Include="CaptchaImage.cs" />
@@ -772,6 +773,8 @@
     <Content Include="Areas\Admin\Views\Home\Index.cshtml" />
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Admin\Views\Data\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Nhom\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Nhom\Update.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

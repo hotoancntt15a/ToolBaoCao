@@ -80,7 +80,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 var mode = Request.getValue("mode");
                 if (mode == "delete")
                 {
-                    return Content($"<div class=\"alert alert-info\">Bạn có thực sự có muốn xoá Menu có ID '{id}' không?</div>");
+                    return Content($"<div class=\"alert alert-info\">Bạn có thực sự có muốn xoá Nhóm có ID '{id}' không? <br /><a href=\"javascript:postform('', '/Admin/Menu/Update?id={id}&layout=null&mode=forcedel');\" class=\"btn btn-primary btn-sm\"> Có </a></div>");
                 }
                 if (mode == "forcedel")
                 {

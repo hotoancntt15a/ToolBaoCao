@@ -1,0 +1,45 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    ViewBag.Title = "Thêm mới Nhóm";
+    var item = new Dictionary<string, string>();
+    var id = $"{ViewBag.id}";
+    if (id != "")
+    {
+        ViewBag.Title = $"Cập nhật Nhóm có ID: {id}";
+        if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
+    }
+    var idfrom = $"frm{DateTime.Now.toTimestamp()}";
+    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin" });
+}
+<h2>@ViewBag.Title</h2>
+<form id="@idfrom" name="@idfrom" method="post">
+    <input type="hidden" name="layout" value="null" />
+    <div class="form-group">
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Thứ tự hiển thị</div></div>
+            <input type="number" name="objectid" id="objectid" class="form-control clsnumber" value="@id" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Tên</div></div>
+            <input type="text" name="ten" id="ten" class="form-control" maxlength="255" value="@item.getValue("ten")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Menu cha [<a href="javascript:showgeturl('@urlSelectFather');"> Chọn </a>]</div></div>
+            <input type="number" name="idmenu" id="idmenu" class="form-control" value="@item.getValue("idmenu")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
+            <input type="text" name="note" id="note" class="form-control" maxlength="255" value="@item.getValue("note")" />
+        </div>
+    </div>
+    <div class="col-12">
+        <a class="btn btn-primary btn-sm" href="javascript:postform('@idfrom','@Url.Action("Update", "Nhom", new { area = "Admin", mode = "update" })')"> <i class="fa fa-fw fa-save"></i> Lưu lại </a>
+        @if (id != "")
+        {
+            <a class="btn btn-primary btn-sm" href="javascript:postform('@idfrom','@Url.Action("Update", "Nhom", new { area = "Admin", mode = "delete" })')"> <i class="fa fa-fw fa-recycle"></i> Xóa </a>
+        }
+    </div>
+</form>
+<script>
+    function selectMenu(e, v) { $('#idmenu').val(v); messageClose(); }
+</script>
