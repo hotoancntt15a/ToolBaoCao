@@ -9,12 +9,50 @@
 {
     <div class="alert alert-warning">@ViewBag.Error</div>
 }
-<!-- DataTales Admins -->
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Thông tin</h6>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i>Truy vấn danh sách Import Excel</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Import Excel</a>
+    </li>
+</ul>
+<!-- Tab panes -->
+<div class="tab-content">
+    <div id="tabHome" class="tab-pane active">
+        @using (Html.BeginForm("TruyVan", "ImportExcel", new { area = "" }, FormMethod.Post, new { id = "truyvan" + idForm }))
+        {
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td style="width: 150px;" class="text-right">@Html.Label("bieu", "Chọn biểu nhập")</td>
+                        <td>
+                            @Html.DropDownList("bieu", new SelectList(new List<SelectListItem>
+                            {
+                                new SelectListItem { Value = "b02", Text = "B02. Thống kê KCB (tháng)"  },
+                                new SelectListItem { Value = "b04", Text = "B04. Thống kê chi bình quân (tháng)"  },
+                                new SelectListItem { Value = "b26", Text = "B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)" }
+                            }, "Value", "Text"), new { @class = "custom-select-sm" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-right">@Html.Label("inputfile", "Chọn tập tin")</td>
+                        <td>
+                            <input type="file" name="inputfile" id="inputfile" value="" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <a href="javascript:truyvan();" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+        <div id="viewpost"></div>
     </div>
-    <div class="card-body">
+    <div id="tabImport" class="tab-pane fade">
         @using (Html.BeginForm("Update", "ImportExcel", new { area = "" }, FormMethod.Post, new { id = idForm, enctype = "multipart/form-data" }))
         {
             <table class="table table-hover">
