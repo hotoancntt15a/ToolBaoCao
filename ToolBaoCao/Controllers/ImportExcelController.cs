@@ -20,6 +20,17 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
+        public ActionResult TruyVan()
+        {
+            string ngay1 = Request.getValue("ngay1");
+            string ngay2 = Request.getValue("ngay2");
+            try {
+                var db = AppHelper.dbSqliteWork;
+            }
+            catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>"); }
+            return View();
+        }
+
         public ActionResult Update(string bieu, HttpPostedFileBase inputfile)
         {
             if (Session["iduser"] == null) { ViewBag.Error = "Bạn chưa đăng nhập"; return View(); }
@@ -72,9 +83,9 @@ namespace ToolBaoCao.Controllers
                     /*
                      * Bắt đầu đọc dữ liệu
                      */
-                    /* 
+                    /*
                      * - Đọc thông số biểu
-                     * Biểu B04: ma_tinh ma_loai_kcb tu_thang den_thang nam loai_bv kieubv loaick hang_bv tuyen cs + userID 
+                     * Biểu B04: ma_tinh ma_loai_kcb tu_thang den_thang nam loai_bv kieubv loaick hang_bv tuyen cs + userID
                      * Biểu B26: ma_tinh	loai_kcb	thoi_gian	loai_bv	kieubv	loaick	hang_bv	tuyen	loai_so_sanh	cs
                      */
                     switch (bieu)
@@ -135,6 +146,7 @@ namespace ToolBaoCao.Controllers
                             fieldCount = 34; indexRegex = 7 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
                             fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
                             break;
+
                         default: fieldCount = 11; break;
                     }
                     /* Bỏ qua dòng tiêu đề */
@@ -165,7 +177,7 @@ namespace ToolBaoCao.Controllers
                         /* Cột lấy dữ liệu không đúng định dạng bỏ qua */
                         if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { continue; }
                         /* Trường hợp trường số để trống thì cho bằng 0 */
-                        foreach(int i in fieldNumbers) { if (Regex.IsMatch(listValue[i], "^[0-9]+$|^[0-9]+[.][0-9]+$") == false) { listValue[i] = "0"; } }
+                        foreach (int i in fieldNumbers) { if (Regex.IsMatch(listValue[i], "^[0-9]+$|^[0-9]+[.][0-9]+$") == false) { listValue[i] = "0"; } }
                         tsqlVaues.Add($"('{string.Join("','", listValue)}')");
                     }
                     if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet ({string.Join(",", allColumns)}) VALUES {string.Join(",", tsqlVaues)};"); }
