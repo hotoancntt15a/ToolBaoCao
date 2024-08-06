@@ -142,7 +142,6 @@ function setActiveLiMenu() {
         }
     });
 }
-
 function showMessage(sender) {
     if (sender['idmsg'] != undefined) {
         if (sender['idmsg'] != '') {

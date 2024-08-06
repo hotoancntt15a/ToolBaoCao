@@ -1,11 +1,14 @@
-﻿@{ 
+﻿@{
     var items = new DataTable();
-    if(ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
     var idForm = $"frm{DateTime.Now.toTimestamp()}";
-
 }
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@ViewBag.Error</div>
+}
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -43,15 +46,6 @@
         }
     </div>
 </div>
-<div class="alert alert-warning">
-    <table class="table table-hover">
-        <tbody>
-            <tr>
-                <td>Ghi chú</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 <script>
     function importData() {
         if ($('#inputfile').val() == "") {
@@ -64,14 +58,7 @@
             messageBox("<i class=\"fa fa-warning\"></i> JS Thông báo lỗi", "<div class=\"alert alert-warning\">Hệ thống không hỗ trợ tập tin có đuôi mở rộng '" + ext + "'</div>");
             return;
         }
-        messageBox("Thông báo", "<div class=\"alert alert-info\">Vui lòng đợi hệ thống đẩy tập tin và xử lý tập tin <img alert=\"\" title=\"\" src=\"/images/loader.gif\"></img> </div>");
-        var idFrom = "#@idForm";
-        postform(idFrom);
-    }
-    @{ 
-        if(ViewBag.Error != null)
-        {
-            Html.Raw($"messageBox('<div class=\"alert alert-warning\">{ViewBag.Error}</div>', 'Thông báo lỗi');");
-        }
+        messageBox("JS Thông báo", "<div class=\"alert alert-info\">Vui lòng đợi hệ thống đẩy tập tin và xử lý tập tin <img alert=\"\" title=\"\" src=\"/images/loader.gif\"></img> </div>");
+        postform('#@idForm');
     }
 </script>
