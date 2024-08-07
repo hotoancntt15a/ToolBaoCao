@@ -438,9 +438,22 @@ namespace ToolBaoCao
             return defaultValue;
         }
 
-        public static bool isDateVN(this string input)
+        public static bool isDateVN(this string timeVN)
         {
-            return Regex.IsMatch(input, "^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3}$|^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3} [0-2][0-9]:[0-5][0-9]$|^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3} [0-2][0-9]:[0-5][0-9]:[0-5][0-9]$");
+            return Regex.IsMatch(timeVN, "^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3}$|^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3} [0-2][0-9]:[0-5][0-9]$|^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3} [0-2][0-9]:[0-5][0-9]:[0-5][0-9]$");
+        }
+        public static bool isDateVN(this string timeVN, out DateTime datetime)
+        {
+            var format = "dd/MM/yyyy"; timeVN = timeVN.Trim(); datetime = new DateTime(1970, 1, 1);
+            if (timeVN.Length > 10)
+            {
+                var tmp = timeVN.Split(':').ToList();
+                if (tmp.Count == 2) { format += " HH:mm"; }
+                else if (tmp.Count == 3) { format += " HH:mm:ss"; }
+                else { return false; }
+            }
+            if (DateTime.TryParseExact(timeVN, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out datetime)) { return true; }
+            return false;
         }
 
         public static string connectString = "";
