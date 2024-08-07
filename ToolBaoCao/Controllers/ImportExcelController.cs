@@ -32,20 +32,20 @@ namespace ToolBaoCao.Controllers
                 if (ngay2.isDateVN(out time2) == false) { throw new Exception($"Đến ngày không đúng định dạng ngày/tháng/năm '{ngay2}'"); }
                 if (time2 < time1) { throw new Exception($"Đến ngày '{ngay2}' < từ ngày {ngay1}"); }
                 var ts = time2 - time1;
-                if(ts.Days > 365) { throw new Exception("Hệ thống không hỗ trợ truy vấn quá 365 ngày"); }
+                if (ts.Days > 365) { throw new Exception("Hệ thống không hỗ trợ truy vấn quá 365 ngày"); }
                 var db = AppHelper.dbSqliteWork;
                 if (time1.Year == time2.Year)
                 {
                     ViewBag.b02 = db.getDataTable($"SELECT * FROM b02 WHERE nam = {time1.Year} AND (den_thang <= {time2.Month} AND tu_thang >= {time1.Month})");
                     ViewBag.b04 = db.getDataTable($"SELECT * FROM b04 WHERE nam = {time1.Year} AND (den_thang <= {time2.Month} AND tu_thang >= {time1.Month})");
-                    ViewBag.b26 = db.getDataTable($"SELECT * FROM b26 WHERE thoigian = {time1:yyyyMMdd}");
                 }
                 else
                 {
                     ViewBag.b02 = db.getDataTable($"SELECT * FROM b02 WHERE (nam > {time1.Year} AND tu_thang > {time1.Month}) AND (nam <= {time2.Year} AND den_thang >= {time2.Month})");
                     ViewBag.b04 = db.getDataTable($"SELECT * FROM b04 WHERE (nam > {time1.Year} AND tu_thang > {time1.Month}) AND (nam <= {time2.Year} AND den_thang >= {time2.Month})");
-                    ViewBag.b26 = db.getDataTable($"SELECT * FROM b26 WHERE thoigian >= {time1:yyyyMMdd} AND thoigian <= {time2:yyyyMMdd}");
                 }
+                if (time1 == time2) { ViewBag.b26 = db.getDataTable($"SELECT * FROM b26 WHERE thoigian = {time1:yyyyMMdd}"); }
+                else { ViewBag.b26 = db.getDataTable($"SELECT * FROM b26 WHERE thoigian >= {time1:yyyyMMdd} AND thoigian <= {time2:yyyyMMdd}"); }
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>"); }
             return View();
