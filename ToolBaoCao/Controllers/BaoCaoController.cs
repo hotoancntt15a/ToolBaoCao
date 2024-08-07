@@ -536,6 +536,7 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("timecreate", timeCreate);
                 var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
                 dbBaoCao.Update("bctuandocx", tailieu, "replace");
+                dbBaoCao.Execute($"DELETE FROM sheetpl01 WHERE id_bc='{tailieu["id"]}'; DELETE FROM sheetpl02 WHERE id_bc='{tailieu["id"]}'; DELETE FROM sheetpl03 WHERE id_bc='{tailieu["id"]}'; ");
                 /* Tạo Phục lục sheetpl01 */
                 tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.tyle_noitru, p1.ngay_dtri_bq, p1.chi_bq_chung, p1.chi_bq_ngoai, p1.chi_bq_noi, '{iduser}' AS userid, '{timeCreate}' AS timecreate
                     FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='0'";
