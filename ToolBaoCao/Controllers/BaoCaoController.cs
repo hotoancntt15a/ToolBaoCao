@@ -1,4 +1,7 @@
-﻿using NPOI.XWPF.UserModel;
+﻿using NPOI.POIFS.Crypt.Dsig;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
+using System.Xml.Linq;
+using zModules.NPOIExcel;
 
 namespace ToolBaoCao.Controllers
 {
@@ -169,37 +174,53 @@ namespace ToolBaoCao.Controllers
                 {
                     tmp = Request.getValue("idobject");
                     var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
-                    var data = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{tmp.sqliteGetValueField()}'");
-                    if (data.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{tmp}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
-                    var tailieu = new Dictionary<string, string>();
-                    foreach (DataColumn c in data.Columns)
+                    if (Request.getValue("type") == "xlsx")
                     {
-                        tailieu.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c]}");
+                        var pl1 = dbBaoCao.getDataTable($"SELECT * FROM sheetpl01 WHERE id_bc='{tmp.sqliteGetValueField()}'");
+                        pl1.TableName = "sheetpl01";
+                        if (pl1.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{tmp}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
+                        var pl2 = dbBaoCao.getDataTable($"SELECT * FROM sheetpl02 WHERE id_bc='{tmp.sqliteGetValueField()}'");
+                        pl1.TableName = "sheetpl02";
+                        var pl3 = dbBaoCao.getDataTable($"SELECT * FROM sheetpl03 WHERE id_bc='{tmp.sqliteGetValueField()}'");
+                        pl1.TableName = "sheetpl03";
+                        XSSFWorkbook xlsx = XLSX.exportExcel(new DataTable[] { pl1, pl2, pl3 });
+                        var output = xlsx.WriteToStream();
+                        return File(output.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"PL{tmp}.xlsx");
                     }
-                    string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
-                    if (System.IO.File.Exists(pathFileTemplate) == false)
+                    else
                     {
-                        ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"; return View();
-                    }
-                    string thoigian = ((long)data.Rows[0]["ngay"]).toDateTime().ToString("yyyyMMdd");
-                    using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
-                    {
-                        var document = new XWPFDocument(fileStream);
-                        foreach (var paragraph in document.Paragraphs)
+                        var data = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{tmp.sqliteGetValueField()}'");
+                        if (data.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{tmp}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
+                        var tailieu = new Dictionary<string, string>();
+                        foreach (DataColumn c in data.Columns)
                         {
-                            foreach (var run in paragraph.Runs)
-                            {
-                                tmp = run.ToString();
-                                // Sử dụng Regex để tìm tất cả các match
-                                MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
-                                foreach (Match match in matches) { tmp = tmp.Replace(match.Value, tailieu.getValue(match.Value, "", true)); }
-                                run.SetText(tmp, 0);
-                            }
+                            tailieu.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c]}");
                         }
-                        MemoryStream memoryStream = new MemoryStream();
-                        document.Write(memoryStream);
-                        memoryStream.Position = 0;
-                        return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
+                        string pathFileTemplate = Server.MapPath("~/App_Data/baocaotuan.docx");
+                        if (System.IO.File.Exists(pathFileTemplate) == false)
+                        {
+                            ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"; return View();
+                        }
+                        string thoigian = ((long)data.Rows[0]["ngay"]).toDateTime().ToString("yyyyMMdd");
+                        using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
+                        {
+                            var document = new XWPFDocument(fileStream);
+                            foreach (var paragraph in document.Paragraphs)
+                            {
+                                foreach (var run in paragraph.Runs)
+                                {
+                                    tmp = run.ToString();
+                                    // Sử dụng Regex để tìm tất cả các match
+                                    MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
+                                    foreach (Match match in matches) { tmp = tmp.Replace(match.Value, tailieu.getValue(match.Value, "", true)); }
+                                    run.SetText(tmp, 0);
+                                }
+                            }
+                            MemoryStream memoryStream = new MemoryStream();
+                            document.Write(memoryStream);
+                            memoryStream.Position = 0;
+                            return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
+                        }
                     }
                 }
                 catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); return View(); }
@@ -512,7 +533,7 @@ namespace ToolBaoCao.Controllers
                 tailieu.Add("ma_tinh", matinh);
                 tailieu.Add("userid", iduser);
                 tailieu.Add("ngay", ngayTime.toTimestamp().ToString());
-                tailieu.Add("timecreate", );
+                tailieu.Add("timecreate", timeCreate);
                 var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
                 dbBaoCao.Update("bctuandocx", tailieu, "replace");
                 /* Tạo Phục lục sheetpl01 */
@@ -522,25 +543,16 @@ namespace ToolBaoCao.Controllers
                 dbBaoCao.Insert("sheetpl01", pl);
 
                 /* Tạo Phục lục sheetpl02 */
-                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_pttt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_tt_bq AS ngay_ttbq, '{iduser}' AS userid, '{timeCreate}' AS timecreate
-                    FROM b04chitiet p1 INNER JOIN b04 ON p1.id2=b02.id WHERE b04.tu_thang={thang} AND b04.den_thang={thang} AND b04.nam={nam} AND b04.cs='0'";
+                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_ptt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_ttbq, '{iduser}' AS userid, '{timeCreate}' AS timecreate
+                    FROM b04chitiet p1 INNER JOIN b04 ON p1.id2=b04.id WHERE b04.tu_thang={thang} AND b04.den_thang={thang} AND b04.nam={nam} AND b04.cs='0'";
                 pl = AppHelper.dbSqliteWork.getDataTable(tsql);
                 dbBaoCao.Insert("sheetpl02", pl);
 
-                /* Tạo Phục lục sheetpl03 */+
-                    ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                ,idtinh text not null default '' /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,ma_cskcb text not null default '' /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
-                ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
-                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
-                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
-                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
-                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
-                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
-                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_pttt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_tt_bq AS ngay_ttbq, '{iduser}' AS userid, '{timeCreate}' AS timecreate
-                    FROM b04chitiet p1 INNER JOIN b04 ON p1.id2=b02.id WHERE b04.tu_thang={thang} AND b04.den_thang={thang} AND b04.nam={nam} AND b04.cs='0'";
+                /* Tạo Phục lục sheetpl03 */
+                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.tyle_noitru, p1.ngay_dtri_bq, p1.chi_bq_chung, p1.chi_bq_ngoai, p1.chi_bq_noi, '{iduser}' AS userid, '{timeCreate}' AS timecreate
+                        FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='1'";
                 pl = AppHelper.dbSqliteWork.getDataTable(tsql);
-                dbBaoCao.Insert("sheetpl02", pl);
+                dbBaoCao.Insert("sheetpl03", pl);
 
                 dbBaoCao.Close();
                 return tailieu;

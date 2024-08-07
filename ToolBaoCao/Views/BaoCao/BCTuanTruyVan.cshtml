@@ -39,7 +39,8 @@
         @foreach (DataRow r in data.Rows)
         {
             <tr data-id="@r[0]">
-                <td><a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0] })"> <i class="fa fa-download"></i> </a></td>
+                <td><a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0] })"> <i class="fa fa-file-word"></i>Báo cáo Word </a> 
+                <a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0], type="xlsx" })"> <i class="fa fa-file-excel"></i> Phục lục Excel </a></td>
                 <td><a href="#" onclick="showgeturl('@Url.Action("BCTuanCreate", "BaoCao", new { area = "", objectid = r[0], layout = "null" })');">@r[1]</a></td>
                 @for (int i = 2; i < data.Columns.Count; i++)
                 {

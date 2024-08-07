@@ -65,9 +65,8 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng	 */
-                ,timecreate integer not null default 0
-                );"
+                ,userid text not null default '' /* Lưu ID của người dùng */
+                ,timecreate integer not null default 0);"
                 );
             }
             if (tables.Contains("sheetpl02") == false)
@@ -80,14 +79,13 @@ namespace ToolBaoCao
                 ,ma_vung text not null default ''
                 ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
                 ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
-                ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F
+                ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
                 ,chi_bq_pttt real not null default 0 /* chi BQ phẫu thuật thủ thuật	Lấy từ B04. Cột G */
                 ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
-                ,chi_bq_giuong real not null default 0, /* chi BQ tiền giường; Lấy từ B04. Cột I */
-                ,ngay_tt_bq text not null default '' /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                ,userid text not null default '' /* Lưu ID của người dùng	 */
-                ,timecreate integer not null default 0
-                );"
+                ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
+                ,ngay_ttbq text not null default '' /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
+                ,userid text not null default '' /* Lưu ID của người dùng */
+                ,timecreate integer not null default 0);"""
                 );
             }
             if (tables.Contains("sheetpl03") == false)
@@ -102,9 +100,8 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng	 */
-                ,timecreate integer not null default 0
-                    );");
+                ,userid text not null default '' /* Lưu ID của người dùng */
+                ,timecreate integer not null default 0);");
             }
             if (File.Exists(pathDB) == false)
             {
@@ -191,8 +188,8 @@ namespace ToolBaoCao
                     ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */
                     );");
                 tsql.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
-                db.Execute(string.Join(Environment.NewLine, tsql));
             }
+            if(tsql.Count > 0) { db.Execute(string.Join(Environment.NewLine, tsql)); }
             return db;
         }
 
@@ -360,8 +357,8 @@ namespace ToolBaoCao
                 chi_bq_chung real not null default 0, /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
                 chi_bq_ngoai real not null default 0, /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 chi_bq_noi real not null default 0, /* Như trên nhưng với nội trú	Cột K, B02 */
-                userid text not null default '', /* Lưu ID của người dùng	 */
-                user_name text not null default '' /* Lưu tên đăng nhập của người dùng	 */
+                userid text not null default '', /* Lưu ID của người dùng */
+                user_name text not null default '' /* Lưu tên đăng nhập của người dùng */
                 );"
                 );
             }
@@ -379,26 +376,26 @@ namespace ToolBaoCao
                 chi_bq_vtyt real not null default 0, /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
                 chi_bq_giuong real not null default 0, /* chi BQ tiền giường; Lấy từ B04. Cột I */
                 ngay_tt_bq text not null default '', /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                userid text not null default '', /* Lưu ID của người dùng	 */
-                user_name text not null default '' /* Lưu tên đăng nhập của người dùng	 */
+                userid text not null default '', /* Lưu ID của người dùng */
+                user_name text not null default '' /* Lưu tên đăng nhập của người dùng */
                 );"
                 );
             }
             if (tables.Contains("sheetpl03") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS sheetpl03 (id INTEGER primary key AUTOINCREMENT,
-                    id_bc text not null, /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                    idtinh text not null, /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                    ma_cskcb text not null, /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
-                    ten_cskcb text not null default '', /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
-                    tyle_noitru real not null default 0, /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
-                    ngay_dtri_bq real not null default 0, /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
-                    chi_bq_chung real not null default 0, /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
-                    chi_bq_ngoai real not null default 0, /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
-                    chi_bq_noi real not null default 0, /* Như trên nhưng với nội trú; Cột K B02 */
-                    userid text not null default '', /* Lưu ID của người dùng	 */
-                    user_name text not null default '' /* Lưu tên đăng nhập của người dùng	 */
-                    );");
+                id_bc text not null, /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                idtinh text not null, /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ma_cskcb text not null, /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
+                ten_cskcb text not null default '', /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
+                tyle_noitru real not null default 0, /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
+                ngay_dtri_bq real not null default 0, /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
+                chi_bq_chung real not null default 0, /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
+                chi_bq_ngoai real not null default 0, /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
+                chi_bq_noi real not null default 0, /* Như trên nhưng với nội trú; Cột K B02 */
+                userid text not null default '', /* Lưu ID của người dùng */
+                user_name text not null default '' /* Lưu tên đăng nhập của người dùng */
+                );");
             }
 
             /* B02. Thống kê KCB (Tháng) */

@@ -318,11 +318,11 @@ namespace ToolBaoCao
                     rs = Execute(tsql);
                 }
                 var v = new List<string>();
-                foreach (var f in fields)
+                foreach (DataColumn c in data.Columns)
                 {
-                    if (row[f] is DBNull) { v.Add("NULL"); continue; }
-                    if (row.Table.Columns[f].DataType == typeof(DateTime)) { v.Add($"'{row[f]:yyyy-MM-dd H:m:s}'"); continue; }
-                    v.Add("'" + $"{row[f]}".sqliteGetValueField() + "'");
+                    if (row[c.ColumnName] is DBNull) { v.Add("NULL"); continue; }
+                    if (row.Table.Columns[c.ColumnName].DataType == typeof(DateTime)) { v.Add($"'{row[c.ColumnName]:yyyy-MM-dd H:m:s}'"); continue; }
+                    v.Add("'" + $"{row[c.ColumnName]}".sqliteGetValueField() + "'");
                 }
                 values.Add($"({string.Join(",", v)})");
             }

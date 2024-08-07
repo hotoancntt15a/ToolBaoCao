@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Server;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
@@ -18,15 +17,22 @@ namespace zModules.NPOIExcel
         private static List<System.Type> typeNumber = new List<System.Type>() { Type.GetType("System.Int16"), Type.GetType("System.Int32"), Type.GetType("System.Int64"), Type.GetType("System.Decimal"), Type.GetType("System.Double"), Type.GetType("System.Single") };
         private static List<System.Type> typeDateTime = new List<System.Type>() { Type.GetType("System.DateTime") };
 
-        public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw)
+        public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false)
         {
             var cell = hw.CreateCellStyle();
             cell.BorderLeft = BorderStyle.Thin;
             cell.BorderRight = BorderStyle.Thin;
             cell.BorderTop = BorderStyle.Thin;
             cell.BorderBottom = BorderStyle.Thin;
+            cell.WrapText = wrapText;
+            if (title)
+            {
+                cell.Alignment = HorizontalAlignment.Center;
+                cell.VerticalAlignment = VerticalAlignment.Center;
+            }
             IFont font = hw.CreateFont();
             font.FontName = "Times New Roman";
+            font.IsBold = fontBold;
             cell.SetFont(font);
             return cell;
         }
@@ -47,6 +53,45 @@ namespace zModules.NPOIExcel
             fb.IsBold = true;
             fb.FontName = "Tahoma";
             return fb;
+        }
+
+        public static XSSFWorkbook exportExcel(DataTable[] par)
+        {
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            int i = 0; int rowIndex = 0;
+            var names = new List<string>();
+            foreach (DataTable dt in par)
+            {                
+                var sheet = names.Contains(dt.TableName) ? workbook.CreateSheet() : workbook.CreateSheet(dt.TableName);
+                names.Add(dt.TableName);
+                /* Tạo tiêu đề */
+                rowIndex = 0;
+                var row = sheet.CreateRow(rowIndex);
+                i = -1;
+                foreach (DataColumn col in dt.Columns)
+                {
+                    i++;
+                    var cell = row.CreateCell(i, CellType.String);
+                    cell.CellStyle = workbook.CreateCellStyleThin(true, true, true);
+                    cell.SetCellValue(col.ColumnName);
+                }
+                foreach (DataRow r in dt.Rows)
+                {
+                    rowIndex++;
+                    row = sheet.CreateRow(rowIndex);
+                    i = -1;
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        i++;
+                        var cell = row.CreateCell(i, CellType.String);
+                        cell.CellStyle = workbook.CreateCellStyleThin();
+                        if (r[i] == DBNull.Value) { cell.SetCellValue(""); continue; }
+                        if (col.DataType == typeof(DateTime)) { cell.SetCellValue(string.Format("{0:dd/MM/yyyy HH:mm:ss}", r[i])); continue; }
+                        cell.SetCellValue($"{r[i]}");
+                    }
+                }
+            }
+            return workbook;
         }
 
         public static XSSFWorkbook exportXLSX(this DataTable dt, string FileTemplate = "", string PathSave = "", List<CellMerge> lsTieuDe = null, int RowIndex = 0, bool ShowHeader = true, bool addColumnAutoNumber = false, string formatDate = "dd/MM/yyyy HH:mm:ss")
@@ -183,7 +228,10 @@ namespace zModules.NPOIExcel
             using (var fs = new FileStream(PathSave, FileMode.Create, FileAccess.Write)) { xls.Write(fs); }
             xls.Clear();
         }
-        public static List<string> getSheetNames(this XSSFWorkbook hw) { var rs = new List<string>(); for (int i = 0; i < hw.NumberOfSheets; i++) { rs.Add(hw.GetSheetName(i)); } return rs; }
+
+        public static List<string> getSheetNames(this XSSFWorkbook hw)
+        { var rs = new List<string>(); for (int i = 0; i < hw.NumberOfSheets; i++) { rs.Add(hw.GetSheetName(i)); } return rs; }
+
         public static List<string> getSheetNames(string fileXls)
         {
             if (string.IsNullOrEmpty(fileXls)) { return new List<string>(); }
@@ -195,6 +243,7 @@ namespace zModules.NPOIExcel
             fs.Dispose();
             return hw.getSheetNames();
         }
+
         public static MemoryStream WriteToStream(this XSSFWorkbook hssfworkbook)
         {
             MemoryStream file = new MemoryStream();
@@ -236,7 +285,7 @@ namespace zModules.NPOIExcel
                 {
                     var cc = row0.CreateCell(j, CellType.String);
                     cc.SetCellValue(fields[j]);
-                    cc.CellStyle = cellb; 
+                    cc.CellStyle = cellb;
                 }
             }
             if (cn.State == ConnectionState.Closed) cn.Open();
@@ -309,6 +358,7 @@ namespace zModules.NPOIExcel
             var sheet = hw.GetSheetAt(sheetIndex);
             sheet.fillData(dt, 0, hw.CreateCellStyleThin(), formatDate, showHeader, autoNumber, headerText);
         }
+
         private static void fillData(this ISheet sheet, DataTable dt, int index, ICellStyle cellStyle, string formatDate = "dd/MM/yyyy HH:mm:ss", bool showHeader = false, bool autoNumber = false, Dictionary<string, string> headerText = null)
         {
             if (index == 0)
@@ -527,7 +577,7 @@ namespace zModules.NPOIExcel
             int maxColumn = 0;
             var sheet = hw.GetSheetAt(sheetIndex);
             var dt = new DataTable();
-            for (int i = 0; i < fieldCount; i++) { dt.Columns.Add($"f{i}"); } 
+            for (int i = 0; i < fieldCount; i++) { dt.Columns.Add($"f{i}"); }
             if (maxRow < 1) { maxRow = maxRow > sheet.LastRowNum ? sheet.LastRowNum : maxRow; }
             for (int i = 0; i < maxRow; i++)
             {
@@ -543,7 +593,7 @@ namespace zModules.NPOIExcel
                 dt.Rows.Add(r);
             }
             hw.Close();
-            if (dt.Columns.Count > maxColumn) { for (var i = dt.Columns.Count - 1; i >= maxColumn; i--) { dt.Columns.RemoveAt(i); } } 
+            if (dt.Columns.Count > maxColumn) { for (var i = dt.Columns.Count - 1; i >= maxColumn; i--) { dt.Columns.RemoveAt(i); } }
             return dt;
         }
 
