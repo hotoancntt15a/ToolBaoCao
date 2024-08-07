@@ -507,14 +507,42 @@ namespace ToolBaoCao.Controllers
                 /* X74 Lấy ngày chọn báo cáo */
                 tailieu.Add("{X74}", ngayTime.ToString("dd/MM/yyyy"));
 
+                string timeCreate = DateTime.Now.toTimestamp().ToString();
                 tailieu.Add("id", $"{thoigian}|{iduser}");
                 tailieu.Add("ma_tinh", matinh);
                 tailieu.Add("userid", iduser);
                 tailieu.Add("ngay", ngayTime.toTimestamp().ToString());
-                tailieu.Add("timecreate", DateTime.Now.toTimestamp().ToString());
-                var dbBaoCaoTuan = BuildDatabase.getDbSQLiteBaoCao();
-                dbBaoCaoTuan.Update("bctuandocx", tailieu, "replace");
-                dbBaoCaoTuan.Close();
+                tailieu.Add("timecreate", );
+                var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao();
+                dbBaoCao.Update("bctuandocx", tailieu, "replace");
+                /* Tạo Phục lục sheetpl01 */
+                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.tyle_noitru, p1.ngay_dtri_bq, p1.chi_bq_chung, p1.chi_bq_ngoai, p1.chi_bq_noi, '{iduser}' AS userid, '{timeCreate}' AS timecreate
+                    FROM b02chitiet p1 INNER JOIN b02 ON p1.id2=b02.id WHERE b02.tu_thang={thang} AND b02.den_thang={thang} AND b02.nam={nam} AND b02.cs='0'";
+                var pl = AppHelper.dbSqliteWork.getDataTable(tsql);
+                dbBaoCao.Insert("sheetpl01", pl);
+
+                /* Tạo Phục lục sheetpl02 */
+                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_pttt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_tt_bq AS ngay_ttbq, '{iduser}' AS userid, '{timeCreate}' AS timecreate
+                    FROM b04chitiet p1 INNER JOIN b04 ON p1.id2=b02.id WHERE b04.tu_thang={thang} AND b04.den_thang={thang} AND b04.nam={nam} AND b04.cs='0'";
+                pl = AppHelper.dbSqliteWork.getDataTable(tsql);
+                dbBaoCao.Insert("sheetpl02", pl);
+
+                /* Tạo Phục lục sheetpl03 */+
+                    ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null default '' /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,ma_cskcb text not null default '' /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
+                ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
+                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
+                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
+                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
+                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
+                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
+                tsql = $@"SELECT '{tailieu["id"]}' AS id_bc, '{matinh}' AS idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_pttt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_tt_bq AS ngay_ttbq, '{iduser}' AS userid, '{timeCreate}' AS timecreate
+                    FROM b04chitiet p1 INNER JOIN b04 ON p1.id2=b02.id WHERE b04.tu_thang={thang} AND b04.den_thang={thang} AND b04.nam={nam} AND b04.cs='0'";
+                pl = AppHelper.dbSqliteWork.getDataTable(tsql);
+                dbBaoCao.Insert("sheetpl02", pl);
+
+                dbBaoCao.Close();
                 return tailieu;
             }
             catch (Exception ex) { tailieu.Add("Error", ex.getLineHTML()); return tailieu; }
