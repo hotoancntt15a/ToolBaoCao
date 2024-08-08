@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = "Quản lý dữ liệu tạm (Cache)";
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@Html.Raw(ViewBag.Error)</div>
+        return;
+    }
+    string pathCache = Path.Combine(AppHelper.pathApp, "cache");
+    var idFrom = "frmCache" + DateTime.Now.toTimestamp().ToString();
+    var d = new System.IO.DirectoryInfo(pathCache);
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<p class="mb-4"> Quản lý Menu. </p>
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách File Cache <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+    </div>
+    <div class="card-body">
+        <div>- Đường dẫn: @pathCache</div>
+        <form id="@idFrom" , method="post">
+            <input name="layout" value="null" type="hidden" />
+            <input name="mode" value="del" type="hidden" />
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td>
+                            <ul>
+                                @foreach (System.IO.FileInfo f in d.GetFiles())
+                                {
+                                    <li> <label> <input type="checkbox" value="@f.Name" name="listfile" class="custom-checkbox" /> @f.Name (@f.Length.getFileSize())</label> </li>
+                                }
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idFrom');"> <i class="fa fa-play"></i> Xoá các file đã chọn</a>
+                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idFrom', '@Url.Action("Cache", "Data", new { area = "Admin", layout="null", mode="clear" })');"> <i class="fa fa-play"></i> Xoá tất cả</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>

@@ -775,6 +775,7 @@
     <Content Include="Areas\Admin\Views\Data\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Nhom\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Nhom\Update.cshtml" />
+    <Content Include="Areas\Admin\Views\Data\Cache.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

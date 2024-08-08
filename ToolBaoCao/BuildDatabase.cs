@@ -23,7 +23,7 @@ namespace ToolBaoCao
             }
             if (tables.Contains("dmnhom") == false)
             {
-                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS dmnhom(id INTEGER primary key, ten text not null default '', idwmenus text not null default '', ghichu text not null default '');");
+                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS dmnhom(id INTEGER primary key, ten text not null default '', idwmenu text not null default '', ghichu text not null default '');");
             }
             if (tables.Contains("wmenu") == false)
             {

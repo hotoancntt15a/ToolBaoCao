@@ -23,7 +23,7 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mât khẩu</div></div>
-            <input type="text" name="mat_khau" id="mat_khau" class="form-control" maxlength="50" />
+            <input type="text" name="mat_khau" id="mat_khau" class="form-control" maxlength="50" @Html.Raw((id == "" ? "" : "placeholder=\"Hãy bỏ trống trường này nếu không thay đổi mật khẩu\""))/>
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Nhóm làm việc</div></div>

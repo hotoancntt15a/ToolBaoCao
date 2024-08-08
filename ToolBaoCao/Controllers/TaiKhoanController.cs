@@ -64,7 +64,7 @@ namespace ToolBaoCao.Controllers
                     { "email", Request.getValue("email") },
                     { "dien_thoai", Request.getValue("dien_thoai") },
                     { "idtinh", idtinh },
-                    { "vitrivieclam", Request.getValue("vitrivieclam") }
+                    { "vitrilamviec", Request.getValue("vitrilamviec") }
                 };
                 if (idObject == "")
                 {
