@@ -18,12 +18,13 @@ namespace ToolBaoCao.Controllers
                 var data = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM taikhoan WHERE idtinh='{idtinh.sqliteGetValueField()}' ORDER BY iduser");
                 ViewBag.Data = data;
             }
-            catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
+            catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getLineHTML()}"; }
             return View();
         }
 
         public ActionResult Update(string id = "")
         {
+            var timeStart = DateTime.Now;
             var tmp = $"{Session["nhom"]}";
             if (tmp != "0" && tmp != "1") { return Content($"<div class=\"alert alert-warning\">Tài khoản bạn không có quyền khóa tài khoản</div>"); }
             ViewBag.id = id;
@@ -60,14 +61,10 @@ namespace ToolBaoCao.Controllers
                 {
                     { "mat_khau", Request.getValue("mat_khau").Trim() },
                     { "ten_hien_thi", Request.getValue("ten_hien_thi") },
-                    { "gioi_tinh", Request.getValue("gioi_tinh") },
-                    { "ngay_sinh", Request.getValue("ngay_sinh") },
                     { "email", Request.getValue("email") },
                     { "dien_thoai", Request.getValue("dien_thoai") },
-                    { "dia_chi", Request.getValue("dia_chi") },
                     { "idtinh", idtinh },
-                    { "ghi_chu", Request.getValue("ghi_chu") },
-                    { "hinh_dai_dien", "" }
+                    { "vitrivieclam", Request.getValue("vitrivieclam") }
                 };
                 if (idObject == "")
                 {
@@ -76,6 +73,7 @@ namespace ToolBaoCao.Controllers
                     if (Regex.IsMatch(item["iduser"], "^[a-z0-9@_.]+$", RegexOptions.IgnoreCase) == false) { throw new Exception("Tên đăng nhập có các ký tự không thuộc [a-zA-Z0-9@_.] các từ cho phép"); }
                     if (item["mat_khau"] == "") { throw new Exception("Mật khẩu để trống"); }
                     item.Add("time_create", DateTime.Now.toTimestamp().ToString());
+                    item.Add("nhom", "3"); /* Mặc định 3 - Nhóm người sử dụng */
                     idObject = item["iduser"];
                 }
                 else { where = $"iduser = '{idObject.sqliteGetValueField()}'"; }
@@ -83,10 +81,9 @@ namespace ToolBaoCao.Controllers
                 if (item["mat_khau"] != "") { item["mat_khau"] = item["mat_khau"].GetMd5Hash(); }
                 else { item.Remove("mat_khau"); }
                 if (item["ten_hien_thi"] == "") { throw new Exception("Tên hiển thị để trống"); }
-                if (item["ngay_sinh"] == "") { throw new Exception("Ngày sinh để trống"); }
 
                 AppHelper.dbSqliteMain.Update("taikhoan", item, where);
-                return Content($"<div class=\"alert alert-info\">Thao tác thành công với tài khoản '{idObject}'</div>");
+                return Content($"<div class=\"alert alert-info\">Thao tác thành công với tài khoản '{idObject}' ({timeStart.getTimeRun()})</div>");
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }

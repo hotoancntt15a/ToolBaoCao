@@ -15,7 +15,7 @@ namespace ToolBaoCao
             /** Nhóm quản lý web */
             if (tables.Contains("taikhoan") == false)
             {
-                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS taikhoan(iduser TEXT NOT NULL Primary Key, mat_khau TEXT NOT NULL, ten_hien_thi TEXT NOT NULL, gioi_tinh TEXT NOT NULL DEFAULT '', ngay_sinh TEXT NOT NULL Default '', email TEXT NOT NULL Default '', dien_thoai TEXT NOT NULL Default '', dia_chi TEXT NOT NULL Default '', hinh_dai_dien TEXT NOT NULL Default '', idtinh text not null default '', ghi_chu TEXT NOT NULL DEFAULT '', nhom INTEGER NOT NULL default -1, locked INTEGER NOT NULL default 0, time_create double not null default 0, time_last_login double not null default 0);");
+                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS taikhoan(iduser TEXT NOT NULL Primary Key, mat_khau TEXT NOT NULL, ten_hien_thi TEXT NOT NULL, gioi_tinh TEXT NOT NULL DEFAULT '', ngay_sinh TEXT NOT NULL Default '', email TEXT NOT NULL Default '', dien_thoai TEXT NOT NULL Default '', dia_chi TEXT NOT NULL Default '', hinh_dai_dien TEXT NOT NULL Default '', idtinh text not null default '', ghi_chu TEXT NOT NULL DEFAULT '', vitrilamviec text not null default '', nhom INTEGER NOT NULL default -1, locked INTEGER NOT NULL default 0, time_create double not null default 0, time_last_login double not null default 0);");
             }
             if (tables.Contains("dmtinh") == false)
             {

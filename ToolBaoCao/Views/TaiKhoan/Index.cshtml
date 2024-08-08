@@ -14,50 +14,44 @@
         <h6 class="m-0 font-weight-bold text-primary">Danh sách tài khoản <a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { area = "", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Tên đăng nhập</th>
-                        <th>Tên hiển thị</th>
-                        <th>Giới tính</th>
-                        <th>Ngày sinh</th>
-                        <th>Email</th>
-                        <th>Điện thoại</th>
-                        <th>Địa chỉ</th>
-                        <th>Time create</th>
-                        <th>Last Login</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        if (items.Rows.Count == 0)
+        @if (items.Rows.Count == 0)
+        {
+            <div class="alert alert-warning">Không có dữ liệu phù hợp với truy vấn</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Tên đăng nhập</th>
+                            <th>Tên hiển thị</th>
+                            <th>Email</th>
+                            <th>Điện thoại</th>
+                            <th>Vị trí việc làm</th>
+                            <th>Time create</th>
+                            <th>Last Login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataRow r in items.Rows)
                         {
-                            <tr><td colspan="8">Không có dữ liệu phù hợp với truy vấn</td></tr>
+                            DateTime t1 = $"{r["time_create"]}".toDateTime();
+                            DateTime t2 = $"{r["time_last_login"]}".toDateTime();
+                            <tr>
+                                <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id = r["iduser"], layout = "null" })');">@r["iduser"]</a></td>
+                                <td>@r["ten_hien_thi"]</td>
+                                <td>@r["Email"]</td>
+                                <td>@r["dien_thoai"]</td>
+                                <td>@r["vitrilamviec"]</td>
+                                <td>@($"{r["time_create"]}" == "0" ? "" : $"{t1:dd/MM/yyyy HH:mm}")</td>
+                                <td>@($"{r["time_last_login"]}" == "0" ? "" : $"{t2:dd/MM/yyyy HH:mm}")</td>
+                            </tr>
                         }
-                        else
-                        {
-                            foreach (DataRow r in items.Rows)
-                            {
-                                DateTime t1 = $"{r["time_create"]}".toDateTime();
-                                DateTime t2 = $"{r["time_last_login"]}".toDateTime();
-                                <tr>
-                                    <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id=r["iduser"], layout="null" })');">@r["iduser"]</a></td>
-                                    <td>@r["ten_hien_thi"]</td>
-                                    <td>@r["gioi_tinh"]</td>
-                                    <td>@r["ngay_sinh"]</td>
-                                    <td>@r["Email"]</td>
-                                    <td>@r["dien_thoai"]</td>
-                                    <td>@r["dia_chi"]</td>
-                                    <td>@($"{r["time_create"]}" == "0" ? "" : $"{t1:dd/MM/yyyy HH:mm}")</td>
-                                    <td>@($"{r["time_last_login"]}" == "0" ? "" : $"{t2:dd/MM/yyyy HH:mm}")</td>
-                                </tr>
-                            }
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
 <div class="alert alert-warning">

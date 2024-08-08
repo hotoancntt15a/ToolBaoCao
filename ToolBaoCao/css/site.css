@@ -1,7 +1,5 @@
-.modal-header {
-    font-size: 1.4em;
-    background-color: greenyellow;
-}
+.modal-header { font-size: 1.4em; background-color: greenyellow; }
+.modal-title { font-weight: bold; }
 .clsdate { width: 100px; }
 .clstime { width: 50px; }
 .clsnumber { text-align: right; }

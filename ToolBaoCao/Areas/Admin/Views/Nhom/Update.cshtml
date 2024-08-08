@@ -17,7 +17,7 @@
     <div class="form-group">
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">ID</div></div>
-            <input type="number" name="objectid" id="objectid" class="form-control" style="width: 60px;" value="@id" @(id != "" ? "readonly" : "")/>
+            <input type="number" name="objectid" id="objectid" class="form-control" style="width: 60px;" value="@id" @(id != "" ? "readonly" : "") />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Tên</div></div>
@@ -38,6 +38,7 @@
         {
             <a class="btn btn-primary btn-sm" href="javascript:postform('@idfrom','@Url.Action("Update", "Nhom", new { area = "Admin", mode = "delete" })')"> <i class="fa fa-fw fa-recycle"></i> Xóa </a>
         }
+        <a class="btn btn-primary btn-sm" href="@Url.Action("Index", "Nhom", new { area = "Admin" })"> <i class="fa fa-fw fa-backward"></i> Quay lại </a>
     </div>
 </form>
 <script>

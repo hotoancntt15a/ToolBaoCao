@@ -9,7 +9,8 @@
         idReadOnly = "readonly=\"readonly\"";
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
-    DataTable dmTinh = ViewBag.dmTinh == null ? new DataTable() : (DataTable)ViewBag.dmTinh;
+    var dmTinh = ViewBag.dmTinh == null ? new DataTable() : ViewBag.dmTinh as DataTable;
+    var dmNhom = ViewBag.dmNhom == null ? new DataTable() : ViewBag.dmNhom as DataTable;
 }
 <h2>@ViewBag.Title</h2>
 <form id="frmUpdateQuanTri" name="frmUpdateQuanTri" method="post">
@@ -25,8 +26,24 @@
             <input type="text" name="mat_khau" id="mat_khau" class="form-control" maxlength="50" />
         </div>
         <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Nhóm làm việc</div></div>
+            <select name="nhom" id="nhom" class="custom-select-sm">
+                @foreach (DataRow row in dmNhom.Rows)
+                {
+                    if (item.getValue("nhom") == row[0].ToString())
+                    {
+                        <option value="@row[0]" selected>@row[1]</option>
+                    }
+                    else
+                    {
+                        <option value="@row[0]">@row[1]</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mã tỉnh làm việc</div></div>
-            <select name="idtinh" id="idtinh" class="form-select">
+            <select name="idtinh" id="idtinh" class="custom-select-sm">
                 @foreach (DataRow row in dmTinh.Rows)
                 {
                     if (item.getValue("idtinh") == row[0].ToString())
@@ -45,14 +62,6 @@
             <input type="text" name="ten_hien_thi" id="ten_hien_thi" class="form-control" maxlength="255" value="@item.getValue("ten_hien_thi")" />
         </div>
         <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Giới tính</div></div>
-            <input type="text" name="gioi_tinh" id="gioi_tinh" class="form-control" maxlength="255" value="@item.getValue("gioi_tinh")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Ngày sinh</div></div>
-            <input type="text" name="ngay_sinh" id="ngay_sinh" class="form-control clsdate" maxlength="10" value="@item.getValue("ngay_sinh")" />
-        </div>
-        <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Email</div></div>
             <input type="text" name="email" id="email" class="form-control" maxlength="50" value="@item.getValue("email")" />
         </div>
@@ -61,12 +70,8 @@
             <input type="text" name="dien_thoai" id="dien_thoai" class="form-control" maxlength="50" value="@item.getValue("dien_thoai")" />
         </div>
         <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Địa chỉ</div></div>
-            <input type="text" name="dia_chi" id="dia_chi" class="form-control" maxlength="255" value="@item.getValue("dia_chi")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
-            <input type="text" name="ghi_chu" id="ghi_chu" class="form-control" maxlength="255" value="@item.getValue("ghi_chu")" />
+            <div class="input-group-append"><div class="input-group-text">Vị trí làm việc</div></div>
+            <input type="text" name="vitrilamviec" id="vitrilamviec" class="form-control" maxlength="255" value="@item.getValue("vitrilamviec")" />
         </div>
     </div>
     <div class="col-12">

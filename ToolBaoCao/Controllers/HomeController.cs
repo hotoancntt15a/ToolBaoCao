@@ -42,19 +42,13 @@ namespace ToolBaoCao.Controllers
                     {
                         { "mat_khau", Request.getValue("mat_khau").Trim() },
                         { "ten_hien_thi", Request.getValue("ten_hien_thi") },
-                        { "gioi_tinh", Request.getValue("gioi_tinh") },
-                        { "ngay_sinh", Request.getValue("ngay_sinh") },
                         { "email", Request.getValue("email") },
                         { "dien_thoai", Request.getValue("dien_thoai") },
-                        { "dia_chi", Request.getValue("dia_chi") },
-                        { "idtinh", Request.getValue("idtinh") },
-                        { "ghi_chu", Request.getValue("ghi_chu") },
-                        { "hinh_dai_dien", "" }
+                        { "vitrilamviec", Request.getValue("vitrilamviec") }
                     };
                     if (item["mat_khau"] == "") { item.Remove("mat_khau"); } 
                     else { item["mat_khau"] = item["mat_khau"].GetMd5Hash(); }
                     if (item["ten_hien_thi"] == "") { return Content($"<div class=\"alert alert-warning\">Tên hiển thị để trống</div>"); }
-                    if (item["ngay_sinh"] == "") { return Content($"<div class=\"alert alert-warning\">Ngày sinh để trống</div>"); }
 
                     AppHelper.dbSqliteMain.Update("taikhoan", item, $"iduser='{id.sqliteGetValueField()}'");
                     return Content($"<div class=\"alert alert-info\">Thay đổi thông tin thành công</div>");

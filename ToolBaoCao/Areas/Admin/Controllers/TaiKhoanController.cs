@@ -21,9 +21,11 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
         }
+
         // GET: Admin/TaiKhoan/Update
         public ActionResult Update(string id = "")
         {
+            var timeStart = DateTime.Now;
             var tmp = $"{Session["nhom"]}";
             if (tmp != "0" && tmp != "1") { return Content($"<div class=\"alert alert-warning\">Tài khoản bạn không có quyền khóa tài khoản</div>"); }
             ViewBag.id = id;
@@ -42,9 +44,9 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     return Content($"<div class=\"alert alert-info\">Khóa tài khoản {idObject} thành công</div>");
                 }
                 if (mode != "update")
-                {
-                    var dmTinh = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmTinh ORDER BY tt, ten");
-                    ViewBag.dmTinh = dmTinh;
+                { 
+                    ViewBag.dmTinh = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmTinh ORDER BY tt, ten"); ;
+                    ViewBag.dmNhom = AppHelper.dbSqliteMain.getDataTable("SELECT id, ten FROM dmNhom ORDER BY id");
                     if (id != "")
                     {
                         var items = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM taikhoan WHERE iduser = @iduser LIMIT 1", new KeyValuePair<string, string>("@iduser", id));
@@ -60,14 +62,11 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 {
                     { "mat_khau", Request.getValue("mat_khau").Trim() },
                     { "ten_hien_thi", Request.getValue("ten_hien_thi") },
-                    { "gioi_tinh", Request.getValue("gioi_tinh") },
-                    { "ngay_sinh", Request.getValue("ngay_sinh") },
+                    { "nhom", Request.getValue("nhom") },
                     { "email", Request.getValue("email") },
                     { "dien_thoai", Request.getValue("dien_thoai") },
-                    { "dia_chi", Request.getValue("dia_chi") },
                     { "idtinh", Request.getValue("idtinh") },
-                    { "ghi_chu", Request.getValue("ghi_chu") },
-                    { "hinh_dai_dien", "" }
+                    { "vitrivieclam", Request.getValue("vitrivieclam") }
                 };
                 if (idObject == "")
                 {
@@ -83,10 +82,10 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 if (item["mat_khau"] != "") { item["mat_khau"] = item["mat_khau"].GetMd5Hash(); }
                 else { item.Remove("mat_khau"); }
                 if (item["ten_hien_thi"] == "") { throw new Exception("Tên hiển thị để trống"); }
-                if (item["ngay_sinh"] == "") { throw new Exception("Ngày sinh để trống"); }
+                if (Regex.IsMatch(item["nhom"], @"^-?\d+$")) { throw new Exception($"Mã nhóm làm việc không hợp lệ {item["nhom"]}"); }
 
                 AppHelper.dbSqliteMain.Update("taikhoan", item, where);
-                return Content($"<div class=\"alert alert-info\">Thao tác thành công với tài khoản '{idObject}'</div>");
+                return Content($"<div class=\"alert alert-info\">Thao tác thành công với tài khoản '{idObject}' ({timeStart.getTimeRun()}) </div>");
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }
