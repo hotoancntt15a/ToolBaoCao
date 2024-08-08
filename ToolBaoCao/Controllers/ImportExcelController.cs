@@ -36,16 +36,16 @@ namespace ToolBaoCao.Controllers
                 var db = AppHelper.dbSqliteWork;
                 if (time1.Year == time2.Year)
                 {
-                    ViewBag.b02 = db.getDataTable($"SELECT * FROM b02 WHERE nam = {time1.Year} AND (den_thang <= {time2.Month} AND tu_thang >= {time1.Month})");
-                    ViewBag.b04 = db.getDataTable($"SELECT * FROM b04 WHERE nam = {time1.Year} AND (den_thang <= {time2.Month} AND tu_thang >= {time1.Month})");
+                    ViewBag.b02 = db.getDataTable($"SELECT *, datetime(timeup, 'auto', '+7 hour') AS timeup2 FROM b02 WHERE nam = {time1.Year} AND (den_thang <= {time2.Month} AND tu_thang >= {time1.Month}) ORDER BY timeup DESC");
+                    ViewBag.b04 = db.getDataTable($"SELECT *, datetime(timeup, 'auto', '+7 hour') AS timeup2 FROM b04 WHERE nam = {time1.Year} AND (den_thang <= {time2.Month} AND tu_thang >= {time1.Month}) ORDER BY timeup DESC");
                 }
                 else
                 {
-                    ViewBag.b02 = db.getDataTable($"SELECT * FROM b02 WHERE (nam > {time1.Year} AND tu_thang > {time1.Month}) AND (nam <= {time2.Year} AND den_thang >= {time2.Month})");
-                    ViewBag.b04 = db.getDataTable($"SELECT * FROM b04 WHERE (nam > {time1.Year} AND tu_thang > {time1.Month}) AND (nam <= {time2.Year} AND den_thang >= {time2.Month})");
+                    ViewBag.b02 = db.getDataTable($"SELECT *, datetime(timeup, 'auto', '+7 hour') AS timeup2 FROM b02 WHERE (nam > {time1.Year} AND tu_thang > {time1.Month}) AND (nam <= {time2.Year} AND den_thang >= {time2.Month}) ORDER BY timeup DESC");
+                    ViewBag.b04 = db.getDataTable($"SELECT *, datetime(timeup, 'auto', '+7 hour') AS timeup2 FROM b04 WHERE (nam > {time1.Year} AND tu_thang > {time1.Month}) AND (nam <= {time2.Year} AND den_thang >= {time2.Month}) ORDER BY timeup DESC");
                 }
-                if (time1 == time2) { ViewBag.b26 = db.getDataTable($"SELECT * FROM b26 WHERE thoigian = {time1:yyyyMMdd}"); }
-                else { ViewBag.b26 = db.getDataTable($"SELECT * FROM b26 WHERE thoigian >= {time1:yyyyMMdd} AND thoigian <= {time2:yyyyMMdd}"); }
+                if (time1 == time2) { ViewBag.b26 = db.getDataTable($"SELECT *, datetime(timeup, 'auto', '+7 hour') AS timeup2 FROM b26 WHERE thoigian = {time1:yyyyMMdd} ORDER BY timeup DESC"); }
+                else { ViewBag.b26 = db.getDataTable($"SELECT *, datetime(timeup, 'auto', '+7 hour') AS timeup2 FROM b26 WHERE thoigian >= {time1:yyyyMMdd} AND thoigian <= {time2:yyyyMMdd} ORDER BY timeup DESC"); }
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>"); }
             return View();

@@ -1,8 +1,7 @@
 ﻿@{
-    if (Request.getValue("layout") == "null")
-    {
-        Layout = null;
-    }
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    string tmp1 = "";
+    string tmp2 = "";
 }
 <div class="alert alert-info">Từ ngày @Request.getValue("ngay1") đến @Request.getValue("ngay2")</div>
 @if (ViewBag.Error != null)
@@ -11,101 +10,124 @@
         @Html.Raw(ViewBag.Error)
     </div>
 }
-<div class="alert alert-info">
-    <fieldset>
-        <legend>B02. Thống kê KCB (tháng)</legend>
-        <div>
-            @if (ViewBag.b02 != null)
-            {
-                DataTable data = ViewBag.b02 as DataTable;
-                <table class="table table-hover table-bordered">
-                    <thead>
-                        <tr>
-                            @foreach (DataColumn c in data.Columns)
+<fieldset>
+    <legend><b>+ B02. Thống kê KCB (tháng)</b></legend>
+    <div>
+        @if (ViewBag.b02 != null)
+        {
+            var fieldShow = new List<string>() { "ma_loai_kcb", "loai_bv", "kieubv", "loaick", "hang_bv", "tuyen", "cs", "userid" };
+            var data = ViewBag.b02 as DataTable;
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width: 172px;">Thời gian Import</th>
+                        <th style="width: 90px;">Mã tỉnh</th>
+                        <th style="width: 145px;">Thời gian</th>
+                        @foreach (var field in fieldShow)
+                        {
+                            <th>@field</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow row in data.Rows)
+                    {
+                        tmp1 = $"{row["tu_thang"]}"; if (tmp1.Length == 1) { tmp1 = "0" + tmp1; }
+                        tmp1 = $"{row["nam"]}{tmp1}";
+                        tmp2 = $"{row["den_thang"]}"; if (tmp2.Length == 1) { tmp2 = "0" + tmp2; }
+                        tmp2 = $"{row["nam"]}{tmp2}";
+                        if (tmp1 != tmp2) { tmp1 = $"{tmp1} - {tmp2}"; }
+                        <tr data-id="@row["id"]">
+                            <td>@row["timeup2"]</td>
+                            <td>@row["ma_tinh"]</td>
+                            <td>@tmp1</td>
+                            @foreach (var field in fieldShow)
                             {
-                                <th>@c.ColumnName</th>
+                                <td>@row[field]</td>
                             }
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (DataRow row in data.Rows)
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</fieldset>
+<fieldset>
+    <legend><b>+ B04. Thống kê chi bình quân (tháng)</b></legend>
+    <div>
+        @if (ViewBag.b04 != null)
+        {
+            var fieldShow = new List<string>() { "ma_loai_kcb", "loai_bv", "hang_bv", "tuyen", "kieubv", "loaick", "cs", "userid" };
+            var data = ViewBag.b04 as DataTable;
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width: 172px;">Thời gian Import</th>
+                        <th style="width: 90px;">Mã tỉnh</th>
+                        <th style="width: 145px;">Thời gian</th>
+                        @foreach (var field in fieldShow)
                         {
-                            <tr>
-                                @for (int i = 0; i < data.Columns.Count; i++)
-                                {
-                                    <td>@row[i]</td>
-                                }
-                            </tr>
+                            <th>@field</th>
                         }
-                    </tbody>
-                </table>
-            }
-        </div>
-    </fieldset>
-</div>
-
-<div class="alert alert-info">
-    <fieldset>
-        <legend>B04. Thống kê chi bình quân (tháng)</legend>
-        <div>
-            @if (ViewBag.b04 != null)
-            {
-                DataTable data = ViewBag.b04 as DataTable;
-                <table class="table table-hover table-bordered">
-                    <thead>
-                        <tr>
-                            @foreach (DataColumn c in data.Columns)
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow row in data.Rows)
+                    {
+                        tmp1 = $"{row["tu_thang"]}"; if (tmp1.Length == 1) { tmp1 = "0" + tmp1; }
+                        tmp1 = $"{row["nam"]}{tmp1}";
+                        tmp2 = $"{row["den_thang"]}"; if (tmp2.Length == 1) { tmp2 = "0" + tmp2; }
+                        tmp2 = $"{row["nam"]}{tmp2}";
+                        if (tmp1 != tmp2) { tmp1 = $"{tmp1} - {tmp2}"; }
+                        <tr data-id="@row["id"]">
+                            <td>@row["timeup2"]</td>
+                            <td>@row["ma_tinh"]</td>
+                            <td>@tmp1</td>
+                            @foreach (var field in fieldShow)
                             {
-                                <th>@c.ColumnName</th>
+                                <td>@row[field]</td>
                             }
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (DataRow row in data.Rows)
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</fieldset>
+<fieldset>
+    <legend><b>+ B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)</b></legend>
+    <div>
+        @if (ViewBag.b26 != null)
+        {
+            var fieldShow = new List<string>() { "loai_kcb", "loai_bv", "kieubv", "loaick", "hang_bv", "tuyen", "loai_so_sanh", "cs", "userid" };
+            var data = ViewBag.b26 as DataTable;
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width: 172px;">Thời gian Import</th>
+                        <th style="width: 90px;">Mã tỉnh</th>
+                        <th style="width: 100px;">Thời gian</th>
+                        @foreach (var field in fieldShow)
                         {
-                            <tr>
-                                @for (int i = 0; i < data.Columns.Count; i++)
-                                {
-                                    <td>@row[i]</td>
-                                }
-                            </tr>
+                            <th>@field</th>
                         }
-                    </tbody>
-                </table>
-            }
-        </div>
-    </fieldset>
-</div>
-
-<div class="alert alert-info">
-    <fieldset>
-        <legend>B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận)</legend>
-        <div>
-            @if (ViewBag.b26 != null)
-            {
-                DataTable data = ViewBag.b26 as DataTable;
-                <table class="table table-hover table-bordered">
-                    <thead>
-                        <tr>
-                            @foreach (DataColumn c in data.Columns)
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow row in data.Rows)
+                    {
+                        <tr data-id="@row["id"]">
+                            <td>@row["timeup2"]</td>
+                            <td>@row["ma_tinh"]</td>
+                            <td>@row["thoigian"]</td>
+                            @foreach (var field in fieldShow)
                             {
-                                <th>@c.ColumnName</th>
+                                <td>@row[field]</td>
                             }
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (DataRow row in data.Rows)
-                        {
-                            <tr>
-                                @for (int i = 0; i < data.Columns.Count; i++)
-                                {
-                                    <td>@row[i]</td>
-                                }
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </div>
-    </fieldset>
-</div>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</fieldset>
