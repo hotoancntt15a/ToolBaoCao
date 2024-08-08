@@ -37,6 +37,13 @@ namespace ToolBaoCao
             if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
             return $"{size}b";
         }
+        public static string getFileSize(this int size)
+        {
+            if (size > 1073741824) { return $"{(size / 1048576):0.##}Gb"; }
+            if (size > 1048576) { return $"{(size / 1048576):0.##}Mb"; }
+            if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
+            return $"{size}b";
+        }
 
         public static long toTimestamp(this DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
 

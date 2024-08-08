@@ -213,16 +213,12 @@ namespace ToolBaoCao.Controllers
                 }
                 catch (Exception ex2)
                 {
-                    ViewBag.Error = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{fileName}': {ex2.getLineHTML()}";
+                    ViewBag.Error = $"{bieu}: {fileName} (size {inputfile.ContentLength.getFileSize()}; Thời gian xử lý là: {(DateTime.Now - timeStart).TotalSeconds:0.##} giây <br />Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{fileName}': {ex2.getLineHTML()}";
+                    return View();
                 }
-                if (workbook != null)
-                {
-                    workbook.Close();
-                    workbook = null;
-                }
+                finally { if (workbook != null) { workbook.Close(); workbook = null; } }
             }
-            var timeProcess = (DateTime.Now - timeStart);
-            ViewBag.data = $"{bieu}: {fileName} (size {inputfile.ContentLength} b) được lưu tại {fileNameSave}; Thời gian xử lý là: {timeProcess.TotalSeconds:0.##} giây";
+            ViewBag.data = $"{bieu}: {fileName} (size {inputfile.ContentLength} b) được lưu tại {fileNameSave}; Thời gian xử lý là: {(DateTime.Now - timeStart).TotalSeconds:0.##} giây";
             return View();
         }
     }
