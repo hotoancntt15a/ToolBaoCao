@@ -12,7 +12,7 @@
 <!-- Nav tabs -->
 <ul class="nav nav-tabs">
     <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Truy vấn danh sách Import Excel</a>
+        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Liệt kê các lần Import</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Import Excel</a>
@@ -27,13 +27,14 @@
                 <tbody>
                     <tr>
                         <td>
-                            Từ ngày <input type="text" name="ngay1" class="clsdate" value="@DateTime.Now.ToString("01/MM/yyyy")" />
+                            <!-- Từ ngày mặc định 01/tháng trước so với hiện tại; đến ngày là ngày hiện tại -->
+                            Từ ngày <input type="text" name="ngay1" class="clsdate" value="@DateTime.Now.AddMonths(-1).ToString("01/MM/yyyy")" />
                             đến <input type="text" class="clsdate" name="ngay2" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <a href="#" onclick="postform('truyvan' + '@idForm', '', 'viewimportexcel');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                            <a href="#" onclick="postform('truyvan' + '@idForm', '', 'viewimportexcel');" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</a>
                         </td>
                     </tr>
                 </tbody>

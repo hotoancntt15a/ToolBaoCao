@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Danh sách báo cáo tuần";
+    ViewBag.Title = "Danh sách báo cáo";
     if(ViewBag.Error !=  null)
     {
         <div class="alert alert-danger">@ViewBag.Error</div>
@@ -48,7 +48,7 @@
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <a href="javascript:postform('@idForm', '', '@idResult');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                            <a href="javascript:postform('@idForm', '', '@idResult');" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</a>
                         </td>
                     </tr>
                 </tbody>
