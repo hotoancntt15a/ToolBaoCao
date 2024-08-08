@@ -7,6 +7,15 @@ using System.Web.Routing;
 
 namespace ToolBaoCao
 {
+    public class ControllerCheckLogin : Controller
+    {
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            AppHelper.CheckIsLogin();
+            /* if (AppHelper.CheckIsLogin() != true) { filterContext.Result = new RedirectResult("/Login/"); } */
+            base.OnActionExecuting(filterContext);
+        }
+    }
     public class MvcApplication : System.Web.HttpApplication
     {
         protected void Application_Start()
@@ -51,6 +60,9 @@ namespace ToolBaoCao
         {
             Session[keyMSG.SessionIPAddress] = GetUserIpAddress();
             Session[keyMSG.SessionBrowserInfo] = GetUserBrowserInfo();
+            var db = BuildDatabase.getDBUserOnline();
+            int maxSeccondsOnline = 15 * 60;
+            try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }
         }
 
         private void Session_End(object sender, EventArgs e)

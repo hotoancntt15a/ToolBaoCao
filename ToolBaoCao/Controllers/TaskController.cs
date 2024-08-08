@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
 {
-    public class TaskController : Controller
+    public class TaskController : ControllerCheckLogin
     {
         // GET: Task
         public ActionResult Index()

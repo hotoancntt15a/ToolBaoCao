@@ -46,6 +46,26 @@ namespace ToolBaoCao
             catch (Exception er) { er.saveError(); }
         }
 
+        public static dbSQLite getDBUserOnline()
+        {
+            string pathData = AppHelper.pathApp + "App_Data\\useronline.db";
+            dbSQLite db = new dbSQLite(pathData);
+            if (File.Exists(pathData) == false)
+            {
+                try
+                {
+                    db.Execute(@"CREATE TABLE IF NOT EXISTS useronline (
+                        userid TEXT NOT NULL,
+                        time1 INTEGER NOT NULL DEFAULT 0,
+                        time2 INTEGER NOT NULL DEFAULT 0,
+                        ten_hien_thi TEXT NOT NULL DEFAULT '',
+                        ip TEXT NOT NULL DEFAULT '',
+                        [local] TEXT NOT NULL DEFAULT '', PRIMARY KEY (userid, ip));");
+                }
+                catch { }
+            }
+            return db;
+        }
         public static dbSQLite getDbSQLiteBaoCao()
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data\\BaoCao.db");

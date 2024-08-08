@@ -7,7 +7,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
 {
-    public class MenuController : Controller
+    public class MenuController : ControllerCheckLogin
     {
         // GET: Admin/Menu
         public ActionResult Index()

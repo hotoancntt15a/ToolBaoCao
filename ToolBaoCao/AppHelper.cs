@@ -208,7 +208,6 @@ namespace ToolBaoCao
             if (Directory.Exists(pathApp + "temp") == false) { Directory.CreateDirectory(pathApp + "temp"); }
             if (Directory.Exists(pathApp + "temp\\data") == false) { Directory.CreateDirectory(pathApp + "temp\\data"); }
             if (Directory.Exists(pathApp + "temp\\excel") == false) { Directory.CreateDirectory(pathApp + "temp\\excel"); }
-            getDBUserOnline();
         }
 
         public static void SapXepNgauNhien(this List<string> arr)
@@ -230,40 +229,12 @@ namespace ToolBaoCao
                 "</div></a>";
         }
 
-        public static dbSQLite getDBUserOnline()
-        {
-            string pathData = pathApp + "App_Data\\useronline.db";
-            dbSQLite db = new dbSQLite(pathData);
-            if (File.Exists(pathData) == false)
-            {
-                try
-                {
-                    db.Execute(@"CREATE TABLE IF NOT EXISTS useronline (
-                        userid TEXT NOT NULL,
-                        time1 INTEGER NOT NULL DEFAULT 0,
-                        time2 INTEGER NOT NULL DEFAULT 0,
-                        ten_hien_thi TEXT NOT NULL DEFAULT '',
-                        ip TEXT NOT NULL DEFAULT '',
-                        [local] TEXT NOT NULL DEFAULT '', PRIMARY KEY (userid, ip));");
-                }
-                catch { }
-            }
-            return db;
-        }
-
         public static bool CheckIsLogin()
         {
             var http = HttpContext.Current;
             if (http == null) return false;
-            var db = getDBUserOnline();
-            int maxSeccondsOnline = 15 * 60;
-            try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }
             var tmp = $"{http.Session["app.isLogin"]}";
-            if (tmp == "1")
-            {
-                db.Execute($"UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}'");
-                return true;
-            }
+            if (tmp == "1") return true;
             if (http.Request.Cookies.AllKeys.Any(p => p == "idobject") == false) { return false; }
             tmp = $"{http.Request.Cookies["idobject"]?.Value}";
             /* IDUSER|PASS|DATETIME */
@@ -310,8 +281,8 @@ namespace ToolBaoCao
                 try { dbSqliteMain.Execute($"UPDATE taikhoan SET time_last_login='{DateTime.Now.toTimestamp()}' WHERE iduser = @iduser", new KeyValuePair<string, string>("@iduser", userName)); } catch { }
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
-            var db = getDBUserOnline();
-            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}')");
+            var db = BuildDatabase.getDBUserOnline();
+            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");
             return "";
         }
 
@@ -442,6 +413,7 @@ namespace ToolBaoCao
         {
             return Regex.IsMatch(timeVN, "^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3}$|^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3} [0-2][0-9]:[0-5][0-9]$|^[0-3][0-9]/[0-1][0-9]/[1-9][0-9]{3} [0-2][0-9]:[0-5][0-9]:[0-5][0-9]$");
         }
+
         public static bool isDateVN(this string timeVN, out DateTime datetime)
         {
             var format = "dd/MM/yyyy"; timeVN = timeVN.Trim(); datetime = new DateTime(1970, 1, 1);

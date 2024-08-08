@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
 {
-    public class TaiKhoanController : Controller
+    public class TaiKhoanController : ControllerCheckLogin
     {
         /* GET: QuanTri */
 

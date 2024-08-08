@@ -9,7 +9,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
 {
-    public class DataController : Controller
+    public class DataController : ControllerCheckLogin
     {
         // GET: Admin/Data
         public ActionResult Index()

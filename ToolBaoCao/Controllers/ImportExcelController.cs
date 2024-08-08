@@ -11,7 +11,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
 {
-    public class ImportExcelController : Controller
+    public class ImportExcelController : ControllerCheckLogin
     {
         // GET: ImportExcel
         public ActionResult Index()

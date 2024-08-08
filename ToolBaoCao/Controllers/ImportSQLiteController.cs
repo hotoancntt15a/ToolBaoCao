@@ -7,7 +7,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
 {
-    public class ImportSQLiteController : Controller
+    public class ImportSQLiteController : ControllerCheckLogin
     {
         // GET: ImportSQLite
         public ActionResult Index()

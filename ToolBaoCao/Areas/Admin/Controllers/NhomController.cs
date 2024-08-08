@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
 {
-    public class NhomController : Controller
+    public class NhomController : ControllerCheckLogin
     {
         // GET: Admin/Nhom
         public ActionResult Index()

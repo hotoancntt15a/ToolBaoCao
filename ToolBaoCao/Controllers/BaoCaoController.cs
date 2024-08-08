@@ -14,7 +14,7 @@ using zModules.NPOIExcel;
 
 namespace ToolBaoCao.Controllers
 {
-    public class BaoCaoController : Controller
+    public class BaoCaoController : ControllerCheckLogin
     {
         // GET: BaoCao
         public ActionResult Index()

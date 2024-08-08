@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
 {
-    public class TaiKhoanController : Controller
+    public class TaiKhoanController : ControllerCheckLogin
     {
         // GET: Admin/TaiKhoan
         public ActionResult Index()

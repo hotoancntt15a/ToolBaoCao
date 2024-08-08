@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : ControllerCheckLogin
     {
         public ActionResult Index()
         {
