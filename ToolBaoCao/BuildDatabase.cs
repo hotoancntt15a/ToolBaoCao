@@ -6,7 +6,7 @@ namespace ToolBaoCao
 {
     public static class BuildDatabase
     {
-        public static void buildData(this dbSQLite connect)
+        public static void buildDataMain(this dbSQLite connect)
         {
             var tsqlInsert = new List<string>();
             var tsqlCreate = new List<string>();
@@ -45,7 +45,6 @@ namespace ToolBaoCao
             }
             catch (Exception er) { er.saveError(); }
         }
-
         public static dbSQLite getDBUserOnline()
         {
             string pathData = AppHelper.pathApp + "App_Data\\useronline.db";
@@ -82,9 +81,9 @@ namespace ToolBaoCao
                 ,ma_vung text not null default '' /* Mã vùng 0,1,2,3,4... cột C , B02 */
                 ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú, B02 */
                 ,ngay_dtri_bq real not null default 0 /*	Ngày điều trị BQ, vd 6,42, DVT: ngày; Lấy từ cột H: NGAY ĐT_BQ, B02 */
-                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
+                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT (đồng) Cột I, B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
-                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
+                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú Cột K, B02 */
                 ,userid text not null default '' /* Lưu ID của người dùng */
                 ,timecreate integer not null default 0);"
                 );
@@ -212,7 +211,6 @@ namespace ToolBaoCao
             if(tsql.Count > 0) { db.Execute(string.Join(Environment.NewLine, tsql)); }
             return db;
         }
-
         public static dbSQLite getDbSQLiteImport(string iduser)
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data\\Import");
@@ -355,8 +353,7 @@ namespace ToolBaoCao
             }
             return db;
         }
-
-        public static void buildDataCongViec(this dbSQLite connect)
+        public static void buildDataWork(this dbSQLite connect)
         {
             var tsqlCreate = new List<string>();
             var tsql = "";

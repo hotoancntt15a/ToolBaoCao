@@ -25,7 +25,7 @@
                 <table class="table table-hover">
                     <tbody>
                         <tr>
-                            <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh")</td>
+                            <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh x73")</td>
                             <td>
                                 <select name="matinh" id="matinh">
                                     @foreach (DataRow row in dmTinh.Rows)
@@ -43,47 +43,47 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-right">@Html.Label("thoigian", "Thời gian")</td>
+                            <td class="text-right">@Html.Label("thoigian", "Ngày lập báo x74")</td>
                             <td>
                                 <input type="text" name="thoigian" id="thoigian" value="@DateTime.Now.ToString("dd/MM/yyyy")" class="clsdate" />
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán:")</td>
+                            <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán x2:")</td>
                             <td>
                                 <input type="text" name="x2" id="x2" value="" class="clsnumber form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay")</td>
+                            <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3")</td>
                             <td>
                                 <input type="text" name="x3" id="x3" value="" class="clsnumber form-control-sm" />
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                @Html.Label("x67", "Công tác kiểm soát chi:")
+                                @Html.Label("x67", "Công tác kiểm soát chi x67:")
                                 <br />
                                 <textarea name="x67" class="form-control"></textarea>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                @Html.Label("x68", "Công tác thanh, quyết toán năm:")
+                                @Html.Label("x68", "Công tác thanh, quyết toán năm x68:")
                                 <br />
                                 <textarea name="x68" class="form-control"></textarea>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                @Html.Label("x69", "Phương hướng kỳ tiếp theo:")
+                                @Html.Label("x69", "Phương hướng kỳ tiếp theo x69:")
                                 <br />
                                 <textarea name="x69" class="form-control"></textarea>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có):")
+                                @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có) x70:")
                                 <br />
                                 <textarea name="x70" class="form-control"></textarea>
                             </td>
@@ -125,7 +125,7 @@
                                         }
                                     }
                                 </select>
-                                @Html.Label("thoigian", "Thời gian {X74}") <input type="text" id="thoigian" value="@item["x74"]" class="form-control-sm" readonly />
+                                @Html.Label("thoigian", "Ngày lập báo cáo {X74}") <input type="text" id="thoigian" value="@item["x74"]" class="form-control-sm" readonly />
                             </td>
                         </tr>
                         <tr>

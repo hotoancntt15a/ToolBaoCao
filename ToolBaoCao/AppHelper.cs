@@ -207,9 +207,9 @@ namespace ToolBaoCao
                 appConfig.Set("App.PacketSize", "1000");
             }
             dbSqliteMain = new dbSQLite(Path.Combine(pathApp, "App_Data\\main.db"));
-            dbSqliteMain.buildData();
+            dbSqliteMain.buildDataMain();
             dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
-            dbSqliteWork.buildDataCongViec();
+            dbSqliteWork.buildDataWork();
             /* Check Folder Exists */
             if (Directory.Exists(pathApp + "cache") == false) { Directory.CreateDirectory(pathApp + "cache"); }
             if (Directory.Exists(pathApp + "temp") == false) { Directory.CreateDirectory(pathApp + "temp"); }
