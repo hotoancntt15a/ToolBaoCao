@@ -45,6 +45,7 @@ namespace ToolBaoCao
             }
             catch (Exception er) { er.saveError(); }
         }
+
         public static dbSQLite getDBUserOnline()
         {
             string pathData = AppHelper.pathApp + "App_Data\\useronline.db";
@@ -65,67 +66,51 @@ namespace ToolBaoCao
             }
             return db;
         }
-        public static dbSQLite getDbSQLiteBaoCao()
+
+        public static dbSQLite getDbSQLiteBaoCao(string matinh = "")
         {
-            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data\\BaoCao.db");
+            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoTuan{matinh}.db");
             var db = new dbSQLite(pathDB);
             var tables = db.getAllTables();
-            var tsql = new List<string>();
-            if (tables.Contains("sheetpl01") == false)
-            {
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS sheetpl01 (id INTEGER primary key AUTOINCREMENT
-                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                ,idtinh text not null default '' /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
-                ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
-                ,ma_vung text not null default '' /* Mã vùng 0,1,2,3,4... cột C , B02 */
-                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú, B02 */
-                ,ngay_dtri_bq real not null default 0 /*	Ngày điều trị BQ, vd 6,42, DVT: ngày; Lấy từ cột H: NGAY ĐT_BQ, B02 */
-                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT (đồng) Cột I, B02 */
-                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
-                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú Cột K, B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng */
-                ,timecreate integer not null default 0);"
-                );
-            }
-            if (tables.Contains("sheetpl02") == false)
-            {
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS sheetpl02 (id INTEGER primary key AUTOINCREMENT
-                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                ,idtinh text not null default '' /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
-                ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
-                ,ma_vung text not null default ''
-                ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
-                ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
-                ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
-                ,chi_bq_pttt real not null default 0 /* chi BQ phẫu thuật thủ thuật	Lấy từ B04. Cột G */
-                ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
-                ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
-                ,ngay_ttbq text not null default '' /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                ,userid text not null default '' /* Lưu ID của người dùng */
-                ,timecreate integer not null default 0);"""
-                );
-            }
-            if (tables.Contains("sheetpl03") == false)
-            {
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS sheetpl03 (id INTEGER primary key AUTOINCREMENT
-                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                ,idtinh text not null default '' /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,ma_cskcb text not null default '' /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
-                ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
-                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
-                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
-                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
-                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
-                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng */
-                ,timecreate integer not null default 0);");
-            }
             if (File.Exists(pathDB) == false)
             {
-                /* BaoCaoTuanDocx */
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS bctuandocx (
+                db.CreateTablePhucLucBaoCao(tables);
+                db.CreateTableBaoCao(tables);
+            }
+            return db;
+        }
+
+        public static dbSQLite getDbSQLiteImport(string matinh)
+        {
+            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"import{matinh}.db");
+            var db = new dbSQLite(pathDB);
+            if (File.Exists(pathDB) == false)
+            {
+                db.CreateTableImport();
+            }
+            return db;
+        }
+
+        public static void buildDataWork(this dbSQLite connect)
+        {
+            var tsqlCreate = new List<string>();
+            var tsql = "";
+            var tables = connect.getAllTables();
+            /* Các bảng Import */
+            connect.CreateTableImport(tables);
+            /* Các bảng phục lục công việc */
+            connect.CreateTablePhucLucBaoCao(tables);
+            /* Tạo cơ sở dữ liệu */
+            try { if (tsqlCreate.Count > 0) { tsql = string.Join(" ", tsqlCreate); connect.Execute(tsql); } }
+            catch (Exception ex) { ex.saveError(tsql); }
+        }
+
+        private static void CreateTableBaoCao(this dbSQLite dbConnect, List<string> tables = null)
+        {
+            if (tables == null) { tables = dbConnect.getAllTables(); }
+            var tsqlCreate = new List<string>();
+            /* BaoCaoTuanDocx */
+            tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bctuandocx (
                     id text not null primary key /* Mã hóa rút gọn và gợi nhớ cho mỗi lần lập BC tuần Dùng trình bày danh sách báo cáo đã lập để tiện cho chọn và xử lý thao tác: Khóa và mở khóa báo cáo/ xóa báo cáo/ xem/in lại */
                     ,x1 real not null default 0 /* Tổng tiền các CSKCB đã đề nghị bảo hiểm thanh toán (T_BHTT): X1={cột R (T-BHTT) bảng B02_TOANQUOC }. Làm tròn đến triệu đồng */
                     ,x2 real not null default 0 /* Số của Quyết định giao dự toán: X2={“ Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy thì  lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
@@ -206,161 +191,14 @@ namespace ToolBaoCao
                     ,ngay integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
                     ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */
                     );");
-                tsql.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
-            }
-            if(tsql.Count > 0) { db.Execute(string.Join(Environment.NewLine, tsql)); }
-            return db;
+            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
+            if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
-        public static dbSQLite getDbSQLiteImport(string iduser)
-        {
-            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data\\Import");
-            if (Directory.Exists(pathDB) == false) { Directory.CreateDirectory(pathDB); }
-            pathDB = Path.Combine(pathDB, $"i_{iduser.GetMd5Hash()}.db");
-            var db = new dbSQLite(pathDB);
-            if (File.Exists(pathDB) == false)
-            {
-                var tsql = new List<string>();
-                /* B02. Thống kê KCB (Tháng) */
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS b02 (id INTEGER primary key AUTOINCREMENT,
-                    ma_tinh text not null,
-                    ma_loai_kcb text not null,
-                    tu_thang integer not null default 0,
-                    den_thang integer not null default 0,
-                    nam integer not null default 0,
-                    loai_bv integer not null default 0,
-                    kieubv integer not null default 0,
-                    loaick integer not null default 0,
-                    hang_bv integer not null default 0,
-                    tuyen integer not null default 0,
-                    cs integer not null default 0,
-                    userid text not null default '',
-                    timeup integer not null default 0
-                    );");
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS b02chitiet (id INTEGER primary key AUTOINCREMENT,
-                    id2 integer not null default 0,
-                    ma_tinh text not null default '',
-                    ten_tinh text not null default '',
-                    ma_cskcb text not null default '',
-                    ten_cskcb text not null default '',
-                    ma_vung text not null default '',
-                    tong_luot integer not null default 0,
-                    tong_luot_ngoai integer not null default 0,
-                    tong_luot_noi integer not null default 0,
-                    tyle_noitru real not null default 0,
-                    ngay_dtri_bq real not null default 0,
-                    chi_bq_chung real not null default 0,
-                    chi_bq_ngoai real not null default 0,
-                    chi_bq_noi real not null default 0,
-                    tong_chi real not null default 0,
-                    ty_trong real not null default 0,
-                    tong_chi_ngoai real not null default 0,
-                    ty_trong_kham real not null default 0,
-                    tong_chi_noi real not null default 0,
-                    ty_trong_giuong real not null default 0,
-                    t_bhtt real not null default 0,
-                    t_bhtt_noi real not null default 0,
-                    t_bhtt_ngoai real not null default 0
-                    );");
 
-                /* B04. Thống kê chi bình quân (Tháng) */
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS b04 (id INTEGER primary key AUTOINCREMENT,
-                    ma_tinh text not null,
-                    tu_thang integer not null default 0,
-                    den_thang integer not null default 0,
-                    nam integer not null default 0,
-                    ma_loai_kcb integer not null default 0,
-                    loai_bv integer not null default 0,
-                    hang_bv integer not null default 0,
-                    tuyen integer not null default 0,
-                    kieubv integer not null default 0,
-                    loaick integer not null default 0,
-                    cs integer not null default 0,
-                    userid text not null default '',
-                    timeup integer not null default 0
-                    );");
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS b04chitiet (id INTEGER primary key AUTOINCREMENT,
-                    id2 integer not null default 0,
-                    ma_tinh text not null default '',
-                    ten_tinh text not null default '',
-                    ma_cskcb text not null default '',
-                    ten_cskcb text not null default '',
-                    chi_bq_luotkcb real not null default 0,
-                    bq_xn real not null default 0,
-                    bq_cdha real not null default 0,
-                    bq_thuoc real not null default 0,
-                    bq_ptt real not null default 0,
-                    bq_vtyt real not null default 0,
-                    bq_giuong real not null default 0,
-                    ngay_ttbq real not null default 0,
-                    ma_vung text not null default ''
-                    );");
-
-                /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS b26 (id INTEGER primary key AUTOINCREMENT,
-                    ma_tinh text not null,
-                    loai_kcb text not null default '',
-                    thoigian integer not null default 0,
-                    loai_bv integer not null default 0,
-                    kieubv integer not null default 0,
-                    loaick integer not null default 0,
-                    hang_bv integer not null default 0,
-                    tuyen integer not null default 0,
-                    loai_so_sanh text not null default '',
-                    cs integer not null default 0,
-                    userid text not null default '',
-                    timeup integer not null default 0
-                    );");
-                tsql.Add(@"CREATE TABLE IF NOT EXISTS b26chitiet (id INTEGER primary key AUTOINCREMENT,
-                    id2 integer not null default 0,
-                    ma_tinh text not null default '',
-                    ten_tinh text not null default '',
-                    ma_cskcb text not null default '',
-                    ten_cskcb text not null default '',
-                    vitri_chibq integer not null default 0,
-                    vitri_tyle_noitru integer not null default 0,
-                    vitri_tlxn integer not null default 0,
-                    vitri_tlcdha integer not null default 0,
-                    tytrong real not null default 0,
-                    chi_bq_chung real not null default 0,
-                    chi_bq_chung_tang real not null default 0,
-                    tyle_noitru real not null default 0,
-                    tyle_noitru_tang real not null default 0,
-                    lan_kham_bq real not null default 0,
-                    lan_kham_bq_tang real not null default 0,
-                    ngay_dtri_bq real not null default 0,
-                    ngay_dtri_bq_tang real not null default 0,
-                    bq_xn real not null default 0,
-                    bq_xn_tang real not null default 0,
-                    bq_cdha real not null default 0,
-                    bq_cdha_tang real not null default 0,
-                    bq_thuoc real not null default 0,
-                    bq_thuoc_tang real not null default 0,
-                    bq_pt real not null default 0,
-                    bq_pt_tang real not null default 0,
-                    bq_tt real not null default 0,
-                    bq_tt_tang real not null default 0,
-                    bq_vtyt real not null default 0,
-                    bq_vtyt_tang real not null default 0,
-                    bq_giuong real not null default 0,
-                    bq_giuong_tang real not null default 0,
-                    chi_dinh_xn real not null default 0,
-                    chi_dinh_xn_tang real not null default 0,
-                    chi_dinh_cdha real not null default 0,
-                    chi_dinh_cdha_tang real not null default 0,
-                    ma_vung text not null default ''
-                    );");
-                db.Execute(string.Join(Environment.NewLine, tsql));
-            }
-            return db;
-        }
-        public static void buildDataWork(this dbSQLite connect)
+        private static void CreateTablePhucLucBaoCao(this dbSQLite dbConnect, List<string> tables = null)
         {
+            if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
-            var tsql = "";
-            var tables = connect.getAllTables();
-            /**
-             Cơ sở công việc
-             */
             if (tables.Contains("sheetpl01") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS sheetpl01 (id INTEGER primary key AUTOINCREMENT,
@@ -414,25 +252,31 @@ namespace ToolBaoCao
                 user_name text not null default '' /* Lưu tên đăng nhập của người dùng */
                 );");
             }
+            if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
+        }
 
+        private static void CreateTableImport(this dbSQLite dbConnect, List<string> tables = null)
+        {
+            if (tables == null) { tables = dbConnect.getAllTables(); }
+            var tsqlCreate = new List<string>();
             /* B02. Thống kê KCB (Tháng) */
             if (tables.Contains("b02") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02 (id INTEGER primary key AUTOINCREMENT,
-                ma_tinh text not null,
-                ma_loai_kcb text not null,
-                tu_thang integer not null default 0,
-                den_thang integer not null default 0,
-                nam integer not null default 0,
-                loai_bv integer not null default 0,
-                kieubv integer not null default 0,
-                loaick integer not null default 0,
-                hang_bv integer not null default 0,
-                tuyen integer not null default 0,
-                cs integer not null default 0,
-                userid text not null default '',
-                timeup integer not null default 0
-                );"
+                ,ma_tinh text not null
+                ,ma_loai_kcb text not null
+                ,tu_thang integer not null default 0
+                ,den_thang integer not null default 0
+                ,nam integer not null default 0
+                ,loai_bv integer not null default 0
+                ,kieubv integer not null default 0
+                ,loaick integer not null default 0
+                ,hang_bv integer not null default 0
+                ,tuyen integer not null default 0
+                ,cs integer not null default 0
+                ,userid text not null default ''
+                ,timeup integer not null default 0
+                ,md5hash text not null default '');"
                 );
             }
             if (tables.Contains("b02chitiet") == false)
@@ -469,20 +313,20 @@ namespace ToolBaoCao
             if (tables.Contains("b04") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04 (id INTEGER primary key AUTOINCREMENT,
-                ma_tinh text not null,
-                tu_thang integer not null default 0,
-                den_thang integer not null default 0,
-                nam integer not null default 0,
-                ma_loai_kcb integer not null default 0,
-                loai_bv integer not null default 0,
-                hang_bv integer not null default 0,
-                tuyen integer not null default 0,
-                kieubv integer not null default 0,
-                loaick integer not null default 0,
-                cs integer not null default 0,
-                userid text not null default '',
-                timeup integer not null default 0
-                );"
+                ,ma_tinh text not null
+                ,tu_thang integer not null default 0
+                ,den_thang integer not null default 0
+                ,nam integer not null default 0
+                ,ma_loai_kcb integer not null default 0
+                ,loai_bv integer not null default 0
+                ,hang_bv integer not null default 0
+                ,tuyen integer not null default 0
+                ,kieubv integer not null default 0
+                ,loaick integer not null default 0
+                ,cs integer not null default 0
+                ,userid text not null default ''
+                ,timeup integer not null default 0
+                ,md5hash text not null default '');"
                 );
             }
             if (tables.Contains("b04chitiet") == false)
@@ -510,19 +354,19 @@ namespace ToolBaoCao
             if (tables.Contains("b26") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b26 (id INTEGER primary key AUTOINCREMENT,
-                ma_tinh text not null,
-                loai_kcb text not null default '',
-                thoigian integer not null default 0,
-                loai_bv integer not null default 0,
-                kieubv integer not null default 0,
-                loaick integer not null default 0,
-                hang_bv integer not null default 0,
-                tuyen integer not null default 0,
-                loai_so_sanh text not null default '',
-                cs integer not null default 0,
-                userid text not null default '',
-                timeup integer not null default 0
-                );"
+                ,ma_tinh text not null
+                ,loai_kcb text not null default ''
+                ,thoigian integer not null default 0
+                ,loai_bv integer not null default 0
+                ,kieubv integer not null default 0
+                ,loaick integer not null default 0
+                ,hang_bv integer not null default 0
+                ,tuyen integer not null default 0
+                ,loai_so_sanh text not null default ''
+                ,cs integer not null default 0
+                ,userid text not null default ''
+                ,timeup integer not null default 0
+                ,md5hash text not null default '');"
                 );
             }
             if (tables.Contains("b26chitiet") == false)
@@ -568,9 +412,7 @@ namespace ToolBaoCao
                 );"
                 );
             }
-            /* Tạo cơ sở dữ liệu */
-            try { tsql = string.Join(" ", tsqlCreate); connect.Execute(tsql); } catch (Exception ex) { ex.saveError(tsql); }
-            /* if (tsqlCreate.Count > 0) { foreach (var v in tsqlCreate) { try { connect.Execute(v); } catch (Exception ex) { ex.saveError(v); } } } */
+            if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
     }
 }
