@@ -149,8 +149,12 @@ function showMessage(sender) {
             if (!idmsg.startsWith('#')) idmsg = '#' + idmsg;
         }
     }
-    var footer = '<a href="javascript:void(0);" class="btn btn-primary btn-sm" data-dismiss="modal"> <i class="fa fa-times"></i> Hủy</a>';
-    if (sender['footer'] != undefined) footer = sender['footer'] + " " + footer;
+    var footer = '<button class="btn btn-primary btn-sm" type="button" data-dismiss="modal"> <i class="fa fa-times"></i> Đóng cửa sổ</button>';
+    if (sender['footer'] != undefined) {
+        footer = sender['footer'];
+        /* footer = sender['footer'] + " " + footer; */
+    }
+    else { footer = ''; }
     if (sender['action'] != undefined) footer = '<a href="' + sender['action'] + '" class="btn"> <i class="fa fa-save"></i> Lưu lại </a>' + " " + footer;
     if (sender['title'] != undefined) { $(idmsg).find('.modal-title').html(sender['title']) }
     if (sender['body'] != undefined) { $(idmsg).find('div.modal-body').html(sender['body']) }

@@ -1,6 +1,6 @@
 ﻿@{
     if (Request.getValue("layout") == "null") { Layout = null; }
-    ViewBag.Title = "Thêm mới tài khoản quản trị";
+    ViewBag.Title = "Thêm mới tài khoản";
     var item = new Dictionary<string, string>();
     var id = $"{ViewBag.id}";
     var idReadOnly = "";
@@ -9,7 +9,7 @@
         idReadOnly = "readonly=\"readonly\"";
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
-    DataTable dmTinh = ViewBag.dmTinh == null ? new DataTable() : (DataTable)ViewBag.dmTinh;
+    DataTable dmTinh = ViewBag.dmTinh == null ? new DataTable() : ViewBag.dmTinh as DataTable;
 }
 <h2>@ViewBag.Title</h2>
 <form id="frmUpdateQuanTri" name="frmUpdateQuanTri" method="post">
