@@ -1,13 +1,20 @@
-﻿@if (Request.getValue("layout") == "null") { Layout = null; }
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idtarget = Request.getValue("idtarget");
+}
 @if (ViewBag.Error != null)
 {
-    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    <div class="alert alert-warning">
+        @Html.Raw(ViewBag.Error)
+        <br />
+
+        <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-recycle"></i> Tạo lại</a>
+    </div>
     return;
 }
 @{
     var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id as string;
-    var idtarget = Request.getValue("idtarget");
 }
 <br />
 <h2 class="font-weight-bold">BƯỚC 2: ĐIỀN THÔNG TIN CÒN THIẾU CHO BÁO CÁO CÓ ID '@id'</h2>

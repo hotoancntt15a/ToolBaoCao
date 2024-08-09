@@ -1,6 +1,4 @@
-﻿using Antlr.Runtime.Misc;
-using NPOI.HSSF.UserModel;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
@@ -32,10 +30,9 @@ namespace ToolBaoCao.Controllers
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             /* Tạo thư mục tạm */
-            var d = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "temp", "bctuan", $"{Session["idtinh"]}"));
+            string folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bctuan", $"{Session["idtinh"]}_{Session["iduser"]}".GetMd5Hash());
+            var d = new System.IO.DirectoryInfo(folderTemp);
             if (d.Exists == false) { d.Create(); }
-            var time = DateTime.Now.AddMinutes(-30);
-            foreach (var item in d.GetFiles()) { if (item.LastWriteTime < time) { try { item.Delete(); } catch { } } }
             return View();
         }
 
@@ -46,26 +43,48 @@ namespace ToolBaoCao.Controllers
             if (matinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin dữ liệu nào đẩy lên"; return View(); }
             string id = $"{timeStart:yyyyMMddHHmmss}_{matinh}_{timeStart.Millisecond:000}";
+            string folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bctuan", $"{matinh}_{Session["iduser"]}".GetMd5Hash());
             ViewBag.id = id;
             try
             {
+                /* Xoá hết các File có trong thư mục */
+                var time = timeStart.AddMinutes(-30);
+                var d = new System.IO.DirectoryInfo(folderTemp);
+                foreach (var item in d.GetFiles()) { if (item.LastWriteTime < time) { try { item.Delete(); } catch { } } }
+                /* Khai báo dữ liệu tạm */
+                var dbTemp = new dbSQLite(Path.Combine(folderTemp, "import.db"));
+                dbTemp.CreateTableImport();
+                dbTemp.CreateTablePhucLucBaoCao();
+                dbTemp.CreateTableBaoCao();
+                /* Đọc và kiểm tra các tập tin */
                 var list = new List<string>();
+                var bieus = new List<string>();
                 for (int i = 0; i < Request.Files.Count; i++)
                 {
                     if (Path.GetExtension(Request.Files[i].FileName).ToLower() != ".xlsx") { throw new Exception($"Hệ thống chỉ hỗ trợ dữ liệu Excel 2007 (Type of file: Microsoft Excel Worksheet) trở lên '{Request.Files[i].FileName}'"); }
                     list.Add($"{Request.Files[i].FileName} ({Request.Files[i].ContentLength.getFileSize()})");
-                    readExcelbcTuan(Request.Files[i], Session, id, timeStart);
+                    bieus.Add(readExcelbcTuan(dbTemp, Request.Files[i], Session, id, folderTemp, timeStart));
                 }
                 ViewBag.files = list;
+                list = new List<string>();
+                if (bieus.Contains("b02_00") == false) { list.Add("Thiếu biểu B02 toàn quốc;"); }
+                if (bieus.Contains($"b02_{matinh}") == false) { list.Add($"Thiếu biểu B02 của Tỉnh có mã {matinh};"); }
+                if (bieus.Contains("b04_00") == false) { list.Add("Thiếu biểu B04 toàn quốc;"); }
+                if (bieus.Contains("b26_00") == false) { list.Add("Thiếu biểu B26 toàn quốc;"); }
+                if (bieus.Contains($"b26_{matinh}") == false) { list.Add($"Thiếu biểu B26 của Tỉnh có mã {matinh};"); }
+                if(list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
             }
-            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.getLineHTML();
+                var d = new System.IO.DirectoryInfo(folderTemp);
+                foreach (var item in d.GetFiles()) { try { item.Delete(); } catch { } }
+            }
             return View();
         }
 
-        private Dictionary<string, object> readExcelbcTuan(HttpPostedFileBase inputFile, HttpSessionStateBase Session, string idBaoCao, DateTime timeStart)
+        private string readExcelbcTuan(dbSQLite dbConnect, HttpPostedFileBase inputFile, HttpSessionStateBase Session, string idBaoCao, string folderTemp, DateTime timeStart)
         {
-            var rs = new Dictionary<string, object>();
-            string folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bctuan", $"{Session["idtinh"]}");
             string messageError = "";
             var timeUp = timeStart.toTimestamp().ToString();
             var userID = $"{Session["iduser"]}".Trim();
@@ -141,17 +160,17 @@ namespace ToolBaoCao.Controllers
                 if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
                 matinhImport = listValue[0];
                 /* Lấy danh sách cột, bỏ cột ID */
-                var allColumns = AppHelper.dbSqliteWork.getColumns(bieu).Select(p => p.ColumnName).ToList();
+                var allColumns = dbConnect.getColumns(bieu).Select(p => p.ColumnName).ToList();
                 allColumns.RemoveAt(0);
                 /* Thêm UserID */
                 listValue.Add(userID);
                 listValue.Add(timeUp);
                 listValue.Add(idBaoCao);
-                tsql.Add($"INSERT INTO {bieu} ({string.Join(",", allColumns)}) VALUES ('{string.Join("','", listValue)}')");
+                tsql.Add($"INSERT INTO {bieu} ({string.Join(",", allColumns)}) VALUES ('{string.Join("','", listValue)}');");
                 /**
                  * Lấy dữ liệu chi tiết
                  */
-                allColumns = AppHelper.dbSqliteWork.getColumns(bieu + "chitiet").Select(p => p.ColumnName).ToList();
+                allColumns = dbConnect.getColumns(bieu + "chitiet").Select(p => p.ColumnName).ToList();
                 allColumns.RemoveAt(0);
                 /* id2 matinh tentinh macskcb tencskcb */
                 if (cs) { allColumns.RemoveAt(1); allColumns.RemoveAt(1); } /* Loại bỏ ma_tinh, ten_tinh */
@@ -211,19 +230,19 @@ namespace ToolBaoCao.Controllers
                     tsqlVaues.Add($"('{string.Join("','", listValue)}')");
                 }
                 if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet ({string.Join(",", allColumns)}) VALUES {string.Join(",", tsqlVaues)};"); }
-
-                System.IO.File.WriteAllText(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}.sql"), string.Join(Environment.NewLine, tsql));
+                tmp = string.Join(Environment.NewLine, tsql);
+                System.IO.File.WriteAllText(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}.sql"), tmp);
+                dbConnect.Execute(tmp);
                 if (tsql.Count < 2) { throw new Exception("Không có dữ liệu chi tiết"); }
             }
-            catch (Exception ex2)
+            catch (Exception ex2) { messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()} <br />{tmp}"; }
+            finally
             {
-                messageError = $"{bieu}: {inputFile.FileName} (size {inputFile.ContentLength.getFileSize()}; Thời gian xử lý là: {(DateTime.Now - timeStart).TotalSeconds:0.##} giây <br />Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}";
+                if (workbook != null) { workbook.Close(); workbook = null; }
             }
-            finally { if (workbook != null) { workbook.Close(); workbook = null; } }
             if (messageError != "") { throw new Exception(messageError); }
-            rs["tsql"] = string.Join(Environment.NewLine, tsql);
             inputFile.SaveAs(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}{fileExtension}"));
-            return rs;
+            return $"{bieu}_{matinhImport}";
         }
 
         public ActionResult Buoc3()

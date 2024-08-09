@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace ToolBaoCao
 {
@@ -77,14 +78,15 @@ namespace ToolBaoCao
             return db;
         }
 
-        public static dbSQLite getDbSQLiteImport(string matinh)
+        public static dbSQLite getDbSQLiteImport(string matinhOrPath)
         {
-            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"import{matinh}.db");
-            var db = new dbSQLite(pathDB);
-            if (File.Exists(pathDB) == false)
+            if (matinhOrPath == "") { matinhOrPath = Path.Combine(AppHelper.pathApp, "App_Data", "import.db"); }
+            else
             {
-                db.CreateTableImport();
+                if (Regex.IsMatch(matinhOrPath, @"^\d+$")) { matinhOrPath = Path.Combine(AppHelper.pathApp, "App_Data", $"import{matinhOrPath}.db"); }
             }
+            var db = new dbSQLite(matinhOrPath);
+            db.CreateTableImport();
             return db;
         }
 
@@ -102,7 +104,7 @@ namespace ToolBaoCao
             catch (Exception ex) { ex.saveError(tsql); }
         }
 
-        private static void CreateTableBaoCao(this dbSQLite dbConnect, List<string> tables = null)
+        public static void CreateTableBaoCao(this dbSQLite dbConnect, List<string> tables = null)
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
@@ -186,13 +188,12 @@ namespace ToolBaoCao
                     ,userid text not null default '' /* Lưu ID của người dùng */
                     ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
                     ,ngay integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
-                    ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */
-                    );");
+                    ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */);");
             tsqlCreate.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
 
-        private static void CreateTablePhucLucBaoCao(this dbSQLite dbConnect, List<string> tables = null)
+        public static void CreateTablePhucLucBaoCao(this dbSQLite dbConnect, List<string> tables = null)
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
@@ -209,9 +210,7 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng */
-                );"
-                );
+                ,userid text not null default '' /* Lưu ID của người dùng */);");
             }
             if (tables.Contains("pl02") == false)
             {
@@ -228,9 +227,7 @@ namespace ToolBaoCao
                 ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
                 ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
                 ,ngay_ttbq text not null default '' /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                ,userid text not null default '' /* Lưu ID của người dùng */
-                );"
-                );
+                ,userid text not null default '' /* Lưu ID của người dùng */);");
             }
             if (tables.Contains("pl03") == false)
             {
@@ -250,14 +247,14 @@ namespace ToolBaoCao
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
 
-        private static void CreateTableImport(this dbSQLite dbConnect, List<string> tables = null)
+        public static void CreateTableImport(this dbSQLite dbConnect, List<string> tables = null)
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
             /* B02. Thống kê KCB (Tháng) */
             if (tables.Contains("b02") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02 (id INTEGER primary key AUTOINCREMENT,
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,ma_loai_kcb text not null
                 ,tu_thang integer not null default 0
@@ -345,7 +342,7 @@ namespace ToolBaoCao
             /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */
             if (tables.Contains("b26") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b26 (id INTEGER primary key AUTOINCREMENT,
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b26 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,loai_kcb text not null default ''
                 ,thoigian integer not null default 0
