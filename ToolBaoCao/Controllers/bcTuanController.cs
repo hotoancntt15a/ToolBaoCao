@@ -48,9 +48,8 @@ namespace ToolBaoCao.Controllers
             try
             {
                 /* Xoá hết các File có trong thư mục */
-                var time = timeStart.AddMinutes(-30);
                 var d = new System.IO.DirectoryInfo(folderTemp);
-                foreach (var item in d.GetFiles()) { if (item.LastWriteTime < time) { try { item.Delete(); } catch { } } }
+                foreach (var item in d.GetFiles()) { try { item.Delete(); } catch { } }
                 /* Khai báo dữ liệu tạm */
                 var dbTemp = new dbSQLite(Path.Combine(folderTemp, "import.db"));
                 dbTemp.CreateTableImport();
@@ -249,6 +248,14 @@ namespace ToolBaoCao.Controllers
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             ViewBag.id = Request.getValue("idobject");
+            string folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bctuan", $"{Session["idtinh"]}_{Session["iduser"]}".GetMd5Hash());
+            var d = new System.IO.DirectoryInfo(folderTemp);
+            var list = new List<string>();
+            foreach (var f in d.GetFiles())
+            {
+                list.Add($"{f.Name} ({f.Length.getFileSize()})");
+            }
+            ViewBag.files = list;
             return View();
         }
 
