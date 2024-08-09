@@ -1,11 +1,7 @@
-﻿using Microsoft.Ajax.Utilities;
-using NPOI.HSSF.Record.Chart;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -32,14 +28,15 @@ namespace ToolBaoCao
 
         public static string getFileSize(this long size)
         {
-            if (size > 1073741824) { return $"{(size / 1048576):0.##}Gb"; }
+            if (size > 1073741824) { return $"{(size / 1073741824):0.##}Gb"; }
             if (size > 1048576) { return $"{(size / 1048576):0.##}Mb"; }
             if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
             return $"{size}b";
         }
+
         public static string getFileSize(this int size)
         {
-            if (size > 1073741824) { return $"{(size / 1048576):0.##}Gb"; }
+            if (size > 1073741824) { return $"{(size / 1073741824):0.##}Gb"; }
             if (size > 1048576) { return $"{(size / 1048576):0.##}Mb"; }
             if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
             return $"{size}b";
@@ -211,10 +208,13 @@ namespace ToolBaoCao
             dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
             dbSqliteWork.buildDataWork();
             /* Check Folder Exists */
-            if (Directory.Exists(pathApp + "cache") == false) { Directory.CreateDirectory(pathApp + "cache"); }
-            if (Directory.Exists(pathApp + "temp") == false) { Directory.CreateDirectory(pathApp + "temp"); }
-            if (Directory.Exists(pathApp + "temp\\data") == false) { Directory.CreateDirectory(pathApp + "temp\\data"); }
-            if (Directory.Exists(pathApp + "temp\\excel") == false) { Directory.CreateDirectory(pathApp + "temp\\excel"); }
+            var folders = new List<string>() {
+                Path.Combine(pathApp, "cache")
+                , Path.Combine(pathApp, "temp")
+                , Path.Combine(pathApp, "temp", "data")
+                , Path.Combine(pathApp, "temp", "excel")
+                , Path.Combine(pathApp, "App_Data", "bctuan") };
+            foreach (var pathFolder in folders) { if (Directory.Exists(pathFolder) == false) { Directory.CreateDirectory(pathFolder); } }
         }
 
         public static void SapXepNgauNhien(this List<string> arr)

@@ -1,0 +1,33 @@
+﻿@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@ViewBag.Error</div>
+    return;
+}
+@{
+    ViewBag.Title = "Báo cáo mới";
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idformbuoc1 = "frmbuoc1" + DateTime.Now.toTimestamp().ToString();
+}
+<div class="bg-primary"></div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4>Kéo và Thả File vào Đây</h4>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadfile">
+                        <p class="text-center">Kéo và thả file vào khu vực này hoặc nhấp để chọn file</p>
+                    </div>
+                    <div id="fileDetails" class="mt-4">
+                        <h5>Thông Tin File:</h5>
+                        <ul id="fileList" class="list-group"></ul>
+                    </div>
+                    <button id="uploadButton" class="btn btn-primary mt-3" disabled>Đẩy lên Server</button>
+                    <div id="statusMessage" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

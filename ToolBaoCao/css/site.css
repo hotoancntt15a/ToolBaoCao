@@ -3,3 +3,39 @@
 .clsdate { width: 100px; }
 .clstime { width: 50px; }
 .clsnumber { text-align: right; }
+
+.upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 5px;
+    padding: 40px;
+    text-align: center;
+    background-color: #e9ecef;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+    .upload-area.hover {
+        background-color: #d6d8db;
+    }
+
+#fileList {
+    margin-top: 15px;
+}
+
+    #fileList li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        background-color: #ffffff;
+    }
+
+    #fileList img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        margin-right: 10px;
+    }

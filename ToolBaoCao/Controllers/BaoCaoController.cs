@@ -145,6 +145,7 @@ namespace ToolBaoCao.Controllers
                 {
                     var db = BuildDatabase.getDbSQLiteBaoCao();
                     var data = db.getDataTable($"SELECT * FROM bctuandocx WHERE id='{objectid.sqliteGetValueField()}';");
+                    db.Close();
                     if (data.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có mã '{objectid}' không tồn tại hoặc bị xoá trên hệ thống"; return View(); }
                     ViewBag.data = data.Rows[0];
                 }

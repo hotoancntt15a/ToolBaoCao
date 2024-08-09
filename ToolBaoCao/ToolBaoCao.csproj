@@ -347,6 +347,7 @@
     <Compile Include="BuildDatabase.cs" />
     <Compile Include="CaptchaImage.cs" />
     <Compile Include="Controllers\BaoCaoController.cs" />
+    <Compile Include="Controllers\bcTuanController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ImportExcelController.cs" />
@@ -726,6 +727,7 @@
     <Content Include="img\undraw_rocket.svg" />
     <Content Include="js\sb-admin-2.js" />
     <Content Include="js\sb-admin-2.min.js" />
+    <Content Include="js\drapDropFiles.js" />
     <Content Include="js\site.js" />
     <Content Include="ckeditor\bender-runner.config.json" />
     <Content Include="ckeditor\CHANGES.md" />
@@ -2701,6 +2703,12 @@
     <Content Include="Views\BaoCao\BCTuanCreate.cshtml" />
     <Content Include="Views\BaoCao\BCTuanTruyVan.cshtml" />
     <Content Include="Views\ImportExcel\TruyVan.cshtml" />
+    <Content Include="Views\bcTuan\Index.cshtml" />
+    <Content Include="Views\bcTuan\TruyVan.cshtml" />
+    <Content Include="Views\bcTuan\Buoc1.cshtml" />
+    <Content Include="Views\bcTuan\Buoc2.cshtml" />
+    <Content Include="Views\bcTuan\Buoc3.cshtml" />
+    <Content Include="Views\bcTuan\Update.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

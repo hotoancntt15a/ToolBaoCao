@@ -1,0 +1,60 @@
+﻿@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+    return;
+}
+@{
+    ViewBag.Title = "BÁO CÁO TUẦN";
+    var timeStampNow = DateTime.Now.toTimestamp().ToString();
+    var idFormTruyVan = "bctuan2" + timeStampNow;
+    var idViewTruyVan = "vbctuan2" + timeStampNow;
+    var idForm = "bctuan" + timeStampNow;
+    var idResult = "rsbctuan" + timeStampNow;
+    DataTable dmTinh = new DataTable();
+    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as DataTable; }
+    string tinhSelect = $"{ViewBag.tinhSelect}";
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Báo cáo Lưu</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Báo cáo mới</a>
+    </li>
+</ul>
+<!-- Tab panes -->
+<div class="tab-content">
+    <div id="tabHome" class="tab-pane active">
+        @using (Html.BeginForm("TruyVan", "bcTuan", new { area = "", layout = "null" }, FormMethod.Post, new { id = idFormTruyVan }))
+        {
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td>
+                            <!-- Từ ngày mặc định 01/tháng trước so với hiện tại; đến ngày là ngày hiện tại -->
+                            Thời gian lập báo cáo Từ <input type="text" name="ngay1" class="clsdate" value="@DateTime.Now.AddMonths(-1).ToString("01/MM/yyyy")" />
+                            đến <input type="text" class="clsdate" name="ngay2" value="@DateTime.Now.ToString("dd/MM/yyyy")" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="#" onclick="postform('@idFormTruyVan', '', '@idViewTruyVan');" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+        <div id="@idViewTruyVan"></div>
+    </div>
+    <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
+    <div id="tabImport" class="tab-pane fade">
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout="null" })', 'tabImport');
+    });
+</script>

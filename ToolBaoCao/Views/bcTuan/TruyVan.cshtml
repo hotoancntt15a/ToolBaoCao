@@ -1,0 +1,38 @@
+﻿@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    return;
+}
+@{
+    if(Request.getValue("layout") == "null") { Layout = null; }
+    ViewBag.Title = "Báo cáo đã lưu";
+    var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
+    var dField = new Dictionary<string, string>();
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Tải về</th>
+            @for (int i = 1; i < data.Columns.Count; i++)
+            {
+                <th>@dField.getValue(data.Columns[i].ColumnName, data.Columns[i].ColumnName)</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (DataRow r in data.Rows)
+        {
+            <tr data-id="@r[0]">
+                <td>
+                    <a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0] })"> <i class="fa fa-file-word"></i>Báo cáo Word </a>
+                    <a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0], type="xlsx" })"> <i class="fa fa-file-excel"></i> Phục lục Excel </a>
+                </td>
+                <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r[0], layout = "null" })');">@r[1]</a></td>
+                @for (int i = 2; i < data.Columns.Count; i++)
+                {
+                    <td>@r[i]</td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

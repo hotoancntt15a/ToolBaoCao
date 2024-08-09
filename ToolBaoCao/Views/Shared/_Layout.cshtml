@@ -78,21 +78,23 @@
     <script src="~/vendor/datatables/jquery.dataTables.js"></script>
     <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="~/js/sb-admin-2.min.js"></script>
+    <script src="~/js/drapDropFiles.js?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/js/drapDropFiles.js")).ToOADate())"></script>
     <script src="~/js/site.js?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/js/site.js")).ToOADate())"></script>
     @RenderSection("scripts", required: false)
-<script>
+    <script>
         function fixAllClass() {
             if ($('.clsdate').length > 0) { $('.clsdate').datepicker({ language: "vi", autoclose: true, todayHighlight: true }); }
             if ($('.clstime').length > 0) { $('.clstime').timepicker({ 'timeFormat': 'H:i:s' }); }
             $(".clsnumberint").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9-]/g)) return false; });
             $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.-]/g)) return false; });
-            setClsNumberTooltip();
+            if (typeof (setClsNumberTooltip) === "function") { setClsNumberTooltip(); }
+            if (typeof (drapDropFiles) === "function") { drapDropFiles(); }
         }
         $(document).ready(function () {
             fixAllClass();
             if ($('.apptitle').length > 0) { $('title').text($('.apptitle').first().text() + ' - @AppHelper.getConfig("App.Title")'); }
             setActiveLiMenu();
         });
-</script>
+    </script>
 </body>
 </html>
