@@ -1,33 +1,31 @@
 ﻿@if (ViewBag.Error != null)
 {
-    <div class="alert alert-warning">@ViewBag.Error</div>
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
     return;
 }
 @{
-    ViewBag.Title = "Báo cáo mới";
     if (Request.getValue("layout") == "null") { Layout = null; }
     var idformbuoc1 = "frmbuoc1" + DateTime.Now.toTimestamp().ToString();
+    var idtarget = Request.getValue("idtarget");
 }
-<div class="bg-primary"></div>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header text-center">
-                    <h4>Kéo và Thả File vào Đây</h4>
+<br />
+<h2 class="font-weight-bold">BƯỚC 1: ĐẨY DỮ LIỆU EXCEL</h2>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("Buoc2", "bcTuan", new { area = "", layout = "null", idtarget=idtarget })" data-target="@idtarget">
+                    <p class="text-center">Kéo và thả tập tin Excel 2007 trở lên (Type of file: Microsoft Excel Worksheet) vào khu vực này hoặc nhấp để chọn file</p>
                 </div>
-                <div class="card-body">
-                    <div class="upload-area" id="uploadfile">
-                        <p class="text-center">Kéo và thả file vào khu vực này hoặc nhấp để chọn file</p>
-                    </div>
-                    <div id="fileDetails" class="mt-4">
-                        <h5>Thông Tin File:</h5>
-                        <ul id="fileList" class="list-group"></ul>
-                    </div>
-                    <button id="uploadButton" class="btn btn-primary mt-3" disabled>Đẩy lên Server</button>
-                    <div id="statusMessage" class="mt-2"></div>
+                <div id="fileDetails" class="mt-4">
+                    <h5>Danh sách tập tin đã chọn:</h5>
+                    <ul id="fileList" class="list-group"></ul>
                 </div>
+                <button id="uploadButton" class="btn btn-primary mt-3" disabled><i class="fa fa-plus"></i> Đẩy lên máy chủ</button>
             </div>
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () { drapDropFiles(); });
+</script>

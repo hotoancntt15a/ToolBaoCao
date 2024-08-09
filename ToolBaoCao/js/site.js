@@ -28,10 +28,10 @@ Number.prototype.formatVN = function (n = 0, x = 3) {
     return re.replace(/[|]/g, ',');
 };
 function formatNumberToVn(num) {
-    num = num.replace(/,/g, '');
-    if (!isNaN(num) && num !== '') {
-        return new Intl.NumberFormat('vi-VN').format(num);
-    }
+    var number = '';
+    if (typeof (num) == 'string') { number = num; } else { number = num.toString(); }
+    number = number.replace(/,/g, '');
+    if (!isNaN(number) && number !== '') { return new Intl.NumberFormat('vi-VN').format(number); }
     return '';
 }
 function setClsNumberTooltip() {
@@ -194,7 +194,7 @@ function getElementJquery(idObject) {
     if ($('#' + idObject).length > 0) { return '#' + idObject; }
     return '.' + idObject;
 }
-function postform(fromID, urlPost, targetID, callback) {
+function postform(idFromOrData, urlPost, targetID, callback) {
     var timestamp = (Math.floor((new Date()).getTime() / 1000)).toString();
     /** Lấy id Element hiển thị */
     var idtarget = "";
@@ -205,14 +205,12 @@ function postform(fromID, urlPost, targetID, callback) {
     idtarget = getElementJquery(targetID);
 
     /** Lấy id From truyền dữ liệu */
-    var idform = "";
-    if (typeof (fromID) == "object") {
-        if ($(fromID).attr("id") == "") {
-            idform = "idform" + timestamp;
-            $(fromID).attr("id", idform);
-        }
+    var idform = ""; var isFormData = false;
+    if (typeof (idFromOrData) == "object") {
+        if (idFromOrData instanceof FormData) { isFormData = true; }
+        else { if ($(idFromOrData).attr("id") == "") { idform = "idform" + timestamp; $(idFromOrData).attr("id", idform); } }
     }
-    if (idform == "") { idform = getIdJquery(fromID); }
+    if (idform == "") { idform = getIdJquery(idFromOrData); }
 
     /** Lấy Url Post */
     var url = "";
@@ -221,16 +219,16 @@ function postform(fromID, urlPost, targetID, callback) {
         if (idform != "") { if ($(idform).attr("action") != "") { url = $(idform).attr("action"); } }
         if (url == "") { url = window.location.href; }
     }
-    if (idform == '') { messageBox('<div class="alert alert-danger">Thông báo lỗi', '<div class="alert alert-danger">Không có nguồn Form để thao tác</div>'); return; }
-    if ($(idform).length == 0) {
-        if (idf)
+    if (isFormData == false) {
+        if (idform == '') { messageBox('<div class="alert alert-danger">Thông báo lỗi', '<div class="alert alert-danger">Không có nguồn Form để thao tác</div>'); return; }
+        if ($(idform).length == 0) {
             messageBox('<div class="alert alert-danger">Thông báo lỗi', `<div class="alert alert-danger">Không tìm thấy Form có id: ${idform} để thao tác</div>`);
-        return;
+            return;
+        }
     }
-    if ($(idform).attr('enctype') == 'multipart/form-data') {
-        var dataform = new FormData(document.getElementById(idform.replace('#', '')));
+    if (isFormData == true || $(idform).attr('enctype') == 'multipart/form-data') {
+        var dataform = isFormData ? idFromOrData : new FormData(document.getElementById(idform.replace('#', '')));
         if (idtarget != '') { $(idtarget).html('Đang thực hiện <img src="/images/loader.gif" alt="" />'); }
-        messageBox('Thông báo', '<div class="alert alert-info">Đang thực hiện <img alt="" title="" src="/images/loader.gif" /></div><progress id="progressBar' + timestamp + '" value="0" max="100" style="width: 100%;"></progress> <span id="progressPercent' + timestamp + '">0%</span>');
         $.ajax({
             url: url, type: "POST", data: dataform,
             mimeTypes: "multipart/form-data",
@@ -238,11 +236,19 @@ function postform(fromID, urlPost, targetID, callback) {
             , xhr: function () {
                 const xhr = $.ajaxSettings.xhr();
                 if (xhr.upload) {
+                    var id1 = `progressBar${timestamp}`;
+                    var id2 = `progressPercent${timestamp}`;
                     xhr.upload.addEventListener('progress', function (e) {
                         if (e.lengthComputable) {
                             const percentComplete = (e.loaded / e.total) * 100;
-                            $('#progressBar' + timestamp).val(percentComplete);
-                            $('#progressPercent' + timestamp).text(`${Math.round(percentComplete)}%`);
+                            if ($('#' + id1).length == 0) {
+                                var html = `<div class="alert alert-info">Đang thực hiện <img alt="" title="" src="/images/loader.gif" /></div><progress id="${id1}" value="${percentComplete}" max="100" style="width: 100%;"></progress> <span id="${id2}">${Math.round(percentComplete)}%</span>`;
+                                if (idtarget != '' && $(idtarget).css('display') != 'none') { $(idtarget).html(html); }
+                                else { messageBox('Thông báo', html); }                               
+                            } else {
+                                $('#' + id1).val(percentComplete);
+                                $('#' + id2).text(`${Math.round(percentComplete)}%`);
+                            }
                         }
                     }, false);
                 }
@@ -262,7 +268,10 @@ function postform(fromID, urlPost, targetID, callback) {
     }
 }
 function ajaxSuccess(response, isUpload, idtarget, callback) {
-    if (idtarget != "") { $(idtarget).html(response); }
+    if (idtarget != "") {
+        $(idtarget).html(response);
+        if ($(idtarget).css('display') != 'none') { $(idmsg).modal('hide'); }
+    }
     else {
         if (isUpload) { $(idmsg).find(".modal-body").html(response); }
         else { messageBox('Thông báo', response); }

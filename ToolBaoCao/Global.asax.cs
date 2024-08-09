@@ -52,7 +52,11 @@ namespace ToolBaoCao
                                       $"&ErrorCode={httpException.ErrorCode}";
                 throw new Exception(errorMessage);
             }
-            catch (Exception ex) { Response.Redirect($"~/Error?{ex.Message}"); }
+            catch (Exception ex)
+            {
+                HttpContext.Current.Session["ErrorMessage"] = ex.Message;
+                Response.Redirect($"~/Error");
+            }
             finally { Server.ClearError(); }
         }
 

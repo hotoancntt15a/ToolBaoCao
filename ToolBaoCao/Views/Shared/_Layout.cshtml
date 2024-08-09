@@ -88,7 +88,6 @@
             $(".clsnumberint").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9-]/g)) return false; });
             $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.-]/g)) return false; });
             if (typeof (setClsNumberTooltip) === "function") { setClsNumberTooltip(); }
-            if (typeof (drapDropFiles) === "function") { drapDropFiles(); }
         }
         $(document).ready(function () {
             fixAllClass();

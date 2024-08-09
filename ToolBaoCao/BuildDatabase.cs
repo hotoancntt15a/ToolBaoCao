@@ -271,43 +271,42 @@ namespace ToolBaoCao
                 ,cs integer not null default 0
                 ,userid text not null default ''
                 ,timeup integer not null default 0
-                ,md5hash text not null default '');"
+                ,id_bc text not null default '');"
                 );
             }
             if (tables.Contains("b02chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02chitiet (id INTEGER primary key AUTOINCREMENT,
-                id2 integer not null default 0,
-                ma_tinh text not null default '',
-                ten_tinh text not null default '',
-                ma_cskcb text not null default '',
-                ten_cskcb text not null default '',
-                ma_vung text not null default '',
-                tong_luot integer not null default 0,
-                tong_luot_ngoai integer not null default 0,
-                tong_luot_noi integer not null default 0,
-                tyle_noitru real not null default 0,
-                ngay_dtri_bq real not null default 0,
-                chi_bq_chung real not null default 0,
-                chi_bq_ngoai real not null default 0,
-                chi_bq_noi real not null default 0,
-                tong_chi real not null default 0,
-                ty_trong real not null default 0,
-                tong_chi_ngoai real not null default 0,
-                ty_trong_kham real not null default 0,
-                tong_chi_noi real not null default 0,
-                ty_trong_giuong real not null default 0,
-                t_bhtt real not null default 0,
-                t_bhtt_noi real not null default 0,
-                t_bhtt_ngoai real not null default 0
-                );"
-                );
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02chitiet (id INTEGER primary key AUTOINCREMENT
+                ,id2 integer not null default 0
+                ,ma_tinh text not null default ''
+                ,ten_tinh text not null default ''
+                ,ma_cskcb text not null default ''
+                ,ten_cskcb text not null default ''
+                ,ma_vung text not null default ''
+                ,tong_luot integer not null default 0
+                ,tong_luot_ngoai integer not null default 0
+                ,tong_luot_noi integer not null default 0
+                ,tyle_noitru real not null default 0
+                ,ngay_dtri_bq real not null default 0
+                ,chi_bq_chung real not null default 0
+                ,chi_bq_ngoai real not null default 0
+                ,chi_bq_noi real not null default 0
+                ,tong_chi real not null default 0
+                ,ty_trong real not null default 0
+                ,tong_chi_ngoai real not null default 0
+                ,ty_trong_kham real not null default 0
+                ,tong_chi_noi real not null default 0
+                ,ty_trong_giuong real not null default 0
+                ,t_bhtt real not null default 0
+                ,t_bhtt_noi real not null default 0
+                ,t_bhtt_ngoai real not null default 0
+                ,id_bc text not null default '');");
             }
 
             /* B04. Thống kê chi bình quân (Tháng) */
             if (tables.Contains("b04") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04 (id INTEGER primary key AUTOINCREMENT,
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,tu_thang integer not null default 0
                 ,den_thang integer not null default 0
@@ -321,28 +320,26 @@ namespace ToolBaoCao
                 ,cs integer not null default 0
                 ,userid text not null default ''
                 ,timeup integer not null default 0
-                ,md5hash text not null default '');"
-                );
+                ,id_bc text not null default '');");
             }
             if (tables.Contains("b04chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04chitiet (id INTEGER primary key AUTOINCREMENT,
-                id2 integer not null default 0,
-                ma_tinh text not null default '',
-                ten_tinh text not null default '',
-                ma_cskcb text not null default '',
-                ten_cskcb text not null default '',
-                chi_bq_luotkcb real not null default 0,
-                bq_xn real not null default 0,
-                bq_cdha real not null default 0,
-                bq_thuoc real not null default 0,
-                bq_ptt real not null default 0,
-                bq_vtyt real not null default 0,
-                bq_giuong real not null default 0,
-                ngay_ttbq real not null default 0,
-                ma_vung text not null default ''
-                );"
-                );
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04chitiet (id INTEGER primary key AUTOINCREMENT
+                ,id2 integer not null default 0
+                ,ma_tinh text not null default ''
+                ,ten_tinh text not null default ''
+                ,ma_cskcb text not null default ''
+                ,ten_cskcb text not null default ''
+                ,chi_bq_luotkcb real not null default 0
+                ,bq_xn real not null default 0
+                ,bq_cdha real not null default 0
+                ,bq_thuoc real not null default 0
+                ,bq_ptt real not null default 0
+                ,bq_vtyt real not null default 0
+                ,bq_giuong real not null default 0
+                ,ngay_ttbq real not null default 0
+                ,ma_vung text not null default ''
+                ,id_bc text not null default '');");
             }
 
             /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */
@@ -361,8 +358,7 @@ namespace ToolBaoCao
                 ,cs integer not null default 0
                 ,userid text not null default ''
                 ,timeup integer not null default 0
-                ,md5hash text not null default '');"
-                );
+                ,id_bc text not null default '');");
             }
             if (tables.Contains("b26chitiet") == false)
             {
@@ -404,8 +400,7 @@ namespace ToolBaoCao
                 chi_dinh_cdha real not null default 0,
                 chi_dinh_cdha_tang real not null default 0,
                 ma_vung text not null default ''
-                );"
-                );
+                ,id_bc text not null default '');");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }

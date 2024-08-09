@@ -1,21 +1,37 @@
 ﻿@{
     Layout = null;
     string dataText = "404";
-    string msg = Request.getValue("UrlNotFound");
-    if (msg == "")
+    string msg = $"{Session["ErrorMessage"]}";
+    if (msg != "")
     {
-        dataText = "Error";
-        msg = Request.getValue("Message");
-        string tmp = Request.getValue("Source");
-        if (tmp != "")
+        Session["ErrorMessage"] = "";
+        var tmp = new List<string>();
+        foreach (string component in msg.Split('&'))
         {
-            msg += $"<br />Source: {tmp}";
-            tmp = Request.getValue("StackTrace");
-            msg += $"<br />StackTrace: {tmp}";
-            tmp = Request.getValue("WebEventCode");
-            msg += $"<br />WebEventCode: {tmp}";
-            tmp = Request.getValue("ErrorCode");
-            msg += $"<br />ErrorCode: {tmp}";
+            string[] keyValue = component.Split('=');
+            if (keyValue.Length == 2) { tmp.Add($"{keyValue[0]}: {HttpUtility.UrlDecode(keyValue[1])}"); }
+        }
+        msg = string.Join("<br />", tmp);
+        dataText = "Error";
+    }
+    else
+    {
+        msg = Request.getValue("UrlNotFound");
+        if (msg == "")
+        {
+            dataText = "Error";
+            msg = Request.getValue("Message");
+            string tmp = Request.getValue("Source");
+            if (tmp != "")
+            {
+                msg += $"<br />Source: {tmp}";
+                tmp = Request.getValue("StackTrace");
+                msg += $"<br />StackTrace: {tmp}";
+                tmp = Request.getValue("WebEventCode");
+                msg += $"<br />WebEventCode: {tmp}";
+                tmp = Request.getValue("ErrorCode");
+                msg += $"<br />ErrorCode: {tmp}";
+            }
         }
     }
 }
