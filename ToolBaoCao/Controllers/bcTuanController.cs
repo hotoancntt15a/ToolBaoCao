@@ -1,5 +1,6 @@
 ﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
+using zModules.NPOIExcel;
 
 namespace ToolBaoCao.Controllers
 {
@@ -76,14 +78,15 @@ namespace ToolBaoCao.Controllers
                 if (bieus.Contains($"b26_{matinh}") == false) { list.Add($"Thiếu biểu B26 của Tỉnh có mã {matinh};"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
                 /* Tạo Phục Lục 1 */
-                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid, timecreate) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid, '{timeUp}' AS timecreate
-                    FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> ''");
+                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
+                    FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '';");
                 /* Tạo Phục Lục 2*/
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, bq_xn AS chi_bq_xn, bq_cdha AS chi_bq_cdha, bq_thuoc AS chi_bq_thuoc, bq_ptt AS chi_bq_pttt, bq_vtyt AS chi_bq_vtyt, bq_giuong AS chi_bq_giuong, ngay_ttbq, userid, timecreate) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, bq_xn AS chi_bq_xn, bq_cdha AS chi_bq_cdha, bq_thuoc AS chi_bq_thuoc, bq_ptt AS chi_bq_pttt, bq_vtyt AS chi_bq_vtyt, bq_giuong AS chi_bq_giuong, ngay_ttbq, '{idUser}' AS userid, '{timeUp}' AS timecreate
-                    FROM b04chitiet WHERE id_bc='{id}' AND ma_tinh <> '' ");
+                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, bq_xn AS chi_bq_xn, bq_cdha AS chi_bq_cdha, bq_thuoc AS chi_bq_thuoc, bq_ptt AS chi_bq_pttt, bq_vtyt AS chi_bq_vtyt, bq_giuong AS chi_bq_giuong, ngay_ttbq, '{idUser}' AS userid
+                    FROM b04chitiet WHERE id_bc='{id}' AND ma_tinh <> '';");
                 /* Tạo Phục Lục 3 */
-                dbTemp.Execute($@"INSERT INTO pl03 (id_bc, idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.tyle_noitru, p1.ngay_dtri_bq, p1.chi_bq_chung, p1.chi_bq_ngoai, p1.chi_bq_noi, userid, timecreate) SELECT id_bc, '{matinh}' AS idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.tyle_noitru, p1.ngay_dtri_bq, p1.chi_bq_chung, p1.chi_bq_ngoai, p1.chi_bq_noi, '{idUser}' AS userid, '{timeUp}' AS timecreate
-                        FROM b02chitiet WHERE  id_bc='{id}' AND ma_cskcb <> ''");
+                dbTemp.Execute($@"INSERT INTO pl03 (id_bc, idtinh, ma_cskcb, ten_cskcb, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
+                        FROM b02chitiet WHERE id_bc='{id}' AND ma_cskcb <> '';");
+                dbTemp.Close();
             }
             catch (Exception ex)
             {
@@ -160,7 +163,7 @@ namespace ToolBaoCao.Controllers
                 row = sheet.GetRow(indexRow);
                 for (jIndex = indexColumn; jIndex < indexColumn + fieldCount; jIndex++)
                 {
-                    ICell c = row.GetCell(jIndex);
+                    NPOI.SS.UserModel.ICell c = row.GetCell(jIndex);
                     listValue.Add(c.GetValueAsString().Trim());
                 }
                 /* Có phải là cơ sở không? */
@@ -230,7 +233,7 @@ namespace ToolBaoCao.Controllers
                     listValue = new List<string>() { "0", ma.sqliteGetValueField() };
                     for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
                     {
-                        ICell c = row.GetCell(jIndex);
+                        NPOI.SS.UserModel.ICell c = row.GetCell(jIndex);
                         listValue.Add(c.GetValueAsString().Trim().sqliteGetValueField());
                     }
                     /* Cột lấy dữ liệu không đúng định dạng bỏ qua */
@@ -245,14 +248,18 @@ namespace ToolBaoCao.Controllers
                 System.IO.File.WriteAllText(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}.sql"), tmp);
                 dbConnect.Execute(tmp);
                 if (tsql.Count < 2) { throw new Exception("Không có dữ liệu chi tiết"); }
+                /* Lưu lại file */
+                using (FileStream stream = new FileStream(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}{fileExtension}"), FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
             }
             catch (Exception ex2) { messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()} <br />{tmp}"; }
             finally
             {
-                if (workbook != null) { workbook.Close(); workbook = null; }
+                /* Xoá luôn dữ liệu tạm của IIS */
+                if (workbook != null) { 
+                    workbook.Close(); workbook = null; 
+                }
             }
             if (messageError != "") { throw new Exception(messageError); }
-            inputFile.SaveAs(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}{fileExtension}"));
             return $"{bieu}_{matinhImport}";
         }
 
@@ -300,13 +307,63 @@ namespace ToolBaoCao.Controllers
                     tmp = Path.Combine(folderSave, $"bctuan_{idBaoCao}.docx");
                     if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
                     using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
+                    /*
+                     * MemoryStream memoryStream = new MemoryStream();
+                            document.Write(memoryStream);
+                            memoryStream.Position = 0;
+                            return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
+                    */
                 }
+                string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
                 /* Tạo phụ lục báo cáo */
-
+                var pl1 = dbTemp.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}'");
+                pl1.TableName = "pl01";
+                if (pl1.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{idBaoCao}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
+                var pl2 = dbTemp.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}'");
+                pl1.TableName = "pl02";
+                var pl3 = dbTemp.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}'");
+                pl1.TableName = "pl03";
+                var xlsx = XLSX.exportExcel(pl1, pl2, pl3);
+                tmp = Path.Combine(folderSave, $"bctuan_pl_{idBaoCao}.xlsx");
+                if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
+                using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
+                xlsx.Close(); xlsx.Clear();
+                /*
+                 * XSSFWorkbook xlsx = XLSX.exportExcel(pl1, pl2, pl3);
+                        var output = xlsx.WriteToStream();
+                        return File(output.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"PL{tmp}.xlsx"); */
                 /* Di chuyển tập tin Excel */
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
+
+                /** Chuyển sang dữ liệu chính */
+                var dbWork = AppHelper.dbSqliteWork;
+                /* Bỏ cột ID (Số tự động) */
+                /* Phụ Lục chuyển */
+                pl1.Columns.RemoveAt(0); dbWork.Insert("pl01", pl1);
+                pl2.Columns.RemoveAt(0); dbWork.Insert("pl02", pl2);
+                pl3.Columns.RemoveAt(0); dbWork.Insert("pl03", pl3);
+
+                /* Báo cáo tuần chuyển */
+                dbWork.Update("bctuandocx", bctuan);
+
+                /* Di chuyển dữ liệu import */
+                var data = dbTemp.getDataTable($"SELECT * FROM b02 WHERE id_bc='{idBaoCaoVauleField}';");
+                data.Columns.RemoveAt(0); dbWork.Insert("b02", data);
+                data = dbTemp.getDataTable($"SELECT * FROM b04 WHERE id_bc='{idBaoCaoVauleField}';");
+                data.Columns.RemoveAt(0); dbWork.Insert("b04", data);
+                data = dbTemp.getDataTable($"SELECT * FROM b26 WHERE id_bc='{idBaoCaoVauleField}';");
+                data.Columns.RemoveAt(0); dbWork.Insert("b26", data);
+                /* Dữ liệu chi tiết */
+                data = dbTemp.getDataTable($"SELECT * FROM b02chitiet WHERE id_bc='{idBaoCaoVauleField}';");
+                data.Columns.RemoveAt(0); dbWork.Insert("b02chitiet", data);
+                data = dbTemp.getDataTable($"SELECT * FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}';");
+                data.Columns.RemoveAt(0); dbWork.Insert("b04chitiet", data);
+                data = dbTemp.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{idBaoCaoVauleField}';");
+                data.Columns.RemoveAt(0); dbWork.Insert("b26chitiet", data);
+
+                dbTemp.Close();
             }
-            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
+            catch (Exception ex) { ViewBag.Error = ex.getErrorSave(); }
             return View();
         }
 
@@ -410,7 +467,7 @@ namespace ToolBaoCao.Controllers
             var idBaoCaoValueField = idBaoCao.sqliteGetValueField();
             var maTinhValueField = maTinh.sqliteGetValueField();
             /* Bỏ qua các vùng */
-            tsql = $"SELECT * FROM b02chitiet WHERE id_bc='{idBaoCaoValueField}' AND cs='0' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
+            tsql = $"SELECT * FROM b02chitiet WHERE id_bc='{idBaoCaoValueField}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
             var b02TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
             if (b02TQ.Count() == 0) { throw new Exception("B02 Toàn Quốc không có dữ liệu phù hợp truy vấn"); }
             /* Bỏ qua các vùng */
@@ -438,9 +495,9 @@ namespace ToolBaoCao.Controllers
 
             string mavung = dataTinhB02["ma_vung"].ToString();
             var data = dbConnect.getDataTable($"SELECT thoigian, timeup FROM b26 WHERE id_bc='{idBaoCao}'");
-            tmp = $"{data.Rows[0]["thoigian"]}";
             string timeCreate = $"{data.Rows[0]["timeup"]}";
-            var ngayTime = new DateTime(int.Parse(tmp.Substring(0, 4)), int.Parse(tmp.Substring(2, 2)), int.Parse(tmp.Substring(6)));
+            tmp = $"{data.Rows[0]["thoigian"]}";
+            var ngayTime = new DateTime(int.Parse(tmp.Substring(0, 4)), int.Parse(tmp.Substring(4, 2)), int.Parse(tmp.Substring(6)));
 
             /* X1 = {cột R (T-BHTT) bảng B02_TOANQUOC } */
             bctuan.Add("{X1}", dataTinhB02["t_bhtt"].ToString());

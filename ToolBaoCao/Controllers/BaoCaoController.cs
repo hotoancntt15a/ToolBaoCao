@@ -184,7 +184,7 @@ namespace ToolBaoCao.Controllers
                         pl1.TableName = "sheetpl02";
                         var pl3 = dbBaoCao.getDataTable($"SELECT * FROM sheetpl03 WHERE id_bc='{tmp.sqliteGetValueField()}'");
                         pl1.TableName = "sheetpl03";
-                        XSSFWorkbook xlsx = XLSX.exportExcel(new DataTable[] { pl1, pl2, pl3 });
+                        XSSFWorkbook xlsx = XLSX.exportExcel(pl1, pl2, pl3);
                         var output = xlsx.WriteToStream();
                         return File(output.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"PL{tmp}.xlsx");
                     }

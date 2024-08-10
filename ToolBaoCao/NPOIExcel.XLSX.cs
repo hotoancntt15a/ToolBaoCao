@@ -55,7 +55,7 @@ namespace zModules.NPOIExcel
             return fb;
         }
 
-        public static XSSFWorkbook exportExcel(DataTable[] par)
+        public static XSSFWorkbook exportExcel(params DataTable[] par)
         {
             XSSFWorkbook workbook = new XSSFWorkbook();
             int i = 0; int rowIndex = 0;

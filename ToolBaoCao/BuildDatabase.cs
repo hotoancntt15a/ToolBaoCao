@@ -97,6 +97,7 @@ namespace ToolBaoCao
             dbConnect.CreateTableImport(tables);
             /* Các bảng phục lục công việc */
             dbConnect.CreateTablePhucLucBaoCao(tables);
+            dbConnect.CreateTableBaoCao(tables);
             /* Tạo bảng quản lý các tiến trình */
         }
         public static void CreateTableProcess(this dbSQLite dbConnect)
