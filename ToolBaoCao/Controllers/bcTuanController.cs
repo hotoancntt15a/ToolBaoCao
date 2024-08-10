@@ -1,6 +1,5 @@
 ﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -25,7 +24,6 @@ namespace ToolBaoCao.Controllers
         public ActionResult Index()
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
-
             return View();
         }
 
@@ -86,6 +84,16 @@ namespace ToolBaoCao.Controllers
                 /* Tạo Phục Lục 3 */
                 dbTemp.Execute($@"INSERT INTO pl03 (id_bc, idtinh, ma_cskcb, ten_cskcb, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
                         FROM b02chitiet WHERE id_bc='{id}' AND ma_cskcb <> '';");
+                /* Đọc dữ liệu DuToanGiao dự theo thoigian của b26_00 */
+                var namDuToan = $"{dbTemp.getValue($"SELECT thoigian FROM b26 WHERE id_bc = '{id}' AND ma_tinh <> '' LIMIT 1")}";
+                namDuToan = namDuToan.Substring(0, 4);
+                var data = AppHelper.dbSqliteWork.getDataTable($"SELECT so_kyhieu_qd, tong_dutoan, namqd FROM dutoangia WHERE namqd <= {namDuToan} AND idtinh='{matinh}' ORDER BY namqd DESC LIMIT 1;");
+                if (data.Rows.Count > 0)
+                {
+                    var tmp = $"{data.Rows[0]["namqd"]}";
+                    ViewBag.x2 = $"{data.Rows[0]["so_kyhieu_qd"]}";
+                    ViewBag.x3 = $"{data.Rows[0]["tong_dutoan"]}";
+                }
                 dbTemp.Close();
             }
             catch (Exception ex)
@@ -255,8 +263,9 @@ namespace ToolBaoCao.Controllers
             finally
             {
                 /* Xoá luôn dữ liệu tạm của IIS */
-                if (workbook != null) { 
-                    workbook.Close(); workbook = null; 
+                if (workbook != null)
+                {
+                    workbook.Close(); workbook = null;
                 }
             }
             if (messageError != "") { throw new Exception(messageError); }
@@ -280,7 +289,7 @@ namespace ToolBaoCao.Controllers
                 if (System.IO.File.Exists(pathDB) == false) { throw new Exception($"Dữ liệu tạo báo cáo có ID '{idBaoCao}' đã bị huỷ hoặc không tồn tại trên hệ thống"); }
                 var dbTemp = new dbSQLite(Path.Combine(folderTemp, "import.db"));
                 /* Tạo bctuan */
-                var bctuan = createBcTuan(dbTemp, idBaoCao, idtinh, iduser, Request.getValue("x67"), Request.getValue("x68"), Request.getValue("x69"), Request.getValue("x70"));
+                var bctuan = createBcTuan(dbTemp, idBaoCao, idtinh, iduser, Request.getValue("x2"), Request.getValue("x3"), Request.getValue("x67"), Request.getValue("x68"), Request.getValue("x69"), Request.getValue("x70"));
                 /* Đường dẫn lưu */
                 string folderSave = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan");
                 /* Tạo docx */
@@ -336,31 +345,32 @@ namespace ToolBaoCao.Controllers
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 
                 /** Chuyển sang dữ liệu chính */
-                var dbWork = AppHelper.dbSqliteWork;
+                var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(idtinh);
                 /* Bỏ cột ID (Số tự động) */
                 /* Phụ Lục chuyển */
-                pl1.Columns.RemoveAt(0); dbWork.Insert("pl01", pl1);
-                pl2.Columns.RemoveAt(0); dbWork.Insert("pl02", pl2);
-                pl3.Columns.RemoveAt(0); dbWork.Insert("pl03", pl3);
+                pl1.Columns.RemoveAt(0); dbBCTuan.Insert("pl01", pl1);
+                pl2.Columns.RemoveAt(0); dbBCTuan.Insert("pl02", pl2);
+                pl3.Columns.RemoveAt(0); dbBCTuan.Insert("pl03", pl3);
 
                 /* Báo cáo tuần chuyển */
-                dbWork.Update("bctuandocx", bctuan);
+                dbBCTuan.Update("bctuandocx", bctuan);
+                dbBCTuan.Close();
 
+                var dbImport = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
                 /* Di chuyển dữ liệu import */
                 var data = dbTemp.getDataTable($"SELECT * FROM b02 WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbWork.Insert("b02", data);
+                data.Columns.RemoveAt(0); dbImport.Insert("b02", data);
                 data = dbTemp.getDataTable($"SELECT * FROM b04 WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbWork.Insert("b04", data);
+                data.Columns.RemoveAt(0); dbImport.Insert("b04", data);
                 data = dbTemp.getDataTable($"SELECT * FROM b26 WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbWork.Insert("b26", data);
+                data.Columns.RemoveAt(0); dbImport.Insert("b26", data);
                 /* Dữ liệu chi tiết */
                 data = dbTemp.getDataTable($"SELECT * FROM b02chitiet WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbWork.Insert("b02chitiet", data);
+                data.Columns.RemoveAt(0); dbImport.Insert("b02chitiet", data);
                 data = dbTemp.getDataTable($"SELECT * FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbWork.Insert("b04chitiet", data);
+                data.Columns.RemoveAt(0); dbImport.Insert("b04chitiet", data);
                 data = dbTemp.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbWork.Insert("b26chitiet", data);
-
+                data.Columns.RemoveAt(0); dbImport.Insert("b26chitiet", data);
                 dbTemp.Close();
             }
             catch (Exception ex) { ViewBag.Error = ex.getErrorSave(); }
@@ -449,13 +459,9 @@ namespace ToolBaoCao.Controllers
             return d;
         }
 
-        private Dictionary<string, string> createBcTuan(dbSQLite dbConnect, string idBaoCao, string maTinh, string idUser, string x67 = "", string x68 = "", string x69 = "", string x70 = "")
+        private Dictionary<string, string> createBcTuan(dbSQLite dbConnect, string idBaoCao, string maTinh, string idUser, string x2 = "", string x3 = "", string x67 = "", string x68 = "", string x69 = "", string x70 = "")
         {
             var bctuan = new Dictionary<string, string>() { { "id", idBaoCao } };
-
-            string x2 = "0";
-            string x3 = "0";
-            if (Regex.IsMatch(x2, @"^\d+(\.\d+)?$") == false) { x2 = "0"; }
             if (Regex.IsMatch(x3, @"^\d+(\.\d+)?$") == false) { x3 = "0"; }
 
             double so1 = 0; double so2 = 0;
@@ -505,8 +511,8 @@ namespace ToolBaoCao.Controllers
             bctuan.Add("{X2}", x2);
             /* X3 = {Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay} */
             bctuan.Add("{X3}", x3);
-            /* X4={X1/X2 %} So sánh với dự toán, tỉnh đã sử dụng */
-            so2 = double.Parse(x2);
+            /* X4={X1/X3 %} So sánh với dự toán, tỉnh đã sử dụng */
+            so2 = double.Parse(x3);
             if (so2 == 0) { bctuan.Add("{X4}", "0"); }
             else { bctuan.Add("{X4}", (double.Parse(bctuan["{X1}"]) / so2).ToString()); }
 
@@ -641,6 +647,16 @@ namespace ToolBaoCao.Controllers
             bctuan.Add("userid", idUser);
             bctuan.Add("ngay", ngayTime.toTimestamp().ToString());
             bctuan.Add("timecreate", timeCreate);
+            /* Tự động cập nhật vào dữ tuyết giao */
+            var item = new Dictionary<string, string>() {
+                    { "namqd", $"{ngayTime.Year}" },
+                    { "idtinh", maTinh },
+                    { "idhuyen", "" },
+                    { "so_kyhieu_qd", x2},
+                    { "tong_dutoan", x3 },
+                    { "iduser", idUser }
+                };
+            AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
             return bctuan;
         }
 

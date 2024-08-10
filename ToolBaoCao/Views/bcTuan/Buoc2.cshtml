@@ -38,13 +38,13 @@
                 <tr>
                     <td class="text-right" style="width: 180px;">@Html.Label("x2", "Số của QĐ giao dự toán x2:")</td>
                     <td>
-                        <input type="text" name="x2" id="x2" value="" class="clsnumber form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                        <input type="text" name="x2" id="x2" value="@ViewBag.x2" class="clsnumber form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
                     </td>
                 </tr>
                 <tr>
                     <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3")</td>
                     <td>
-                        <input type="text" name="x3" id="x3" value="" class="clsnumber form-control-sm" />
+                        <input type="text" name="x3" id="x3" value="@ViewBag.x3" class="clsnumber form-control-sm" />
                     </td>
                 </tr>
                 <tr>

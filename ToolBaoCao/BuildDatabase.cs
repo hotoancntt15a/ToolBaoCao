@@ -70,6 +70,15 @@ namespace ToolBaoCao
 
         public static dbSQLite getDbSQLiteBaoCao(string matinh = "")
         {
+            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCao{matinh}.db");
+            var db = new dbSQLite(pathDB);
+            var tables = db.getAllTables();
+            db.CreateTablePhucLucBaoCao(tables);
+            db.CreateTableBaoCao(tables);
+            return db;
+        }
+        public static dbSQLite getDataBaoCaoTuan(string matinh = "")
+        {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoTuan{matinh}.db");
             var db = new dbSQLite(pathDB);
             var tables = db.getAllTables();
@@ -77,6 +86,15 @@ namespace ToolBaoCao
             db.CreateTableBaoCao(tables);
             return db;
         }
+        public static dbSQLite getDataImportBaoCaoTuan(string matinh = "")
+        {
+            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"Import{matinh}.db");
+            var db = new dbSQLite(pathDB);
+            var tables = db.getAllTables();
+            db.CreateTableImport(tables);
+            return db;
+        }
+
 
         public static dbSQLite getDbSQLiteImport(string matinhOrPath)
         {
@@ -98,6 +116,13 @@ namespace ToolBaoCao
             /* Các bảng phục lục công việc */
             dbConnect.CreateTablePhucLucBaoCao(tables);
             dbConnect.CreateTableBaoCao(tables);
+            dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS dutoangiao (so_kyhieu_qd text not null default ''
+                  ,tong_dutoan real not null default 0
+                  ,iduser text not null default ''
+                  ,idtinh text not null default ''
+                  ,idhuyen text not null default ''
+                  ,namqd integer not null default 0
+                  ,PRIMARY KEY (namqd,idtinh,idhuyen));");
             /* Tạo bảng quản lý các tiến trình */
         }
         public static void CreateTableProcess(this dbSQLite dbConnect)
@@ -123,7 +148,7 @@ namespace ToolBaoCao
             tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bctuandocx (
                     id text not null primary key /* Mã hóa rút gọn và gợi nhớ cho mỗi lần lập BC tuần Dùng trình bày danh sách báo cáo đã lập để tiện cho chọn và xử lý thao tác: Khóa và mở khóa báo cáo/ xóa báo cáo/ xem/in lại */
                     ,x1 real not null default 0 /* Tổng tiền các CSKCB đã đề nghị bảo hiểm thanh toán (T_BHTT): X1={cột R (T-BHTT) bảng B02_TOANQUOC }. Làm tròn đến triệu đồng */
-                    ,x2 real not null default 0 /* Số của Quyết định giao dự toán: X2={“ Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy thì  lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
+                    ,x2 text not null default '' /* Số của Quyết định giao dự toán: X2={“ Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy thì  lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
                     ,x3 real not null default 0 /* X3={Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay} */
                     ,x4 real not null default 0 /* So sánh với dự toán, tỉnh đã sử dụng X4={X1/X2%} */
                     ,x5 real not null default 0 /* Tỷ lệ điều trị nội trú X5={Cột G, dòng MA_TINH=10}; */
