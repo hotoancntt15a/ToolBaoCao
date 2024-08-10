@@ -90,18 +90,28 @@ namespace ToolBaoCao
             return db;
         }
 
-        public static void buildDataWork(this dbSQLite connect)
+        public static void buildDataWork(this dbSQLite dbConnect)
         {
-            var tsqlCreate = new List<string>();
-            var tsql = "";
-            var tables = connect.getAllTables();
+            var tables = dbConnect.getAllTables();
             /* Các bảng Import */
-            connect.CreateTableImport(tables);
+            dbConnect.CreateTableImport(tables);
             /* Các bảng phục lục công việc */
-            connect.CreateTablePhucLucBaoCao(tables);
-            /* Tạo cơ sở dữ liệu */
-            try { if (tsqlCreate.Count > 0) { tsql = string.Join(" ", tsqlCreate); connect.Execute(tsql); } }
-            catch (Exception ex) { ex.saveError(tsql); }
+            dbConnect.CreateTablePhucLucBaoCao(tables);
+            /* Tạo bảng quản lý các tiến trình */
+        }
+        public static void CreateTableProcess(this dbSQLite dbConnect)
+        {
+            dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS wprocess (
+                  id text NOT NULL PRIMARY KEY,
+                  name text NOT NULL DEFAULT '',
+                  iduser text NOT NULL,
+                  args text NOT NULL DEFAULT '',
+                  args2 text NOT NULL DEFAULT '',
+                  pageindex integer NOT NULL DEFAULT 1,
+                  time1 integer NOT NULL DEFAULT 0,
+                  time2 integer NOT NULL DEFAULT 0);
+                 CREATE INDEX IF NOT EXISTS index_wprocess_iduser ON wproccess (iduser);
+            ");
         }
 
         public static void CreateTableBaoCao(this dbSQLite dbConnect, List<string> tables = null)
@@ -210,7 +220,8 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng */);");
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                 CREATE INDEX IF NOT EXISTS index_pl01_id_bc ON pl01 (id_bc);");
             }
             if (tables.Contains("pl02") == false)
             {
@@ -227,7 +238,8 @@ namespace ToolBaoCao
                 ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
                 ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
                 ,ngay_ttbq text not null default '' /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                ,userid text not null default '' /* Lưu ID của người dùng */);");
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                 CREATE INDEX IF NOT EXISTS index_pl02_id_bc ON pl02 (id_bc);");
             }
             if (tables.Contains("pl03") == false)
             {
@@ -241,8 +253,8 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
-                ,userid text not null default '' /* Lưu ID của người dùng */
-                );");
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                 CREATE INDEX IF NOT EXISTS index_pl03_id_bc ON pl03 (id_bc);");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
@@ -268,8 +280,8 @@ namespace ToolBaoCao
                 ,cs integer not null default 0
                 ,userid text not null default ''
                 ,timeup integer not null default 0
-                ,id_bc text not null default '');"
-                );
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_b02_id_bc ON b02 (id_bc);");
             }
             if (tables.Contains("b02chitiet") == false)
             {
@@ -297,7 +309,8 @@ namespace ToolBaoCao
                 ,t_bhtt real not null default 0
                 ,t_bhtt_noi real not null default 0
                 ,t_bhtt_ngoai real not null default 0
-                ,id_bc text not null default '');");
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_b02chitiet_id_bc ON b02chitiet (id_bc);");
             }
 
             /* B04. Thống kê chi bình quân (Tháng) */
@@ -317,7 +330,8 @@ namespace ToolBaoCao
                 ,cs integer not null default 0
                 ,userid text not null default ''
                 ,timeup integer not null default 0
-                ,id_bc text not null default '');");
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_b04_id_bc ON b04 (id_bc);");
             }
             if (tables.Contains("b04chitiet") == false)
             {
@@ -336,7 +350,8 @@ namespace ToolBaoCao
                 ,bq_giuong real not null default 0
                 ,ngay_ttbq real not null default 0
                 ,ma_vung text not null default ''
-                ,id_bc text not null default '');");
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_b04chitiet_id_bc ON b04chitiet (id_bc);");
             }
 
             /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */
@@ -355,7 +370,8 @@ namespace ToolBaoCao
                 ,cs integer not null default 0
                 ,userid text not null default ''
                 ,timeup integer not null default 0
-                ,id_bc text not null default '');");
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_b26_id_bc ON b26 (id_bc);");
             }
             if (tables.Contains("b26chitiet") == false)
             {
@@ -397,7 +413,8 @@ namespace ToolBaoCao
                 chi_dinh_cdha real not null default 0,
                 chi_dinh_cdha_tang real not null default 0,
                 ma_vung text not null default ''
-                ,id_bc text not null default '');");
+                ,id_bc text not null default '');
+                CREATE INDEX IF NOT EXISTS index_b26chitiet_id_bc ON b26chitiet (id_bc);");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
