@@ -329,9 +329,10 @@ namespace ToolBaoCao.Controllers
                 pl1.TableName = "pl01";
                 if (pl1.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{idBaoCao}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
                 var pl2 = dbTemp.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}'");
-                pl1.TableName = "pl02";
+                pl2.TableName = "pl02";
                 var pl3 = dbTemp.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}'");
-                pl1.TableName = "pl03";
+                pl3.TableName = "pl03";
+                
                 var xlsx = XLSX.exportExcel(pl1, pl2, pl3);
                 tmp = Path.Combine(folderSave, $"bctuan_pl_{idBaoCao}.xlsx");
                 if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
