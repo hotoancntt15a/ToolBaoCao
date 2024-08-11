@@ -276,6 +276,7 @@ namespace ToolBaoCao
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
                 ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
+                ,ma_vung text not null /* Mã vùng */
                 ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
                 ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */

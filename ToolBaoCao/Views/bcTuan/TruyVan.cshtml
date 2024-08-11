@@ -4,10 +4,14 @@
     return;
 }
 @{
-    if(Request.getValue("layout") == "null") { Layout = null; }
-    ViewBag.Title = "Báo cáo đã lưu";
+    if (Request.getValue("layout") == "null") { Layout = null; }
     var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
     var dField = new Dictionary<string, string>();
+    if(data.Rows.Count == 0)
+    {
+        <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
+        return;
+    }
 }
 <table class="table table-hover">
     <thead>
@@ -24,10 +28,9 @@
         {
             <tr data-id="@r[0]">
                 <td>
-                    <a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0] })"> <i class="fa fa-file-word"></i>Báo cáo Word </a>
-                    <a href="@Url.Action("Tuan", "BaoCao", new { mode = "download", idobject = r[0], type="xlsx" })"> <i class="fa fa-file-excel"></i> Phục lục Excel </a>
+                    <a href="#" onclick="showgeturl('@Url.Action("TaiVe", "bcTuan", new { idobject = r["id"] })')"> <i class="fa fa-file-download"></i> Tải về </a>
                 </td>
-                <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r[0], layout = "null" })');">@r[1]</a></td>
+                <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })');">@r[1]</a></td>
                 @for (int i = 2; i < data.Columns.Count; i++)
                 {
                     <td>@r[i]</td>
