@@ -77,6 +77,7 @@ namespace ToolBaoCao
             db.CreateTableBaoCao(tables);
             return db;
         }
+
         public static dbSQLite getDataBaoCaoTuan(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoTuan{matinh}.db");
@@ -86,6 +87,7 @@ namespace ToolBaoCao
             db.CreateTableBaoCao(tables);
             return db;
         }
+
         public static dbSQLite getDataImportBaoCaoTuan(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"Import{matinh}.db");
@@ -94,7 +96,6 @@ namespace ToolBaoCao
             db.CreateTableImport(tables);
             return db;
         }
-
 
         public static dbSQLite getDbSQLiteImport(string matinhOrPath)
         {
@@ -125,17 +126,18 @@ namespace ToolBaoCao
                   ,PRIMARY KEY (namqd,idtinh,idhuyen));");
             /* Tạo bảng quản lý các tiến trình */
         }
+
         public static void CreateTableProcess(this dbSQLite dbConnect)
         {
             dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS wprocess (
-                  id text NOT NULL PRIMARY KEY,
-                  name text NOT NULL DEFAULT '',
-                  iduser text NOT NULL,
-                  args text NOT NULL DEFAULT '',
-                  args2 text NOT NULL DEFAULT '',
-                  pageindex integer NOT NULL DEFAULT 1,
-                  time1 integer NOT NULL DEFAULT 0,
-                  time2 integer NOT NULL DEFAULT 0);
+                  id text NOT NULL PRIMARY KEY
+                  ,name text NOT NULL DEFAULT ''
+                  ,iduser text NOT NULL
+                  ,args text NOT NULL DEFAULT ''
+                  ,args2 text NOT NULL DEFAULT ''
+                  ,pageindex integer NOT NULL DEFAULT 1
+                  ,time1 integer NOT NULL DEFAULT 0
+                  ,time2 integer NOT NULL DEFAULT 0);
                  CREATE INDEX IF NOT EXISTS index_wprocess_iduser ON wproccess (iduser);
             ");
         }

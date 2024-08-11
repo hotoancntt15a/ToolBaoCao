@@ -12,20 +12,16 @@
 @{
     var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id as string;
+    var dirSave = new System.IO.DirectoryInfo(ViewBag.folderSave);
 }
 <br />
 <h2 class="font-weight-bold">BƯỚC 3: TẢI KẾT QUẢ CHO BÁO CÁO CÓ ID: @id</h2>
-@if (ViewBag.files != null)
-{
-    var list = ViewBag.files as List<string>;
-    <div class="alert alert-info">Danh sách tập tin đã xử lý</div>
-    <ul>
-        @foreach (var f in list)
-        {
-            <li>@f</li>
-        }
-    </ul>
-}
-@Html.Raw(Request.ShowRequest())
+<div class="alert alert-info">Danh sách tập tin đã xử lý</div>
+<ul>
+    @foreach (var f in dirSave.GetFiles())
+    {
+        <li>@f (@f.Length.getFileSize())</li>
+    }
+</ul>
 <div class="alert alert-info">Đang trong quá trình xây dựng</div>
 <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo mới</a>
