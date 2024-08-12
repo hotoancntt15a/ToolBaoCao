@@ -353,6 +353,7 @@
     <Compile Include="Controllers\ImportExcelController.cs" />
     <Compile Include="Controllers\ImportSQLiteController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\TaiController.cs" />
     <Compile Include="Controllers\TaiKhoanController.cs" />
     <Compile Include="Controllers\TaskController.cs" />
     <Compile Include="Convert.cs" />
@@ -2715,6 +2716,7 @@
     <Folder Include="Models\" />
     <Folder Include="temp\data\" />
     <Folder Include="temp\excel\" />
+    <Folder Include="Views\Tai\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
