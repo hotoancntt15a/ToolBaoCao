@@ -21,6 +21,7 @@ namespace ToolBaoCao
         private static readonly string keyMD5 = typeof(AppHelper).Namespace;
         public static AppConfig appConfig = new AppConfig();
         public static readonly string pathApp = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string pathCodeProject = Assembly.GetExecutingAssembly().GetPathCodeProject();
         public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
@@ -464,17 +465,29 @@ namespace ToolBaoCao
             catch { }
         }
 
-        public static string getErrorSave(this Exception ex)
+        public static string getLineHTML(this Exception ex, string description = "")
         {
+            var msg = ex.StackTrace.Split('\n').Where(p => Regex.IsMatch(p, @":line \d+")).ToList();
+            var s2 = string.Join(" <br /> ", msg).Replace(pathCodeProject, "");
+            if (string.IsNullOrEmpty(description)) return $"{ex.Message} <br /> {s2}";
+            return $"Lỗi {description}: {ex.Message} <br /> {s2}";
+        }
+
+        public static string getErrorSave(this Exception ex, string newLineReturn = "<br />")
+        {
+            if (newLineReturn == "") { newLineReturn = Environment.NewLine; }
+            /* Chỉ lấy dòng có chỉ số dòng */
+            var stackTrace = ex.StackTrace.Replace(pathCodeProject, "");
+            var msg = stackTrace.Split('\n').Where(p => Regex.IsMatch(p, @":line \d+")).ToList();
             try
             {
                 using (var sw = new StreamWriter(HttpContext.Current.Server.MapPath("~/error.log"), true, Encoding.Unicode))
                 {
-                    try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {ex.Message} {ex.StackTrace}"); sw.Flush(); } catch { }
+                    try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {ex.Message}{Environment.NewLine}{string.Join(Environment.NewLine, msg)}"); sw.Flush(); } catch { }
                 }
-                return ex.getLineHTML();
             }
-            catch { return $"Lỗi: {ex.Message}<br />Chi tiết:{ex.StackTrace}"; }
+            catch { }
+            return $"Lỗi: {ex.Message}{newLineReturn}Chi tiết:{string.Join(newLineReturn, msg)}";
         }
 
         public static string getValue(this HttpRequestBase r, string key, string def = "")
@@ -755,21 +768,9 @@ namespace ToolBaoCao
             w.Response.Write($"<{element} class=\"jax_error\">Lỗi {element}: {msg}</{element}>");
         }
 
-        public static string getPathCodeProject(this Assembly a)
+        public static string GetPathCodeProject(this Assembly a)
         {
-            var s = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(a.GetName().CodeBase)));
-            s = s.Replace("file:\\", "");
-            return s;
-        }
-
-        public static string getLineHTML(this Exception ex, string description = "", Assembly a = null)
-        {
-            var msg = ex.StackTrace.Split('\n').Where(p => Regex.IsMatch(p, @":line \d+")).ToList();
-            var s = Assembly.GetExecutingAssembly().getPathCodeProject();
-            var s2 = string.Join(" <br /> ", msg).Replace(s, "");
-            if (a != null) s2 = s2.Replace(a.getPathCodeProject(), "");
-            if (string.IsNullOrEmpty(description)) return $"{ex.Message} <br /> {s2}";
-            return $"Lỗi {description}: {ex.Message} <br /> {s2}";
+            return Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(a.GetName().CodeBase))).Replace("file:\\", "");
         }
 
         /// <summary>

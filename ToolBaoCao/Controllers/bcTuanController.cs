@@ -828,5 +828,42 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
+        private void DeleteBaoCaoTuan(string id, bool throwEx = false)
+        {
+            /* ID: {yyyyMMddHHmmss}_{idtinh}_{Milisecon}*/
+            var tmpl = id.Split('_');
+            if (tmpl.Length != 3) { 
+                if (throwEx == false) { return; }
+                throw new Exception("ID Báo cáo không đúng định dạng {yyyyMMddHHmmss}_{idtinh}_{Milisecon}: " + id);
+            }
+            string idtinh = tmpl[1];
+            /* Xoá hết các file trong mục lưu trữ App_Data/bctuan */
+            var folder = new DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
+            foreach(var f in folder.GetFiles($"bctuan_{id}.*")) { try { f.Delete(); } catch { } }
+            foreach (var f in folder.GetFiles($"bctuan_pl_{id}.*")) { try { f.Delete(); } catch { } }
+            /* Xoá trong cơ sở dữ liệu */
+            var db = BuildDatabase.getDataBaoCaoTuan(idtinh);
+            try
+            {
+                var idBaoCao = id.sqliteGetValueField();
+                db.Execute($@"DELETE FROM bctuandocx WHERE id='{idBaoCao}';
+                        DELETE FROM pl01 WHERE id_bc='{idBaoCao}';
+                        DELETE FROM pl02 WHERE id_bc='{idBaoCao}';
+                        DELETE FROM pl03 WHERE id_bc='{idBaoCao}';");
+                db.Close();
+                db = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
+                db.Execute($@"DELETE FROM b02 WHERE id_bc='{idBaoCao}';
+                        DELETE FROM b04 WHERE id_bc='{idBaoCao}';
+                        DELETE FROM b26 WHERE id_bc='{idBaoCao}';
+                        DELETE FROM b02chitiet WHERE id_bc='{idBaoCao}';
+                        DELETE FROM b04chitiet WHERE id_bc='{idBaoCao}';
+                        DELETE FROM b26chitiet WHERE id_bc='{idBaoCao}';");
+            }
+            catch(Exception ex) { 
+                var msg = ex.getErrorSave();
+                if (throwEx) { throw new Exception(msg); }
+            }
+            finally { db.Close(); }            
+        }
     }
 }
