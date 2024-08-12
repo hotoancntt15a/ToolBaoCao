@@ -1,0 +1,7 @@
+﻿@{
+    Layout = null;
+    if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    }
+}

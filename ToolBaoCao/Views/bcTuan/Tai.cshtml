@@ -1,23 +1,17 @@
 ﻿@{
     if (Request.getValue("layout") == "null") { Layout = null; }
-    var idtarget = Request.getValue("idtarget");
     var link = "";
 }
 @if (ViewBag.Error != null)
 {
     <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
-    <br />
-    <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</a>
     return;
 }
 @{
-    var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
-    var id = ViewBag.id as string;
+    var id = Request.getValue("idobject");
     var dirSave = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
 }
-<br />
-<h2 class="font-weight-bold">BƯỚC 3: TẢI KẾT QUẢ CHO BÁO CÁO CÓ ID: @id</h2>
-<div class="alert alert-info">Danh sách tập tin đã xử lý</div>
+<div class="alert alert-info">Danh sách tập tin đã xử lý cho Báo cáo tuần có ID '@id'</div>
 <ul>
     <!-- File báo cáo tuần -->
     @foreach (var f in dirSave.GetFiles($"bctuan_{id}*.*"))
@@ -38,5 +32,3 @@
         <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
     }
 </ul>
-<div class="alert alert-info">Đang trong quá trình xây dựng</div>
-<a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo mới</a>

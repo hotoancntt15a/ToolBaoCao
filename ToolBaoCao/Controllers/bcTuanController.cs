@@ -268,7 +268,10 @@ namespace ToolBaoCao.Controllers
             if (messageError != "") { throw new Exception(messageError); }
             return $"{bieu}_{matinhImport}";
         }
-
+        public ActionResult Tai()
+        {
+            return View();
+        }
         public ActionResult Buoc3()
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
@@ -820,8 +823,10 @@ namespace ToolBaoCao.Controllers
                     ViewBag.ngay1 = ngay1;
                     ViewBag.ngay2 = ngay2;
                     var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(matinh);
-                    ViewBag.data = dbBCTuan.getDataTable($"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7, id,ma_tinh,x72,x74,userid FROM bctuandocx WHERE timecreate >= {time1.toTimestamp()} AND timecreate <= {time2.toTimestamp()}");
+                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7, id,ma_tinh,x72,x74,userid FROM bctuandocx WHERE timecreate >= {time1.toTimestamp()} AND timecreate < {time2.AddDays(1).toTimestamp()}";
+                    ViewBag.data = dbBCTuan.getDataTable(tsql);
                     dbBCTuan.Close();
+                    ViewBag.tsql = tsql;
                     return View();
                 }
             }

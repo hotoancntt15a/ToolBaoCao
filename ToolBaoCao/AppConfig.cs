@@ -62,7 +62,11 @@ namespace ToolBaoCao
         {
             try { if (timeLastWrite != File.GetLastWriteTime(filePath).ToString()) { Load(); } } catch { }
             var setting = Config.Settings.Find(s => s.Key == key);
-            if (setting == null) { return valueDefault; }
+            if (setting == null)
+            {
+                if (key == "app.title" || key == "App.Title") { return "HIA-Tools"; }
+                return valueDefault;
+            }
             return setting.Value;
         }
     }

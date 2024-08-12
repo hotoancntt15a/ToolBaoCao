@@ -715,6 +715,7 @@
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="images\bg-logo.png" />
+    <Content Include="images\graph-clipart-data-statistics.png" />
     <Content Include="images\loader.gif" />
     <Content Include="images\loading.gif" />
     <Content Include="images\loading26.gif" />
@@ -2705,13 +2706,14 @@
     <Content Include="Views\bcTuan\Buoc2.cshtml" />
     <Content Include="Views\bcTuan\Buoc3.cshtml" />
     <Content Include="Views\bcTuan\Update.cshtml" />
+    <Content Include="Views\bcTuan\Tai.cshtml" />
+    <Content Include="Views\Tai\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />
     <Folder Include="Models\" />
     <Folder Include="temp\data\" />
     <Folder Include="temp\excel\" />
-    <Folder Include="Views\Tai\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -3,11 +3,12 @@
     <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
     return;
 }
+<div class="alert alert-info">Dữ liệu truy vấn báo cáo được tạo từ @Request.getValue("ngay1") đến @Request.getValue("ngay2")</div>
 @{
     if (Request.getValue("layout") == "null") { Layout = null; }
     var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
     var dField = new Dictionary<string, string>();
-    if(data.Rows.Count == 0)
+    if (data.Rows.Count == 0)
     {
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
         return;
@@ -28,7 +29,7 @@
         {
             <tr data-id="@r[0]">
                 <td>
-                    <a href="#" onclick="showgeturl('@Url.Action("TaiVe", "bcTuan", new { idobject = r["id"] })')"> <i class="fa fa-file-download"></i> Tải về </a>
+                    <a href="#" onclick="showgeturl('@Url.Action("Tai", "bcTuan", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> Tải về </a>
                 </td>
                 <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })');">@r[1]</a></td>
                 @for (int i = 2; i < data.Columns.Count; i++)
