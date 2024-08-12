@@ -332,7 +332,7 @@ namespace ToolBaoCao
                 byte[] resualArray = tranfrom.TransformFinalBlock(toEndArray, 0, toEndArray.Length);
                 return Encoding.UTF8.GetString(resualArray);
             }
-            catch (Exception ex) { return "Lỗi: " + ex.Message; }
+            catch (Exception ex) { return $"Lỗi: {ex.Message}; Chuỗi nhập '{cipherText}'"; }
         }
 
         public static string RemoveHTMLTag(this object html)

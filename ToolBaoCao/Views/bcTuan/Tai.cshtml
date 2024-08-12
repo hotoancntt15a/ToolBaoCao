@@ -17,18 +17,18 @@
     @foreach (var f in dirSave.GetFiles($"bctuan_{id}*.*"))
     {
         link = f.FullName.Replace(AppHelper.pathApp, "");
-        <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
+        <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
     <!-- File phụ lục báo cáo tuần -->
     @foreach (var f in dirSave.GetFiles($"bctuan_pl_{id}*.*"))
     {
         link = f.FullName.Replace(AppHelper.pathApp, "");
-        <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
+        <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
     <!-- File tải lên phụ vục báo cáo tuần -->
     @foreach (var f in dirSave.GetFiles($"id{id}*.*"))
     {
         link = f.FullName.Replace(AppHelper.pathApp, "");
-        <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
+        <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
 </ul>
