@@ -10,25 +10,33 @@
 @{
     var id = Request.getValue("idobject");
     var dirSave = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
+    var i = 0;
 }
 <div class="alert alert-info">Danh sách tập tin đã xử lý cho Báo cáo tuần có ID '@id'</div>
 <ul>
     <!-- File báo cáo tuần -->
     @foreach (var f in dirSave.GetFiles($"bctuan_{id}*.*"))
     {
+        i++;
         link = f.FullName.Replace(AppHelper.pathApp, "");
         <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
     <!-- File phụ lục báo cáo tuần -->
     @foreach (var f in dirSave.GetFiles($"bctuan_pl_{id}*.*"))
     {
+        i++;
         link = f.FullName.Replace(AppHelper.pathApp, "");
         <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
     <!-- File tải lên phụ vục báo cáo tuần -->
-    @foreach (var f in dirSave.GetFiles($"id{id}*.*"))
+    @foreach (var f in dirSave.GetFiles($"id{id}_b26_00.*"))
     {
+        i++;
         link = f.FullName.Replace(AppHelper.pathApp, "");
         <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
 </ul>
+@if (i == 0)
+{
+    <div class="alert alert-warning">Không tìm thấy tập tin</div>
+}

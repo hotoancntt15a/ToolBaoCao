@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
@@ -23,9 +22,9 @@ namespace ToolBaoCao.Controllers
                 {
                     return File(path, "application/octet-stream", Path.GetFileName(path));
                 }
-                throw new Exception($"Không tìm thấy tập tin {AppHelper.pathApp} : {path}");
+                return Content($"Không tìm thấy tập tin {path} với Object='{Request.getValue("object")}'; MD5Check: {p2}".BootstrapAlter("warning"));
             }
-            catch (Exception ex) { return Content(ex.getLineHTML().BootstrapAlter("warning")); }
+            catch (Exception ex) { return Content(ex.getErrorSave().BootstrapAlter("warning")); }
         }
     }
 }

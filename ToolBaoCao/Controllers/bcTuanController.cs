@@ -63,7 +63,7 @@ namespace ToolBaoCao.Controllers
                 var bieus = new List<string>();
                 for (int i = 0; i < Request.Files.Count; i++)
                 {
-                    if (Path.GetExtension(Request.Files[i].FileName).ToLower() != ".xlsx") { throw new Exception($"Hệ thống chỉ hỗ trợ dữ liệu Excel 2007 (Type of file: Microsoft Excel Worksheet) trở lên '{Request.Files[i].FileName}'"); }
+                    if (Path.GetExtension(Request.Files[i].FileName).ToLower() != ".xlsx") { continue; }
                     list.Add($"{Request.Files[i].FileName} ({Request.Files[i].ContentLength.getFileSize()})");
                     bieus.Add(readExcelbcTuan(dbTemp, Request.Files[i], Session, id, folderTemp, timeStart));
                 }
@@ -268,10 +268,12 @@ namespace ToolBaoCao.Controllers
             if (messageError != "") { throw new Exception(messageError); }
             return $"{bieu}_{matinhImport}";
         }
+
         public ActionResult Tai()
         {
             return View();
         }
+
         public ActionResult Buoc3()
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
@@ -383,6 +385,7 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = ex.getErrorSave(); }
             return View();
         }
+
         private DataTable createPhuLuc01(DataTable pl1)
         {
             var phuluc01 = new DataTable("PhuLuc01");
@@ -405,6 +408,7 @@ namespace ToolBaoCao.Controllers
                 dr[1] = $"{r["ten_tinh"]}";
                 dr[2] = $"{r["tyle_noitru"]}";
                 for (int i = 3; i < phuluc01.Columns.Count; i++) { dr[i] = ""; }
+                phuluc01.Rows.Add(dr);
             }
             /* Sắp xếp theo Ngày điều trị BQ (ngày) */
             var view = pl1.AsEnumerable().OrderByDescending(x => x.Field<double>("ngay_dtri_bq")).ToList();
@@ -436,6 +440,7 @@ namespace ToolBaoCao.Controllers
             }
             return phuluc01;
         }
+
         private DataTable createPhuLuc02(DataTable pl2)
         {
             var phuluc02 = new DataTable("PhuLuc02");
@@ -460,9 +465,11 @@ namespace ToolBaoCao.Controllers
                 dr[6] = $"{r["chi_bq_vtyt"]}";
                 dr[7] = $"{r["chi_bq_giuong"]}";
                 dr[8] = $"{r["ngay_ttbq"]}";
+                phuluc02.Rows.Add(dr);
             }
             return phuluc02;
         }
+
         private DataTable createPhuLuc03(DataTable pl3)
         {
             var phuluc03 = new DataTable("PhuLuc03");
@@ -485,6 +492,7 @@ namespace ToolBaoCao.Controllers
                 dr[1] = $"{r["ten_cskcb"]}";
                 dr[2] = $"{r["tyle_noitru"]}";
                 for (int i = 3; i < phuluc03.Columns.Count; i++) { dr[i] = ""; }
+                phuluc03.Rows.Add(dr);
             }
             /* Sắp xếp theo Ngày điều trị BQ (ngày) */
             var view = pl3.AsEnumerable().OrderByDescending(x => x.Field<double>("ngay_dtri_bq")).ToList();
@@ -833,18 +841,42 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
-        private void DeleteBaoCaoTuan(string id, bool throwEx = false)
+
+        public ActionResult Delete()
+        {
+            var timeStart = DateTime.Now;
+            string ids = Request.getValue("id");
+            var lid = new List<string>();
+            string mode = Request.getValue("mode");
+            try
+            {
+                if (string.IsNullOrEmpty(ids)) { return Content("Không có tham số".BootstrapAlter("warning")); }
+                /* Kiểm tra danh sách nếu có */
+                lid = ids.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                ViewBag.data = string.Join(",", lid);
+                if(mode == "force")
+                {
+                    foreach (string id in lid) { DeleteBCTuan(id, true); }
+                    return Content($"Xoá thành công báo cáo có ID '{string.Join(", ", lid)}' ({timeStart.getTimeRun()})".BootstrapAlter());
+                }                
+            }
+            catch (Exception ex) { return Content(ex.getErrorSave().BootstrapAlter("warning")); }
+            return View();
+        }
+
+        private void DeleteBCTuan(string id, bool throwEx = false)
         {
             /* ID: {yyyyMMddHHmmss}_{idtinh}_{Milisecon}*/
             var tmpl = id.Split('_');
-            if (tmpl.Length != 3) { 
+            if (tmpl.Length != 3)
+            {
                 if (throwEx == false) { return; }
                 throw new Exception("ID Báo cáo không đúng định dạng {yyyyMMddHHmmss}_{idtinh}_{Milisecon}: " + id);
             }
             string idtinh = tmpl[1];
             /* Xoá hết các file trong mục lưu trữ App_Data/bctuan */
             var folder = new DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
-            foreach(var f in folder.GetFiles($"bctuan_{id}.*")) { try { f.Delete(); } catch { } }
+            foreach (var f in folder.GetFiles($"bctuan_{id}.*")) { try { f.Delete(); } catch { } }
             foreach (var f in folder.GetFiles($"bctuan_pl_{id}*.*")) { try { f.Delete(); } catch { } }
             foreach (var f in folder.GetFiles($"id{id}*.*")) { try { f.Delete(); } catch { } }
             /* Xoá trong cơ sở dữ liệu */
@@ -865,11 +897,12 @@ namespace ToolBaoCao.Controllers
                         DELETE FROM b04chitiet WHERE id_bc='{idBaoCao}';
                         DELETE FROM b26chitiet WHERE id_bc='{idBaoCao}';");
             }
-            catch(Exception ex) { 
+            catch (Exception ex)
+            {
                 var msg = ex.getErrorSave();
                 if (throwEx) { throw new Exception(msg); }
             }
-            finally { db.Close(); }            
+            finally { db.Close(); }
         }
     }
 }

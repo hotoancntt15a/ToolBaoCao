@@ -349,7 +349,6 @@
     <Compile Include="Controllers\bcTuanController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\ImportExcelController.cs" />
     <Compile Include="Controllers\ImportSQLiteController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\TaiController.cs" />
@@ -2708,6 +2707,7 @@
     <Content Include="Views\bcTuan\Update.cshtml" />
     <Content Include="Views\bcTuan\Tai.cshtml" />
     <Content Include="Views\Tai\Index.cshtml" />
+    <Content Include="Views\bcTuan\Delete.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

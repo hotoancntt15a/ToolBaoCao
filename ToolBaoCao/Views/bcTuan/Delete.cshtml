@@ -1,0 +1,24 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idfrom = "frmdel" + DateTime.Now.toTimestamp().ToString();
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    return;
+}
+@using (Html.BeginForm("Delete", "bcTuan", new { area = "", mode = "force", layout = "null" }, FormMethod.Post, new { id = idfrom }))
+{
+    <input type="hidden" name="id" value="@Request.getValue("id")" />
+    <div class="alert alert-info"><i class="fa fa-question"></i> Bạn có thực sự muốn xoá các báo cao tuần đã chọn không?</div>
+    <table class="table table-hover">
+        <tbody>
+            <tr>
+                <td>
+                    <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idfrom');"> <i class="fa fa-check-square-o"></i> Đồng ý</a>
+                    <a class="btn btn-primary btn-sm" href="#" onclick="$(idmsg).modal('hide');"> <i class="fa fa-remove"></i> Huỷ</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}

@@ -13,30 +13,41 @@
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
         return;
     }
+    var idform = "frmdel" + DateTime.Now.toTimestamp().ToString(); ;
 }
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Tải về</th>
-            @for (int i = 1; i < data.Columns.Count; i++)
-            {
-                <th>@dField.getValue(data.Columns[i].ColumnName, data.Columns[i].ColumnName)</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow r in data.Rows)
-        {
-            <tr data-id="@r[0]">
-                <td>
-                    <a href="#" onclick="showgeturl('@Url.Action("Tai", "bcTuan", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> Tải về </a>
-                </td>
-                <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })');">@r[1]</a></td>
-                @for (int i = 2; i < data.Columns.Count; i++)
+@using (Html.BeginForm("Delete", "bcTuan", new { area = "", layout = "null" }, FormMethod.Post, new { id = idform }))
+{
+    <table class="table table-hover table-bordered">
+        <thead>
+            <tr>
+                <th>Chọn</th>
+                @for (int i = 1; i < data.Columns.Count; i++)
                 {
-                    <td>@r[i]</td>
+                    <th>@dField.getValue(data.Columns[i].ColumnName, data.Columns[i].ColumnName)</th>
                 }
             </tr>
-        }
+        </thead>
+        <tbody>
+            @foreach (DataRow r in data.Rows)
+            {
+                <tr data-id="@r["id"]">
+                    <td><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
+                    <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })');">@r[1]</a> [<a href="#" onclick="showgeturl('@Url.Action("Tai", "bcTuan", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
+                    @for (int i = 2; i < data.Columns.Count; i++)
+                    {
+                        <td>@r[i]</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<table class="table table-hover">
+    <tbody>
+        <tr>
+            <td>
+                <a href="#" onclick="postform('@idform')" class="btn btn-primary btn-sm"> <i class="fa fa-recycle"></i> Xoá báo cáo </a>
+            </td>
+        </tr>
     </tbody>
 </table>

@@ -321,6 +321,7 @@ namespace ToolBaoCao
         public static string MD5Decrypt(this string cipherText)
         {
             if (string.IsNullOrEmpty(cipherText)) return "";
+            cipherText = cipherText.Replace(" ", "+");
             try
             {
                 byte[] keyArray;

@@ -2,6 +2,7 @@
     Layout = null;
     string dataText = "404";
     string msg = $"{Session["ErrorMessage"]}";
+    var classTextAglin = "text-center";
     if (msg != "")
     {
         Session["ErrorMessage"] = "";
@@ -24,6 +25,7 @@
             string tmp = Request.getValue("Source");
             if (tmp != "")
             {
+                classTextAglin = "text-right";
                 msg += $"<br />Source: {tmp}";
                 tmp = Request.getValue("StackTrace");
                 msg += $"<br />StackTrace: {tmp}";
@@ -57,6 +59,8 @@
             <!-- 404 Error Text -->
             <div class="text-center">
                 <div class="error mx-auto" data-text="@dataText">@dataText</div>
+            </div>
+            <div class="@classTextAglin">
                 <p class="lead text-gray-800 mb-5 apptitle">@Html.Raw(msg)</p>
                 <a href="~/" class="btn btn-primary"><i class="fa fa-home"></i> Trang chủ</a>
             </div>
