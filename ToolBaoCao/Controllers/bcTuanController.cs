@@ -840,7 +840,8 @@ namespace ToolBaoCao.Controllers
             /* Xoá hết các file trong mục lưu trữ App_Data/bctuan */
             var folder = new DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
             foreach(var f in folder.GetFiles($"bctuan_{id}.*")) { try { f.Delete(); } catch { } }
-            foreach (var f in folder.GetFiles($"bctuan_pl_{id}.*")) { try { f.Delete(); } catch { } }
+            foreach (var f in folder.GetFiles($"bctuan_pl_{id}*.*")) { try { f.Delete(); } catch { } }
+            foreach (var f in folder.GetFiles($"id{id}*.*")) { try { f.Delete(); } catch { } }
             /* Xoá trong cơ sở dữ liệu */
             var db = BuildDatabase.getDataBaoCaoTuan(idtinh);
             try
