@@ -265,7 +265,8 @@ namespace ToolBaoCao
                 ,chi_bq_pttt real not null default 0 /* chi BQ phẫu thuật thủ thuật	Lấy từ B04. Cột G */
                 ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
                 ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
-                ,ngay_ttbq text not null default '' /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
+                ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
+                ,tong_luot real not null default 0
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_pl02_id_bc ON pl02 (id_bc);");
             }

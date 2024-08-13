@@ -1,4 +1,5 @@
-﻿using NPOI.SS.UserModel;
+﻿using NPOI.SS.Formula.Functions;
+using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
@@ -79,8 +80,10 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
                     FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '';");
                 /* Tạo Phục Lục 2*/
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, bq_xn AS chi_bq_xn, bq_cdha AS chi_bq_cdha, bq_thuoc AS chi_bq_thuoc, bq_ptt AS chi_bq_pttt, bq_vtyt AS chi_bq_vtyt, bq_giuong AS chi_bq_giuong, ngay_ttbq, '{idUser}' AS userid
-                    FROM b04chitiet WHERE id_bc='{id}' AND ma_tinh <> '';");
+                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, tong_luot, userid) 
+                    SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_ptt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_ttbq, p2.tong_luot, '{idUser}' AS userid
+                    FROM b04chitiet p1 INNER JOIN b02chitiet p2 ON p1.id_bc = p2.id_bc AND p1.ma_tinh = p2.ma_tinh
+                    WHERE p1.id_bc='{id}' AND p1.ma_tinh <> '';");
                 /* Tạo Phục Lục 3 */
                 dbTemp.Execute($@"INSERT INTO pl03 (id_bc, idtinh, ma_cskcb, ten_cskcb, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
                         FROM b02chitiet WHERE id_bc='{id}' AND ma_cskcb <> '';");
@@ -313,7 +316,7 @@ namespace ToolBaoCao.Controllers
                             tmp = run.ToString();
                             // Sử dụng Regex để tìm tất cả các match
                             MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
-                            foreach (Match match in matches) { tmp = tmp.Replace(match.Value, bctuan.getValue(match.Value, "", true)); }
+                            foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bctuan.getValue(match.Value, "", true)); }
                             run.SetText(tmp, 0);
                         }
                     }
@@ -328,16 +331,21 @@ namespace ToolBaoCao.Controllers
                     */
                 }
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
+                var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(idtinh);
+                var dbImport = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
                 /* Tạo phụ lục báo cáo */
-                var pl1 = dbTemp.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}'");
-                if (pl1.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{idBaoCao}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
-                var phuluc01 = createPhuLuc01(pl1, idtinh, bctuan);
+                var pl = dbTemp.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}'");
+                if (pl.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{idBaoCao}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
+                var phuluc01 = createPhuLuc01(pl, idtinh, bctuan);
+                pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl01", pl);
 
-                var pl2 = dbTemp.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}'");
-                var phuluc02 = createPhuLuc02(pl2, idtinh, bctuan);
+                pl = dbTemp.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}'");
+                var phuluc02 = createPhuLuc02(pl, idtinh, bctuan);
+                pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl02", pl);
 
-                var pl3 = dbTemp.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}'");
-                var phuluc03 = createPhuLuc03(pl3, idtinh, bctuan);
+                pl = dbTemp.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}'");
+                var phuluc03 = createPhuLuc03(pl, idtinh, bctuan);
+                pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl03", pl);
 
                 var xlsx = XLSX.exportExcel(phuluc01, phuluc02, phuluc03);
                 phuluc01 = null; phuluc02 = null; phuluc03 = null;
@@ -353,19 +361,10 @@ namespace ToolBaoCao.Controllers
                 /* Di chuyển tập tin Excel */
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 
-                /** Chuyển sang dữ liệu chính */
-                var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(idtinh);
-                /* Bỏ cột ID (Số tự động) */
-                /* Phụ Lục chuyển */
-                pl1.Columns.RemoveAt(0); dbBCTuan.Insert("pl01", pl1);
-                pl2.Columns.RemoveAt(0); dbBCTuan.Insert("pl02", pl2);
-                pl3.Columns.RemoveAt(0); dbBCTuan.Insert("pl03", pl3);
-
                 /* Báo cáo tuần chuyển */
                 dbBCTuan.Update("bctuandocx", bctuan);
                 dbBCTuan.Close();
 
-                var dbImport = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
                 /* Di chuyển dữ liệu import */
                 var data = dbTemp.getDataTable($"SELECT * FROM b02 WHERE id_bc='{idBaoCaoVauleField}';");
                 data.Columns.RemoveAt(0); dbImport.Insert("b02", data);
@@ -382,7 +381,11 @@ namespace ToolBaoCao.Controllers
                 data.Columns.RemoveAt(0); dbImport.Insert("b26chitiet", data);
                 dbTemp.Close();
             }
-            catch (Exception ex) { ViewBag.Error = ex.getErrorSave(); }
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.getErrorSave();
+                DeleteBCTuan(idtinh);
+            }
             return View();
         }
 
@@ -490,7 +493,7 @@ namespace ToolBaoCao.Controllers
         private DataTable createPhuLuc02(DataTable pl2, string idtinh, Dictionary<string, string> bctuan)
         {
             /* Bỏ [ma tỉnh] - ở cột tên tỉnh */
-            for(int i = 0; i < pl2.Rows.Count; i++) { pl2.Rows[i]["ten_tinh"] = Regex.Replace($"{pl2.Rows[i]["ten_tinh"]}", @"^V?\d+[ -]+", "");  }
+            for (int i = 0; i < pl2.Rows.Count; i++) { pl2.Rows[i]["ten_tinh"] = Regex.Replace($"{pl2.Rows[i]["ten_tinh"]}", @"^V?\d+[ -]+", ""); }
             var phuluc02 = new DataTable("PhuLuc02");
             phuluc02.Columns.Add("Mã Tỉnh");
             phuluc02.Columns.Add("Tên tỉnh");
@@ -546,7 +549,31 @@ namespace ToolBaoCao.Controllers
                     , $"{view[0]["ngay_ttbq"]}");
             }
             /* Vùng */
-            phuluc02.Rows.Add($"V{mavung}", "Vùng", "0", "0", "0", "0", "0", "0", "0");
+            var vung = pl2.AsEnumerable()
+                .Where(x => x.Field<string>("ma_vung") == mavung)
+                .Select(x => new
+                {
+                    chi_bq_xn = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("chi_bq_xn") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0,
+                    chi_bq_cdha = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("chi_bq_cdha") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0,
+                    chi_bq_thuoc = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("chi_bq_thuoc") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0,
+                    chi_bq_pttt = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("chi_bq_pttt") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0,
+                    chi_bq_vtyt = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("chi_bq_vtyt") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0,
+                    chi_bq_giuong = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("chi_bq_giuong") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0,
+                    ngay_ttbq = x.Field<double>("tong_luot") != 0 ? (x.Field<double>("ngay_ttbq") * x.Field<double>("tong_luot")) / x.Field<double>("tong_luot") : 0
+                })
+                .GroupBy(x => 1)
+                .Select(g => new
+                {
+                    chi_bq_xn = g.Sum(x => x.chi_bq_xn),
+                    chi_bq_cdha = g.Sum(x => x.chi_bq_cdha),
+                    chi_bq_thuoc = g.Sum(x => x.chi_bq_thuoc),
+                    chi_bq_pttt = g.Sum(x => x.chi_bq_pttt),
+                    chi_bq_vtyt = g.Sum(x => x.chi_bq_vtyt),
+                    chi_bq_giuong = g.Sum(x => x.chi_bq_giuong),
+                    ngay_ttbq = g.Sum(x => x.ngay_ttbq)
+                })
+                .First();
+            phuluc02.Rows.Add($"V{mavung}", "Vùng", $"{vung.chi_bq_xn}", $"{vung.chi_bq_cdha}", $"{vung.chi_bq_thuoc}", $"{vung.chi_bq_pttt}", $"{vung.chi_bq_vtyt}", $"{vung.chi_bq_giuong}", $"{vung.ngay_ttbq}");
             /* Tỉnh */
             if (viewTinh.Count == 0) { phuluc02.Rows.Add(idtinh, idtinh, "0", "0", "0", "0", "0", "0", "0"); }
             else
