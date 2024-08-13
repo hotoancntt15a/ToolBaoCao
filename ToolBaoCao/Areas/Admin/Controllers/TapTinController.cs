@@ -19,48 +19,30 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             try
             {
-                var listFolder = new List<string>();
-                var listfile = new List<string>();
+                var listFolder = new List<DirectoryInfo>();
                 /* Tham số đường dẫn */
                 var pathFolder = Request.getValue("path");
-                if(pathFolder != "") { pathFolder = Regex.Replace(pathFolder, @"^\\+", ""); }
+                var folders = new List<string>();
+                if (pathFolder != "") { 
+                    pathFolder = Regex.Replace(pathFolder, @"^\\+", "");
+                    /* Bỏ qua thư mục ẩn */
+                    folders = pathFolder.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                }
+                ViewBag.folders = folders;
+                ViewBag.path = pathFolder;
                 /* Từ khoá */
                 var key = Request.getValue("key");
+                ViewBag.key = key;
                 /* Thư mục cần truy vấn */
-                var d = new System.IO.DirectoryInfo(pathFolder == "" ? AppHelper.pathApp : Path.Combine(AppHelper.pathApp, pathFolder));
+                var dir = new System.IO.DirectoryInfo(pathFolder == "" ? AppHelper.pathApp : Path.Combine(AppHelper.pathApp, pathFolder));
                 if(key == "")
                 {
+                    ViewBag.listfolder = dir.GetDirectories().ToList();
+                    ViewBag.listfile = dir.GetFiles().ToList();
                     return View();
                 }
-
-                int len = 0;
-                var d = new System.IO.DirectoryInfo(AppHelper.pathApp);
-                if (d.Exists == false) { throw new Exception($"Thư mục Ứng dụng không có quyền truy cập '{AppHelper.pathApp}'"); }
-                len = AppHelper.pathApp.Length; ViewBag.len = len;
-                var tmp = Request.getValue("p").Replace("/", @"\");
-                ViewBag.path = tmp;
-                d = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, Regex.Replace(tmp, @"^\\+", "")));
-                if (d.Exists == false) { return Content($"Thư mục: {tmp} không tồn tại trên hệ thống".BootstrapAlter("warning")); }
-                tmp = Request.getValue("key");
-                if (tmp == "")
-                {
-                    ViewBag.folders = d.GetDirectories().OrderBy(p => p.Name).ToList();
-                    ViewBag.files = d.GetFiles().OrderBy(p => p.Name).ToList();
-                    var ls = new List<string>();
-                    var s = d.FullName.Substring(len - 1).Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-                    tmp = "";
-                    ls.Add($"<a href=\"javascript:viewfolders('{link}')\"> .. </a>");
-                    foreach (var v in s)
-                    {
-                        tmp = $"{tmp}/{v}";
-                        ls.Add($"<a href=\"javascript:viewfolders('{link}?p={Server.UrlPathEncode(tmp)}')\"> {v} </a>");
-                    }
-                    ViewBag.vitri = string.Join(" \\ ", ls);
-                    return View();
-                }
-                ViewBag.folders = d.GetDirectories(tmp, System.IO.SearchOption.AllDirectories).OrderBy(p => p.Name).ToList();
-                ViewBag.files = d.GetFiles(tmp, System.IO.SearchOption.AllDirectories).OrderBy(p => p.Name).ToList();
-                ViewBag.vitri = $"Tìm kiếm thư mục/tập tin: <a href=\"javascript:viewfolders('{link}?p={Server.UrlPathEncode(d.FullName.Substring(len - 2)).Replace("\\", "/")}')\"> {d.FullName.Substring(len - 2)} </a>";
+                ViewBag.listfolder = dir.GetDirectories(key, SearchOption.AllDirectories).ToList();
+                ViewBag.listfile = dir.GetFiles(key, SearchOption.AllDirectories).ToList();
             }
             catch (Exception ex) { return Content(ex.getLineHTML()); }
             return View();

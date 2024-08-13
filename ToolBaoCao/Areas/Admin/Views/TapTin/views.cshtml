@@ -1,17 +1,44 @@
 ﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
     ViewBag.Title = "Views File and Folder";
-    Layout = null;
-    var len = (int)ViewBag.len - 1;
+    var len = AppHelper.pathApp.Length;
+    var idform = $"frmviewfile";
+    var folders = ViewBag.folders as List<string>;
+    var listfolder = ViewBag.listfolder as List<DirectoryInfo>;
+    var listfile = ViewBag.listfile as List<FileInfo>;
+    var idtarget = Request.getValue("idtarget");
 }
-<input type="hidden" id="pcurrent" value="@ViewBag.path" />
-<div><b>@Html.Raw(ViewBag.vitri) </b></div>
-<ol>
-    @foreach (System.IO.DirectoryInfo d in (ViewBag.folders as List<System.IO.DirectoryInfo>))
+<form id="@idform" method="post" action="@Url.Action("views", "TapTin", new { area = "Admin" })">
+    <input type="hidden" name="layout" value="null" />
+    <input type="hidden" name="path" value="@ViewBag.path" />
+    <table class="table table-hover">
+        <tbody>
+            <tr><td>Từ khoá <input type="text" name="key" value="@ViewBag.key" /></td></tr>
+            <tr><td><a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform', '', '@idtarget')"> <i class="fa fa-search"></i> Tìm</a></td></tr>
+        </tbody>
+    </table>
+</form>
+<div class="font-weight-bold">
+    Vị trí:
+    @if (folders.Count > 0)
     {
-        <li> <a href="javascript:viewfolders('@Url.Action("views")?p=/@d.FullName.Substring(len).Replace("\\","/")');"> @d.Name </a> </li>
+        <a href="#" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null" })&idtarget=@idtarget', '@idtarget');">[Thư mục gốc]</a>
+
+        var tmpl = new List<string>();
+        for (int i = 0; i < folders.Count; i++)
+        {
+            tmpl.Add(folders[i]);
+            <span> / </span> <a href="#" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null", path = string.Join(@"\", tmpl) })&idtarget=@idtarget', '@idtarget');"> @folders[i]</a>
+        }
     }
-    @foreach (System.IO.FileInfo f in (ViewBag.files as List<System.IO.FileInfo>))
+</div>
+<ol>
+    @foreach (var f in listfolder)
     {
-        <li> <a href="@Url.Action("index", "download", new { area = "" })?object=@zModules.Crypt.MD5.encrypt(f.FullName.Substring(len).Replace("\\", "/"))"> <i class="fa fa-download"></i> </a> @f.Name (@f.Length.getFileSize()) </li>
+        <li> <a href="#" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null", path = f.FullName.Substring(len) })&idtarget=@idtarget', '@idtarget');"> @f.Name </a> </li>
+    }
+    @foreach (var f in listfile)
+    {
+        <li> <a href="@Url.Action("Index", "Tai", new { area = "", @object = f.FullName.Substring(len).MD5Encrypt() })"> <i class="fa fa-download"></i> </a> @f.Name (@f.Length.getFileSize()) </li>
     }
 </ol>
