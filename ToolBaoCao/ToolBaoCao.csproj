@@ -784,6 +784,7 @@
     <Content Include="Areas\Admin\Views\TapTin\views.cshtml" />
     <Content Include="Areas\Admin\Views\Config\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Config\Variables.cshtml" />
+    <Content Include="Areas\Admin\Views\Config\views.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

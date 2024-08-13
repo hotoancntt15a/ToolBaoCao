@@ -30,5 +30,9 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             return View();
         }
+        public ActionResult views()
+        {
+            return View();
+        }
     }
 }
