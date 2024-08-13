@@ -14,5 +14,6 @@ namespace ToolBaoCao
         public static string NotLoginAccess = "Bạn vui lòng đăng nhập để sử dụng chức năng này";
         public static string HttpConnetNull = "Không xác định được HttpContext";
         public static string NotAccessControl = "Bạn không có quyền sử dụng chức năng này";
+        public static string NotVariable = "Không có tham số";
     }
 }

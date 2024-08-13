@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
 {
-    public class TapTinController : Controller
+    public class TapTinController : ControllerCheckLogin
     {
         // GET: Admin/TapTin
         public ActionResult Index()

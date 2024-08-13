@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.Title = "Các biến tiền định";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-bordered table-hover showexporttable" pagelenght="100">
+            <thead>
+                <tr>
+                    <th>Biến</th>
+                    <th>Giá trị</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var v in Request.ServerVariables.AllKeys)
+                {
+                    <tr><td>@v</td><td>@Request.ServerVariables[v]</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
