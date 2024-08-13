@@ -247,7 +247,7 @@ namespace ToolBaoCao.Controllers
                     /* Cột lấy dữ liệu không đúng định dạng bỏ qua */
                     if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { continue; }
                     /* Trường hợp trường số để trống thì cho bằng 0 */
-                    foreach (int i in fieldNumbers) { if (Regex.IsMatch(listValue[i], "^[0-9]+$|^[0-9]+[.][0-9]+$") == false) { listValue[i] = "0"; } }
+                    foreach (int i in fieldNumbers) { if (Regex.IsMatch(listValue[i], @"^-?\d+([.]\d+)?$") == false) { listValue[i] = "0"; } }
                     listValue.Add(idBaoCao);
                     tsqlVaues.Add($"('{string.Join("','", listValue)}')");
                 }
