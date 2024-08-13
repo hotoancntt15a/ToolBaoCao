@@ -15,9 +15,9 @@ namespace ToolBaoCao.Controllers
             {
                 if (path == "") { throw new Exception("Không có tham số"); }
                 var p2 = path.MD5Decrypt(); if (p2.StartsWith("Lỗi:") == false) { path = p2; }
+                /* Không hỗ trợ \\{PC Share}\ Nếu có yêu cầu Map Network Drive */
                 path = path.Replace("/", @"\");
-                if (path.StartsWith(@"\") == false) { path = $@"\{path}"; }
-                path = Path.Combine(AppHelper.pathApp, Regex.Replace(path, @"^[\\]+", ""));
+                path = Path.Combine(AppHelper.pathApp, Regex.Replace(path, @"^\\+", ""));
                 if (System.IO.File.Exists(path))
                 {
                     return File(path, "application/octet-stream", Path.GetFileName(path));

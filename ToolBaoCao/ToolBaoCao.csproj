@@ -344,6 +344,7 @@
     <Compile Include="Areas\Admin\Controllers\MenuController.cs" />
     <Compile Include="Areas\Admin\Controllers\NhomController.cs" />
     <Compile Include="Areas\Admin\Controllers\TaiKhoanController.cs" />
+    <Compile Include="Areas\Admin\Controllers\TapTinController.cs" />
     <Compile Include="BuildDatabase.cs" />
     <Compile Include="CaptchaImage.cs" />
     <Compile Include="Controllers\bcTuanController.cs" />
@@ -778,6 +779,8 @@
     <Content Include="Areas\Admin\Views\Nhom\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Nhom\Update.cshtml" />
     <Content Include="Areas\Admin\Views\Data\Cache.cshtml" />
+    <Content Include="Areas\Admin\Views\TapTin\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\TapTin\views.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

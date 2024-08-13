@@ -1,0 +1,17 @@
+﻿@{
+    ViewBag.Title = "Views File and Folder";
+    Layout = null;
+    var len = (int)ViewBag.len - 1;
+}
+<input type="hidden" id="pcurrent" value="@ViewBag.path" />
+<div><b>@Html.Raw(ViewBag.vitri) </b></div>
+<ol>
+    @foreach (System.IO.DirectoryInfo d in (ViewBag.folders as List<System.IO.DirectoryInfo>))
+    {
+        <li> <a href="javascript:viewfolders('@Url.Action("views")?p=/@d.FullName.Substring(len).Replace("\\","/")');"> @d.Name </a> </li>
+    }
+    @foreach (System.IO.FileInfo f in (ViewBag.files as List<System.IO.FileInfo>))
+    {
+        <li> <a href="@Url.Action("index", "download", new { area = "" })?object=@zModules.Crypt.MD5.encrypt(f.FullName.Substring(len).Replace("\\", "/"))"> <i class="fa fa-download"></i> </a> @f.Name (@f.Length.getFileSize()) </li>
+    }
+</ol>
