@@ -587,8 +587,8 @@ namespace ToolBaoCao.Controllers
             else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).FormatCultureVN()}%"; } }
             /* X48 số tuyệt đối X48={nếu cột [x+1] là dương, “tăng “ & [cột [x] - (cột [x] / (cột [x+1] +100) *100 )] & “ đồng”, không thì “giảm “ & [cột [x]- (cột [x] / (cột [x+1]+100) *100 )] & “ đồng”} */
             d.Add(key3, "bằng");
-            if (x1 > 0) { d[key3] = "tăng " + (x - (x / (x1 + 100) * 100)).FormatCultureVN() + " đồng"; }
-            else { if (x1 < 0) { d[key3] = "giảm " + (x - (x / (x1 + 100) * 100)).FormatCultureVN() + " đồng"; } }
+            if (x1 > 0) { d[key3] = "tăng " + Math.Abs(x - (x / (x1 + 100) * 100)).FormatCultureVN() + " đồng"; }
+            else { if (x1 < 0) { d[key3] = "giảm " + Math.Abs(x - (x / (x1 + 100) * 100)).FormatCultureVN() + " đồng"; } }
             return d;
         }
 
@@ -603,7 +603,7 @@ namespace ToolBaoCao.Controllers
             d.Add(key2, row[field2].ToString().FormatCultureVN() + "%");
             /* X63 = số tuyệt đối X63 {tính toán: [X61 trừ đi (X61 chia (cột AE+100)*100)] & “bệnh nhân”} */
             var so2 = (double)row[field2];
-            d.Add(key3, (so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
+            d.Add(key3, Math.Abs(so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
             return d;
         }
 
