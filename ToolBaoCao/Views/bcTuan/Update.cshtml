@@ -291,7 +291,7 @@
                 }
             }
         });
-        var urlPost = mode == "taive" ? "/BaoCao/Tuan" : "@Url.Action("BCTuanCreate", "BaoCao", new { area = "", objectid=id, layout = "null"})";
+        var urlPost = mode == "taive" ? "/bcTuan/Update" : "@Url.Action("Update", "bcTuan", new { area = "", objectid=id, layout = "null"})";
         $(idform).find("input[name='mode']").val(mode);
         $(idform).attr("action", urlPost);
         if (mode == "taive") { $(idform).submit(); return; }

@@ -147,6 +147,8 @@ namespace ToolBaoCao.Controllers
                     }
                     if (tmp == "ma_tinh") { break; }
                 }
+                /* Không xác định được biểu thì bỏ qua */
+                if(bieu == "") { workbook.Close(); return ""; }
                 if (indexRow >= maxRow) { throw new Exception("Không có dữ liệu"); }
                 string pattern = "^20[0-9][0-9]$";
                 int indexRegex = 3; int tmpInt = 0;
@@ -175,6 +177,15 @@ namespace ToolBaoCao.Controllers
                 {
                     NPOI.SS.UserModel.ICell c = row.GetCell(jIndex);
                     listValue.Add(c.GetValueAsString().Trim());
+                }
+                /* Yêu cầu tháng từ là từ đầu năm dương lịch */
+                if(bieu == "b02")
+                {
+                    if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
+                }
+                if (bieu == "b04")
+                {
+                    if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                 }
                 /* Có phải là cơ sở không? */
                 tmpInt = (fieldCount - 1);
@@ -255,13 +266,13 @@ namespace ToolBaoCao.Controllers
                 }
                 if (tsqlVaues.Count > 0) { tsql.Add($"INSERT INTO {bieu}chitiet ({string.Join(",", allColumns)}) VALUES {string.Join(",", tsqlVaues)};"); }
                 tmp = string.Join(Environment.NewLine, tsql);
-                System.IO.File.WriteAllText(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}.sql"), tmp);
+                /* System.IO.File.WriteAllText(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}.sql"), tmp); */
                 dbConnect.Execute(tmp);
                 if (tsql.Count < 2) { throw new Exception("Không có dữ liệu chi tiết"); }
                 /* Lưu lại file */
                 using (FileStream stream = new FileStream(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}{fileExtension}"), FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
             }
-            catch (Exception ex2) { messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()} <br />{tmp}"; }
+            catch (Exception ex2) { messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}"; }
             finally
             {
                 /* Xoá luôn dữ liệu tạm của IIS */
