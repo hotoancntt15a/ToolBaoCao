@@ -4,11 +4,11 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace ToolBaoCao.Controllers
+namespace ToolBaoCao.Areas.Admin.Controllers
 {
-    public class TaskController : ControllerCheckLogin
+    public class DMCSKCBController : Controller
     {
-        // GET: Task
+        // GET: Admin/DMCSKCB
         public ActionResult Index()
         {
             return View();

@@ -1,0 +1,74 @@
+﻿@{
+    ViewBag.Title = "Danh mục CSKCB";
+    var items = new DataTable();
+    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách CSKCB <a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+    </div>
+    <div class="card-body">
+        @if (items.Rows.Count == 0)
+        {
+            <div class="alert alert-warning">Không có dữ liệu phù hợp với truy vấn</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Tên đăng nhập</th>
+                            <th>Nhóm làm việc</th>
+                            <th>Tên hiển thị</th>
+                            <th>Email</th>
+                            <th>Điện thoại</th>
+                            <th>Mã tỉnh</th>
+                            <th>Vị trí làm việc</th>
+                            <th>Time create</th>
+                            <th>Last Login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataRow r in items.Rows)
+                        {
+                            DateTime t2 = $"{r["timelogin"]}".toDateTime();
+                            <tr>
+                                <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id=r["iduser"], layout="null" })');">@r["iduser"]</a></td>
+                                <td>@r["nhom"]</td>
+                                <td>@r["ten_hien_thi"]</td>
+                                <td>@r["Email"]</td>
+                                <td>@r["dien_thoai"]</td>
+                                <td>@r["idtinh"]</td>
+                                <td>@r["vitrilamviec"]</td>
+                                <td>@r["timecreate"]</td>
+                                <td>@($"{r["timelogin"]}" == "0" ? "" : $"{t2}")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+<div class="alert alert-warning">
+    <table class="table table-hover">
+        <tbody>
+            <tr>
+                <td>Nhấn vào tên đăng nhập để thay đổi thông tin tài khoản</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    /* $(document).ready(function () { $('#tableadmins').DataTable(); }); */
+    @{
+        if(ViewBag.Error != null)
+        {
+            Html.Raw($"messageBox('<div class=\"alert alert-warning\">{ViewBag.Error}</div>', 'Thông báo lỗi');");
+        }
+    }
+</script>
