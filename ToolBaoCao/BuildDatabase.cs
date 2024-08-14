@@ -7,6 +7,33 @@ namespace ToolBaoCao
 {
     public static class BuildDatabase
     {
+        public static string sqliteGetValueField(this string value) => value.Replace("'", "''");
+        public static string SQLiteLike(this string value, string fieldName)
+        {
+            if (string.IsNullOrEmpty(value)) { return ""; }
+            if (Regex.IsMatch(value, "[*%_?]+") == false) { return $"{fieldName} = '{value.sqliteGetValueField()}'"; }
+            if (value.Contains("*")) { value = value.Replace("*", "%"); }
+            if (value.Contains("?")) { value = value.Replace("?", "_"); }
+            value = Regex.Replace(value, "[%]+", "%");
+            return $"{fieldName} LIKE '{value.sqliteGetValueField()}'";
+        }
+
+        public static string SQLiteLike(this string value, List<string> fieldNames)
+        {
+            if (string.IsNullOrEmpty(value)) { return ""; }
+            var ls = new List<string>();
+            if (Regex.IsMatch(value, "[*%_?]+") == false)
+            {
+                value = value.sqliteGetValueField();
+                foreach (var v in fieldNames) ls.Add($"{v}='{value}'");
+                return string.Join(" or ", ls);
+            }
+            if (value.Contains("*")) { value = value.Replace("*", "%"); }
+            if (value.Contains("?")) { value = value.Replace("?", "_"); }
+            value = (Regex.Replace(value, "[%]+", "%")).sqliteGetValueField();
+            foreach (var v in fieldNames) ls.Add($"{v} LIKE '{value}'");
+            return string.Join(" OR ", ls);
+        }
         public static void buildDataMain(this dbSQLite connect)
         {
             var tsqlInsert = new List<string>();

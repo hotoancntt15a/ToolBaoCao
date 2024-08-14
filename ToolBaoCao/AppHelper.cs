@@ -794,7 +794,5 @@ namespace ToolBaoCao
         }
 
         public static string RemoveTags(string source) => Regex.Replace(source, "<.*?>", string.Empty);
-
-        public static string sqliteGetValueField(this string value) => value.Replace("'", "''");
     }
 }

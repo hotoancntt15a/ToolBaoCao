@@ -1,0 +1,42 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; } 
+}
+<form id="frmUpdateQuanTri" name="frmUpdateQuanTri" method="post">
+    <input type="hidden" name="layout" value="null" />
+    <input type="hidden" name="idobject" value="@ViewBag.id" />
+    <div class="form-group">
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Tên đăng nhập</div></div>
+            @Html.TextBox("id", "", new { @class = "form-control", maxLength = "255" })
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Tên</div></div>
+            @Html.TextBox("ten", "", new { @class="form-control", maxLength = "255" })
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Tên hiển thị</div></div>
+            <input type="text" name="ten_hien_thi" id="ten_hien_thi" class="form-control" maxlength="255" value="@item.getValue("ten_hien_thi")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Email</div></div>
+            <input type="text" name="email" id="email" class="form-control" maxlength="50" value="@item.getValue("email")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Điện thoại</div></div>
+            <input type="text" name="dien_thoai" id="dien_thoai" class="form-control" maxlength="50" value="@item.getValue("dien_thoai")" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append"><div class="input-group-text">Vị trí làm việc</div></div>
+            <input type="text" name="vitrilamviec" id="vitrilamviec" class="form-control" maxlength="255" value="@item.getValue("vitrilamviec")" />
+        </div>
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary btn-sm" type="button" onclick="postform('frmUpdateQuanTri', '@Url.Action("Update", "DMTinh", new { mode = "update" })');"> <i class="fa fa-fw fa-save"></i> Lưu lại </button>
+        @{
+            if (id != "")
+            {
+                <button class="btn btn-primary btn-sm" type="button" onclick="postform('frmUpdateQuanTri', '@Url.Action("Update", "DMTinh", new { mode="delete" })');"> <i class="fa fa-fw fa-recycle"></i> Khóa tài khoản </button>
+            }
+        }
+    </div>
+</form>
