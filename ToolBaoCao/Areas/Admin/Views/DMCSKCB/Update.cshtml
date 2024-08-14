@@ -2,9 +2,9 @@
     if (Request.getValue("layout") == "null") { Layout = null; }
     var item = ViewBag.data as Dictionary<string, object>;
     var id = ViewBag.id as string;
-    var idform = "frmdmtinh" + DateTime.Now.toTimestamp().ToString();
+    var idform = "frmdelcskcb" + DateTime.Now.toTimestamp().ToString();
 }
-<form id="@idform" name="@idform" method="post" action="@Url.Action("Update", "DMTinh", new { mode = "update" })">
+<form id="@idform" name="@idform" method="post" action="@Url.Action("Update", "DMCSKCB", new { mode = "update" })">
     <input type="hidden" name="mode" value="update" />
     <input type="hidden" name="layout" value="null" />
     <input type="hidden" name="objectid" value="@ViewBag.id" />

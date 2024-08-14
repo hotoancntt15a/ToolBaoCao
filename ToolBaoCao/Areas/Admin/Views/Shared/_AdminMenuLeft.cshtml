@@ -39,6 +39,21 @@
         <li class="nav-item">
             <a class="nav-link" href="@Url.Action("Index", "Config", new { area = "Admin" })"> <i class="fas fa-fw fa-cogs"></i> <span>Cấu hình</span> </a>
         </li>
+        <li class="nav-item">
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block" />
+        </li>
+        <li class="nav-item">
+            <!-- Heading -->
+            <div class="sidebar-heading"> Danh mục</div>
+        </li>
+        <!-- Nav Item - Dashboard -->
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Index", "DMTinh", new { area = "Admin" })"> <i class="fas fa-fw fa-list"></i> <span>Tỉnh</span> </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Index", "DMCSKCB", new { area = "Admin" })"> <i class="fas fa-fw fa-list"></i> <span>CSKCB</span> </a>
+        </li>
     }
     <li class="nav-item">
         <!-- Divider -->

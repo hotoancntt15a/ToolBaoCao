@@ -785,10 +785,12 @@
     <Content Include="Areas\Admin\Views\Config\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Config\Variables.cshtml" />
     <Content Include="Areas\Admin\Views\Config\views.cshtml" />
-    <Content Include="Areas\Admin\Views\DMCSKCB\Index.cshtml" />
     <Content Include="Areas\Admin\Views\DMTinh\Index.cshtml" />
     <Content Include="Areas\Admin\Views\DMTinh\Update.cshtml" />
     <Content Include="Areas\Admin\Views\DMTinh\Delete.cshtml" />
+    <Content Include="Areas\Admin\Views\DMCSKCB\Delete.cshtml" />
+    <Content Include="Areas\Admin\Views\DMCSKCB\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\DMCSKCB\Update.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

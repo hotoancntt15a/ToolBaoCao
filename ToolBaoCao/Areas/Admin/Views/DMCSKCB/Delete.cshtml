@@ -1,0 +1,11 @@
+﻿@{
+    Layout = null;
+    var id = ViewBag.id as string;
+    var idform = "frmdelcskcb" + DateTime.Now.toTimestamp().ToString();
+}
+<form id="@idform" name="@idform" method="post" action="@Url.Action("Delete")">
+    <input type="hidden" name="layout" value="null" />
+    <input type="hidden" name="id" value="@id" />
+    <div class="alert alert-danger"><i class="fa fa-question-circle-o"></i> Bạn thực sự muốn xoá các tỉnh đã chọn không?></div>
+    <a href="#" onclick="postform('@idform')" class="btn btn-primary btn-sm"> <i class="fa fa-check-square-o"></i> Đồng ý</a>
+</form>
