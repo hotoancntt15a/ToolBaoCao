@@ -269,7 +269,7 @@ namespace ToolBaoCao
                     if (items.Rows.Count == 0)
                     {
                         var time = DateTime.Now.toTimestamp();
-                        dbSqliteMain.Execute($"INSERT INTO admins ([iduser] ,[mat_khau] ,[ten_hien_thi] ,[gioi_tinh] ,[ngay_sinh] ,[email] ,[dien_thoai] ,[dia_chi] ,[hinh_dai_dien] ,[ghi_chu] ,[time_create] ,[time_last_login], nhom) VALUES ('admin', '{"admin123@".GetMd5Hash()}', 'Adminstrator', 'Nam', '{DateTime.Now:dd/MM/yyyy}', 'hotoancntt15a@gmail.com', '09140272795', 'Thành phố Lào Cai, Tỉnh Lào Cai', '', '', '{time}', '0', 0);");
+                        dbSqliteMain.Execute($"INSERT INTO admins ([iduser] ,[mat_khau] ,[ten_hien_thi] ,[gioi_tinh] ,[ngay_sinh] ,[email] ,[dien_thoai] ,[dia_chi] ,[hinh_dai_dien] ,[ghi_chu] ,[time_create], nhom) VALUES ('admin', '{"admin123@".GetMd5Hash()}', 'Adminstrator', 'Nam', '{DateTime.Now:dd/MM/yyyy}', 'hotoancntt15a@gmail.com', '09140272795', 'Thành phố Lào Cai, Tỉnh Lào Cai', '', '', '{time}', 0);");
                         items = dbSqliteMain.getDataTable(tsql, new KeyValuePair<string, string>("@iduser", userName));
                         if (items.Rows.Count == 0) { return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng"; }
                     }
@@ -286,7 +286,11 @@ namespace ToolBaoCao
                     c1.Expires = DateTime.Now.AddMonths(1);
                     http.Response.Cookies.Add(c1);
                 }
-                try { dbSqliteMain.Execute($"UPDATE taikhoan SET time_last_login='{DateTime.Now.toTimestamp()}' WHERE iduser = @iduser", new KeyValuePair<string, string>("@iduser", userName)); } catch { }
+                try
+                {
+                    var item = new Dictionary<string, string>() { { "iduser", userName }, { "timelogin", DateTime.Now.toTimestamp().ToString() } };
+                    dbSqliteMain.Update("logintime", item, "repalce");
+                } catch { }
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
             var db = BuildDatabase.getDBUserOnline();

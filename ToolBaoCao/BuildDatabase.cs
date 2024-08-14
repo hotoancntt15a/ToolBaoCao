@@ -18,6 +18,10 @@ namespace ToolBaoCao
             {
                 tsqlCreate.Add("CREATE TABLE IF NOT EXISTS taikhoan(iduser TEXT NOT NULL Primary Key, mat_khau TEXT NOT NULL, ten_hien_thi TEXT NOT NULL, gioi_tinh TEXT NOT NULL DEFAULT '', ngay_sinh TEXT NOT NULL Default '', email TEXT NOT NULL Default '', dien_thoai TEXT NOT NULL Default '', dia_chi TEXT NOT NULL Default '', hinh_dai_dien TEXT NOT NULL Default '', idtinh text not null default '', ghi_chu TEXT NOT NULL DEFAULT '', vitrilamviec text not null default '', nhom INTEGER NOT NULL default -1, locked INTEGER NOT NULL default 0, time_create double not null default 0, time_last_login double not null default 0);");
             }
+            if(tables.Contains("logintime"))
+            {
+                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS logintime (iduser text NOT NULL PRIMARY KEY, timelogin integer NOT NULL);");
+            }
             if (tables.Contains("dmtinh") == false)
             {
                 tsqlCreate.Add("CREATE TABLE IF NOT EXISTS dmtinh(id text primary key, ten text not null default '', tt integer not null default 999, ghichu text not null default '');");
@@ -283,6 +287,8 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
+                ,tuyen_bv text not null default ''
+                ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_pl03_id_bc ON pl03 (id_bc);");
             }

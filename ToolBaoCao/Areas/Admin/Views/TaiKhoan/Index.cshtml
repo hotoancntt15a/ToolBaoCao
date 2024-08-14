@@ -29,6 +29,7 @@
                             <th>Tên hiển thị</th>
                             <th>Email</th>
                             <th>Điện thoại</th>
+                            <th>Mã tỉnh</th>
                             <th>Vị trí làm việc</th>
                             <th>Time create</th>
                             <th>Last Login</th>
@@ -37,17 +38,17 @@
                     <tbody>
                         @foreach (DataRow r in items.Rows)
                         {
-                            DateTime t1 = $"{r["time_create"]}".toDateTime();
-                            DateTime t2 = $"{r["time_last_login"]}".toDateTime();
+                            DateTime t2 = $"{r["timelogin"]}".toDateTime();
                             <tr>
                                 <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id=r["iduser"], layout="null" })');">@r["iduser"]</a></td>
                                 <td>@r["nhom"]</td>
                                 <td>@r["ten_hien_thi"]</td>
                                 <td>@r["Email"]</td>
                                 <td>@r["dien_thoai"]</td>
+                                <td>@r["idtinh"]</td>
                                 <td>@r["vitrilamviec"]</td>
-                                <td>@($"{r["time_create"]}" == "0" ? "" : $"{t1:dd/MM/yyyy HH:mm}")</td>
-                                <td>@($"{r["time_last_login"]}" == "0" ? "" : $"{t2:dd/MM/yyyy HH:mm}")</td>
+                                <td>@r["timecreate"]</td>
+                                <td>@($"{r["timelogin"]}" == "0" ? "" : $"{t2}")</td>
                             </tr>
                         }
                     </tbody>

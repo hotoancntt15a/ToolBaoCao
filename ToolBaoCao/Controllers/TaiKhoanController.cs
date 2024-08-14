@@ -15,7 +15,7 @@ namespace ToolBaoCao.Controllers
             try
             {
                 string idtinh = $"{Session["idtinh"]}";
-                var data = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM taikhoan WHERE idtinh='{idtinh.sqliteGetValueField()}' ORDER BY iduser");
+                var data = AppHelper.dbSqliteMain.getDataTable($"SELECT tk.*, datetime(tk.time_create, 'auto', '+7 hour') as timecreate, IFNULL(p2.timelogin, 0) as timelogin FROM taikhoan tk LEFT JOIN logintime p2 ON tk.iduser=p2.iduser WHERE tk.idtinh='{idtinh.sqliteGetValueField()}' ORDER BY tk.iduser");
                 ViewBag.Data = data;
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getLineHTML()}"; }

@@ -1,5 +1,4 @@
-﻿using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
@@ -80,7 +79,7 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
                     FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '';");
                 /* Tạo Phục Lục 2*/
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, tong_luot, userid) 
+                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, tong_luot, userid)
                     SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_tinh, p1.ten_tinh, p1.ma_vung, p1.bq_xn AS chi_bq_xn, p1.bq_cdha AS chi_bq_cdha, p1.bq_thuoc AS chi_bq_thuoc, p1.bq_ptt AS chi_bq_pttt, p1.bq_vtyt AS chi_bq_vtyt, p1.bq_giuong AS chi_bq_giuong, p1.ngay_ttbq, p2.tong_luot, '{idUser}' AS userid
                     FROM b04chitiet p1 INNER JOIN b02chitiet p2 ON p1.id_bc = p2.id_bc AND p1.ma_tinh = p2.ma_tinh
                     WHERE p1.id_bc='{id}' AND p1.ma_tinh <> '';");
@@ -340,11 +339,11 @@ namespace ToolBaoCao.Controllers
                 pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl01", pl);
 
                 pl = dbTemp.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}'");
-                var phuluc02 = createPhuLuc02(pl, idtinh, bctuan);
+                var phuluc02 = createPhuLuc02(pl, idtinh);
                 pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl02", pl);
 
                 pl = dbTemp.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}'");
-                var phuluc03 = createPhuLuc03(pl, idtinh, bctuan);
+                var phuluc03 = createPhuLuc03(pl, idtinh, phuluc01);
                 pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl03", pl);
 
                 var xlsx = XLSX.exportExcel(phuluc01, phuluc02, phuluc03);
@@ -490,7 +489,7 @@ namespace ToolBaoCao.Controllers
             return phuluc01;
         }
 
-        private DataTable createPhuLuc02(DataTable pl2, string idtinh, Dictionary<string, string> bctuan)
+        private DataTable createPhuLuc02(DataTable pl2, string idtinh)
         {
             /* Bỏ [ma tỉnh] - ở cột tên tỉnh */
             for (int i = 0; i < pl2.Rows.Count; i++) { pl2.Rows[i]["ten_tinh"] = Regex.Replace($"{pl2.Rows[i]["ten_tinh"]}", @"^V?\d+[ -]+", ""); }
@@ -611,7 +610,7 @@ namespace ToolBaoCao.Controllers
             return phuluc02;
         }
 
-        private DataTable createPhuLuc03(DataTable pl3, string idtinh, Dictionary<string, string> bctuan)
+        private DataTable createPhuLuc03(DataTable pl3, string idtinh, DataTable phuLuc01)
         {
             var phuluc03 = new DataTable("PhuLuc03");
             phuluc03.Columns.Add("Mã");
@@ -625,6 +624,17 @@ namespace ToolBaoCao.Controllers
             phuluc03.Columns.Add("chi BQ nội trú");
             phuluc03.Columns.Add("Tên CSKCB (5)");
             phuluc03.Columns.Add("Chi BQ ngoại trú");
+            if (phuLuc01.Rows.Count > 5)
+            {
+                for (int i = phuLuc01.Rows.Count - 5; i < phuLuc01.Rows.Count - 2; i++)
+                {
+                    var dr = phuluc03.NewRow();
+                    for (int j = 0; j < phuLuc01.Columns.Count; j++) { dr[j] = phuLuc01.Rows[i][j]; }
+                    phuluc03.Rows.Add(dr);
+                }
+            }
+            phuluc03.Rows.Add("", "", "0", "", "0", "", "0", "", "0", "", "0");
+            var indexHeader = phuluc03.Rows.Count;
             var view = pl3.AsEnumerable().OrderByDescending(x => x.Field<double>("tyle_noitru")).ToList();
             /* Sắp xếp theo tỷ lệ nội trú */
             foreach (DataRow r in pl3.Rows)
@@ -638,31 +648,31 @@ namespace ToolBaoCao.Controllers
             }
             /* Sắp xếp theo Ngày điều trị BQ (ngày) */
             view.AsEnumerable().OrderByDescending(x => x.Field<double>("ngay_dtri_bq")).ToList();
-            for (int i = 0; i < phuluc03.Rows.Count; i++)
+            for (int i = indexHeader; i < phuluc03.Rows.Count; i++)
             {
-                phuluc03.Rows[i][3] = $"{view[i]["ten_cskcb"]}";
-                phuluc03.Rows[i][4] = $"{view[i]["ngay_dtri_bq"]}";
+                phuluc03.Rows[i][3] = $"{view[(i - indexHeader)]["ten_cskcb"]}";
+                phuluc03.Rows[i][4] = $"{view[(i - indexHeader)]["ngay_dtri_bq"]}";
             }
             /* Sắp xếp theo Ngày điều trị BQ (ngày) */
             view = view.OrderByDescending(x => x.Field<double>("chi_bq_chung")).ToList();
-            for (int i = 0; i < phuluc03.Rows.Count; i++)
+            for (int i = indexHeader; i < phuluc03.Rows.Count; i++)
             {
-                phuluc03.Rows[i][5] = $"{view[i]["ten_cskcb"]}";
-                phuluc03.Rows[i][6] = $"{view[i]["chi_bq_chung"]}";
+                phuluc03.Rows[i][5] = $"{view[(i - indexHeader)]["ten_cskcb"]}";
+                phuluc03.Rows[i][6] = $"{view[(i - indexHeader)]["chi_bq_chung"]}";
             }
             /* Sắp xếp theo chi BQ nội trú */
             view = view.OrderByDescending(x => x.Field<double>("chi_bq_noi")).ToList();
-            for (int i = 0; i < phuluc03.Rows.Count; i++)
+            for (int i = indexHeader; i < phuluc03.Rows.Count; i++)
             {
-                phuluc03.Rows[i][7] = $"{view[i]["ten_cskcb"]}";
-                phuluc03.Rows[i][8] = $"{view[i]["chi_bq_noi"]}";
+                phuluc03.Rows[i][7] = $"{view[(i - indexHeader)]["ten_cskcb"]}";
+                phuluc03.Rows[i][8] = $"{view[(i - indexHeader)]["chi_bq_noi"]}";
             }
             /* Sắp xếp theo Chi BQ ngoại trú */
             view = view.OrderByDescending(x => x.Field<double>("chi_bq_ngoai")).ToList();
-            for (int i = 0; i < phuluc03.Rows.Count; i++)
+            for (int i = indexHeader; i < phuluc03.Rows.Count; i++)
             {
-                phuluc03.Rows[i][9] = $"{view[i]["ten_cskcb"]}";
-                phuluc03.Rows[i][10] = $"{view[i]["chi_bq_ngoai"]}";
+                phuluc03.Rows[i][9] = $"{view[(i - indexHeader)]["ten_cskcb"]}";
+                phuluc03.Rows[i][10] = $"{view[(i - indexHeader)]["chi_bq_ngoai"]}";
             }
             return phuluc03;
         }
