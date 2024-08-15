@@ -76,19 +76,47 @@ namespace ToolBaoCao.Controllers
                 if (bieus.Contains($"b26_{matinh}") == false) { list.Add($"Thiếu biểu B26 của Tỉnh có mã {matinh};"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
                 /* Tạo Phục Lục 1 */
-                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
+                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung
+                    , ROUND(tyle_noitru, 2) AS tyle_noitru
+                    , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
+                    , ROUND(chi_bq_chung) AS chi_bq_chung
+                    , ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                    , ROUND(chi_bq_noi) AS chi_bq_noi
+                    , '{idUser}' AS userid
                     FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '' AND ma_tinh NOT LIKE 'V%';");
                 /* Tạo Phục Lục 2*/
                 dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
-                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung, bq_xn AS chi_bq_xn, bq_cdha AS chi_bq_cdha, bq_thuoc AS chi_bq_thuoc, bq_ptt AS chi_bq_pttt, bq_vtyt AS chi_bq_vtyt, bq_giuong AS chi_bq_giuong, ngay_ttbq, '{idUser}' AS userid
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
+                    , ROUND(bq_xn) AS chi_bq_xn
+                    , ROUND(bq_cdha) AS chi_bq_cdha
+                    , ROUND(bq_thuoc) AS chi_bq_thuoc
+                    , ROUND(bq_ptt) AS chi_bq_pttt
+                    , ROUND(bq_vtyt) AS chi_bq_vtyt
+                    , ROUND(bq_giuong) AS chi_bq_giuong
+                    , ROUND(ngay_ttbq, 2) AS ngay_ttbq
+                    , '{idUser}' AS userid
                     FROM b04chitiet WHERE id_bc='{id}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%');");
                 /* Thêm cột vùng */
                 var mavung = $"{dbTemp.getValue($"SELECT ma_vung FROM pl02 WHERE ma_tinh='{matinh}'")}";
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
-                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, '' AS ma_vung, bq_xn AS chi_bq_xn, bq_cdha AS chi_bq_cdha, bq_thuoc AS chi_bq_thuoc, bq_ptt AS chi_bq_pttt, bq_vtyt AS chi_bq_vtyt, bq_giuong AS chi_bq_giuong, ngay_ttbq, '{idUser}' AS userid
+                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung , chi_bq_xn , chi_bq_cdha , chi_bq_thuoc , chi_bq_pttt , chi_bq_vtyt , chi_bq_giuong , ngay_ttbq , userid)
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, '' AS ma_vung
+                    , ROUND(bq_xn) AS chi_bq_xn
+                    , ROUND(bq_cdha) AS chi_bq_cdha
+                    , ROUND(bq_thuoc) AS chi_bq_thuoc
+                    , ROUND(bq_ptt) AS chi_bq_pttt
+                    , ROUND(bq_vtyt) AS chi_bq_vtyt
+                    , ROUND(bq_giuong) AS chi_bq_giuong
+                    , ROUND(ngay_ttbq, 2) AS ngay_ttbq
+                    , '{idUser}' AS userid
                     FROM b04chitiet WHERE id_bc='{id}' AND ma_tinh LIKE 'V%' AND ma_vung='{mavung}';");
                 /* Tạo Phục Lục 3 */
-                dbTemp.Execute($@"INSERT INTO pl03 (id_bc, idtinh, ma_cskcb, ten_cskcb, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, '{idUser}' AS userid
+                dbTemp.Execute($@"INSERT INTO pl03 (id_bc, idtinh, ma_cskcb, ten_cskcb, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung
+                    , ROUND(tyle_noitru, 2) AS tyle_noitru
+                    , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
+                    , ROUND(chi_bq_chung) AS chi_bq_chung
+                    , ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                    , ROUND(chi_bq_noi) AS chi_bq_noi
+                    , '{idUser}' AS userid
                         FROM b02chitiet WHERE id_bc='{id}' AND ma_cskcb <> '';");
                 /* Đọc dữ liệu DuToanGiao dự theo thoigian của b26_00 */
                 var namDuToan = $"{dbTemp.getValue($"SELECT thoigian FROM b26 WHERE id_bc = '{id}' AND ma_tinh <> '' LIMIT 1")}";
@@ -771,15 +799,71 @@ namespace ToolBaoCao.Controllers
             var idBaoCaoValueField = idBaoCao.sqliteGetValueField();
             var maTinhValueField = maTinh.sqliteGetValueField();
             /* Bỏ qua các vùng */
-            tsql = $"SELECT * FROM b02chitiet WHERE id_bc='{idBaoCaoValueField}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
+            tsql = $@"SELECT ma_tinh
+                ,ten_tinh
+                ,ma_vung
+                ,tong_luot
+                ,tong_luot_ngoai
+                ,tong_luot_noi
+                ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
+                ,ROUND(chi_bq_chung) AS chi_bq_chung
+                ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                ,ROUND(chi_bq_noi) AS chi_bq_noi
+                ,ROUND(tong_chi) AS tong_chi
+                ,ROUND(ty_trong, 2) AS ty_trong
+                ,ROUND(tong_chi_ngoai) AS tong_chi_ngoai
+                ,ROUND(ty_trong_kham, 2) AS ty_trong_kham
+                ,ROUND(tong_chi_noi) AS tong_chi_noi
+                ,ROUND(ty_trong_giuong, 2) AS ty_trong_giuong
+                ,ROUND(t_bhtt) AS t_bhtt
+                ,ROUND(t_bhtt_noi) AS t_bhtt_noi
+                ,ROUND(t_bhtt_ngoai) AS t_bhtt_ngoai
+                FROM b02chitiet WHERE id_bc='{idBaoCaoValueField}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
             var b02TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
             if (b02TQ.Count() == 0) { throw new Exception("B02 Toàn Quốc không có dữ liệu phù hợp truy vấn"); }
-            /* Bỏ qua các vùng */
+            /* Bỏ qua các vùng
+             *              
             tsql = $"SELECT * FROM b04chitiet WHERE id_bc='{idBaoCaoValueField}' AND  (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
             var b04TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
-            if (b04TQ.Count() == 0) { throw new Exception("B04 Toàn quốc không có dữ liệu phù hợp truy vấn"); }
+            if (b04TQ.Count() == 0) { throw new Exception("B04 Toàn quốc không có dữ liệu phù hợp truy vấn"); }             
+             */
             /* Bỏ qua các vùng */
-            tsql = $"SELECT * FROM b26chitiet WHERE id_bc='{idBaoCaoValueField}' AND  (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
+            tsql = $@"SELECT ma_tinh
+                ,ten_tinh
+                ,vitri_chibq
+                ,vitri_tyle_noitru
+                ,vitri_tlxn
+                ,vitri_tlcdha
+                ,ROUND(tytrong, 2) AS tytrong
+                ,ROUND(chi_bq_chung) AS chi_bq_chung
+                ,ROUND(chi_bq_chung_tang, 2) AS chi_bq_chung_tang
+                ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                ,ROUND(tyle_noitru_tang, 2) AS tyle_noitru_tang
+                ,ROUND(lan_kham_bq, 2) AS lan_kham_bq
+                ,ROUND(lan_kham_bq_tang, 2) AS lan_kham_bq_tang
+                ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
+                ,ROUND(ngay_dtri_bq_tang, 2) AS ngay_dtri_bq_tang
+                ,ROUND(bq_xn) AS bq_xn
+                ,ROUND(bq_xn_tang, 2) AS bq_xn_tang
+                ,ROUND(bq_cdha) AS bq_cdha
+                ,ROUND(bq_cdha_tang, 2) AS bq_cdha_tang
+                ,ROUND(bq_thuoc) AS bq_thuoc
+                ,ROUND(bq_thuoc_tang, 2) AS bq_thuoc_tang
+                ,ROUND(bq_pt) AS bq_pt
+                ,ROUND(bq_pt_tang, 2) AS bq_pt_tang
+                ,ROUND(bq_tt) AS bq_tt
+                ,ROUND(bq_tt_tang, 2) AS bq_tt_tang
+                ,ROUND(bq_vtyt) AS bq_vtyt
+                ,ROUND(bq_vtyt_tang, 2) AS bq_vtyt_tang
+                ,ROUND(bq_giuong) AS bq_giuong
+                ,ROUND(bq_giuong_tang, 2) AS bq_giuong_tang
+                ,ROUND(chi_dinh_xn, 2) AS chi_dinh_xn
+                ,ROUND(chi_dinh_xn_tang, 2) AS chi_dinh_xn_tang
+                ,ROUND(chi_dinh_cdha, 2) AS chi_dinh_cdha
+                ,ROUND(chi_dinh_cdha_tang, 2) AS chi_dinh_cdha_tang
+                ,ma_vung 
+                FROM b26chitiet WHERE id_bc='{idBaoCaoValueField}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
             var b26TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
             if (b26TQ.Count() == 0) { throw new Exception("B26 Toàn quốc không có dữ liệu phù hợp truy vấn"); }
 
@@ -968,7 +1052,7 @@ namespace ToolBaoCao.Controllers
 
             /* Số tiền làm tròn đến đồng */
             var tronSo = new List<string>() { "{X19}", "{X20}", "{X23}", "{X26}", "{X27}", "{X30}", "{X33}", "{X34}", "{X37}", "{X40}", "{X43}", "{X46}", "{X49}", "{X52}", "{X55}", "{X58}" };
-            foreach (var v in tronSo) { bctuan[v] = Math.Round(double.Parse(bctuan[v]), 0).ToString(); }
+            foreach (var v in tronSo) { if (bctuan[v].Contains(".")) { bctuan[v] = Math.Round(double.Parse(bctuan[v]), 0).ToString(); } }
             var tmp = "";
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
