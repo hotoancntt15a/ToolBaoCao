@@ -791,6 +791,7 @@
     <Content Include="Areas\Admin\Views\DMCSKCB\Delete.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\Index.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\Update.cshtml" />
+    <Content Include="Areas\Admin\Views\DMCSKCB\TruyVan.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

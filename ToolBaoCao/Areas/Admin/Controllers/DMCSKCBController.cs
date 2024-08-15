@@ -9,11 +9,14 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 {
     public class DMCSKCBController : Controller
     {
-        // GET: Admin/DMCSKCB
+        /* GET: Admin/DMCSKCB */
+
         public ActionResult Index()
         {
+            var tsql = @"CREATE TABLE dmcskcb ()";
             return View();
         }
+
         public ActionResult Delete()
         {
             var timeStart = DateTime.Now;

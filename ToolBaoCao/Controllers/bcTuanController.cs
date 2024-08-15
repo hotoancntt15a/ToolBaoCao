@@ -148,7 +148,7 @@ namespace ToolBaoCao.Controllers
                     if (tmp == "ma_tinh") { break; }
                 }
                 /* Không xác định được biểu thì bỏ qua */
-                if(bieu == "") { workbook.Close(); return ""; }
+                if (bieu == "") { workbook.Close(); return ""; }
                 if (indexRow >= maxRow) { throw new Exception("Không có dữ liệu"); }
                 string pattern = "^20[0-9][0-9]$";
                 int indexRegex = 3; int tmpInt = 0;
@@ -179,7 +179,7 @@ namespace ToolBaoCao.Controllers
                     listValue.Add(c.GetValueAsString().Trim());
                 }
                 /* Yêu cầu tháng từ là từ đầu năm dương lịch */
-                if(bieu == "b02")
+                if (bieu == "b02")
                 {
                     if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
                 }
@@ -825,7 +825,7 @@ namespace ToolBaoCao.Controllers
             /* X4={X1/X3 %} So sánh với dự toán, tỉnh đã sử dụng */
             so2 = double.Parse(x3);
             if (so2 == 0) { bctuan.Add("{X4}", "0"); }
-            else { bctuan.Add("{X4}", (double.Parse(bctuan["{X1}"]) / so2).ToString()); }
+            else { bctuan.Add("{X4}", ((double.Parse(bctuan["{X1}"]) / so2) * 100).ToString("0.##")); }
 
             /* X5 = {Cột tyle_noitru, dòng MA_TINH=10} bảng B02_TOANQUOC */
             bctuan.Add("{X5}", dataTinhB02["tyle_noitru"].ToString());
@@ -968,6 +968,13 @@ namespace ToolBaoCao.Controllers
                     { "iduser", idUser }
                 };
             AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
+
+            /*** 1.1 làm tròn đến triệu đồng (x1, x71, x72, x2, x3, x4) */
+            bctuan["{X1}"] = bctuan["{X1}"].lamTronTrieuDong();
+            bctuan["{X71}"] = bctuan["{X71}"].lamTronTrieuDong();
+            bctuan["{X72}"] = bctuan["{X72}"].lamTronTrieuDong();
+            bctuan["{X3}"] = bctuan["{X3}"].lamTronTrieuDong();
+
             return bctuan;
         }
 

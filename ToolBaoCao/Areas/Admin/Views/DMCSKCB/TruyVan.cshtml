@@ -1,24 +1,51 @@
 ﻿@{
-    ViewBag.Title = "Danh mục tỉnh";
-    if (ViewBag.Error != null)
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    if (Request.getValue("mode") == "truyvan")
     {
-        @Html.Raw(ViewBag.Error)
-        return;
+        var data = ViewBag.data as DataTable;
+        @if (data.Rows.Count == 0)
+        {
+            <div class="alert alert-warning">Không có dữ liệu phù hợp với truy vấn</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Mã</th>
+                            <th>Tên</th>
+                            <th>Tuyến</th>
+                            <th>Hạng</th>
+                            <th>Loại</th>
+                            <th>Mã cha</th>
+                            <th>Huyện</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataRow r in data.Rows)
+                        {
+                            <tr>
+                                <td><input type="checkbox" class="custom-checkbox" value="@r["id"]" /></td>
+                                <td><a href="javascript:showgeturl('@Url.Action("Update", "DMCSKCB", new { objectid = r["id"], layout = "null" })');">@r["id"]</a></td>
+                                <td>@r["ten"]</td>
+                                <td>@r["tuyen"]</td>
+                                <td>@r["hang"]</td>
+                                <td>@r["loai"]</td>
+                                <td>@r["macaptren"]</td>
+                                <td>@r["tenhuyen"]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     }
-    var items = new DataTable();
-    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
 }
-<!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
-<!-- Nav tabs -->
-<ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Báo cáo Lưu</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Báo cáo mới</a>
-    </li>
-</ul>
+<!-- Form truy tìm  -->
+<!-- Hiển thị danh sách -->
 <!-- Tab panes -->
 <div class="tab-content">
     <div id="tabHome" class="tab-pane active">
@@ -75,8 +102,3 @@
     <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
     <div id="tabImport" class="tab-pane fade"></div>
 </div>
-<script>
-    $(document).ready(function () {
-        showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
-    });
-</script>

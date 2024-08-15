@@ -27,6 +27,71 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
 
+        /// <summary>
+        /// Định dạng số US; không đúng định dạng trả lại numberUS; Số > triệu = Số tròn triệu đồng; Số > nghìn = Số tròn nghìn đồng; = Số tròn đồng
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static string lamTronTrieuDong(this string numberUS)
+        {
+            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?")) { return numberUS; }
+            double so = double.Parse(numberUS);
+            if (so > 1000000) { so = Math.Round(so, -6); }
+            else
+            {
+                if (so > 1000) { so = Math.Round(so, -3); }
+                else { if (numberUS.Contains(".")) { so = Math.Round(so, 0); } }
+            }
+            return so.ToString();
+        }
+
+        /// <summary>
+        /// Số > triệu = Số tròn triệu đồng; Số > nghìn = Số tròn nghìn đồng; = Số tròn đồng
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static double lamTronTrieuDong(this double numberUS)
+        {
+            if (numberUS > 1000000) { numberUS = Math.Round(numberUS, -6); }
+            else
+            {
+                if (numberUS > 1000) { numberUS = Math.Round(numberUS, -3); }
+                else { numberUS = Math.Round(numberUS, 0); }
+            }
+            return numberUS;
+        }
+
+        /// <summary>
+        /// Định dạng số US; không đúng định dạng trả lại numberUS; Số > nghìn = Số tròn nghìn đồng; = Số tròn đồng
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static string lamTronNghinDong(this string numberUS)
+        {
+            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?")) { return numberUS; }
+            double so = double.Parse(numberUS);
+            if (so > 1000) { so = Math.Round(so, -3); }
+            else { if (numberUS.Contains(".")) { so = Math.Round(so, 0); } }
+            return so.ToString();
+        }
+
+        /// <summary>
+        /// Số > nghìn = Số tròn nghìn đồng; = Số tròn đồng
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static double lamTronNghinDong(this double numberUS)
+        {
+            if (numberUS > 1000) { numberUS = Math.Round(numberUS, -3); }
+            else { numberUS = Math.Round(numberUS, 0); }
+            return numberUS;
+        }
+
+        /// <summary>
+        /// Trả về dạng {numberUS}{b/kb/mb/gb}
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
         public static string getFileSize(this long size)
         {
             if (size > 1073741824) { return $"{(size / 1073741824):0.##}Gb"; }
@@ -34,7 +99,11 @@ namespace ToolBaoCao
             if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
             return $"{size}b";
         }
-
+        /// <summary>
+        /// Trả về dạng {numberUS}{b/kb/mb/gb}
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
         public static string getFileSize(this int size)
         {
             if (size > 1073741824) { return $"{(size / 1073741824):0.##}Gb"; }
@@ -290,7 +359,8 @@ namespace ToolBaoCao
                 {
                     var item = new Dictionary<string, string>() { { "iduser", userName }, { "timelogin", DateTime.Now.toTimestamp().ToString() } };
                     dbSqliteMain.Update("logintime", item, "repalce");
-                } catch { }
+                }
+                catch { }
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
             var db = BuildDatabase.getDBUserOnline();
