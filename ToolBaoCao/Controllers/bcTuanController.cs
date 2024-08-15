@@ -679,7 +679,7 @@ namespace ToolBaoCao.Controllers
             return (s.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1).ToString();
         }
 
-        private Dictionary<string, string> buildBCTuanB02(int iKey, string fieldChiBQ, string fieldTongLuot, string fieldChiBQChung, string mavung, string matinh, DataRow rowTinh, DataRow rowTQ, List<DataRow> data)
+        private Dictionary<string, string> buildBCTuanB02(int iKey, string fieldChiBQ, string fieldChiBQChung, string fieldTongLuotVung, string fieldTongChiVung, string mavung, string matinh, DataRow rowTinh, DataRow rowTQ, List<DataRow> data)
         {
             var d = new Dictionary<string, string>();
             var keys = new List<string>();
@@ -696,14 +696,18 @@ namespace ToolBaoCao.Controllers
             else { if (so1 < so2) { d[keys[2]] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
             /* X36= xếp thứ so toàn quốc X36={Sort cột K CHI_BQ_NOI cao xuống thấp và lấy thứ tự}; */
             d.Add(keys[3], getPosition("", matinh, fieldChiBQ, data));
+            /*** Vùng
+             = SUM(tong_chi)/SUM(tong_luot)
+             */
             /* X37 = Bình quân vùng X37={tính toán: A-Tổng chi nội trú các tỉnh cùng mã vùng / B- Tổng lượt kcb nội trú của các tỉnh cùng mã vùng. A=Total  (cột K (CHI_BQ_NOI) * cột F (TONG_LUOT_NOI)) của tất cả các tỉnh cùng MA_VUNG với tỉnh báo cáo. B= Total cột F (TONG_LUOT_NOI) của các tỉnh có MA_VUNG cùng mã vùng của tỉnh báo cáo}; */
             d.Add(keys[4], "0");
-            so2 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => r.Field<double>(fieldChiBQ));
+            so2 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => r.Field<double>(fieldTongLuotVung));
             if (so2 != 0)
             {
-                so1 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => (r.Field<double>(fieldChiBQ) * r.Field<long>(fieldTongLuot)));
+                so1 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => r.Field<double>(fieldTongChiVung));
                 d[keys[4]] = ((so1 / so2)*100).ToString();
             }
+
             /* X38 = số chênh lệch X38 ={đoạn văn tùy thuộc X33 > hay < X37. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             d.Add(keys[5], "bằng");
             so1 = double.Parse(d[keys[0]]);
@@ -875,13 +879,13 @@ namespace ToolBaoCao.Controllers
             bctuan.Add("{X18}", position.ToString());
 
             /* X19 = Chi bình quân chung X19={Cột I (CHI_BQ_CHUNG), dòng MA_TINH=10}; */
-            tmpD = buildBCTuanB02(19, "chi_bq_chung", "tong_luot", "chi_bq_chung", mavung, maTinh, dataTinhB02, dataTQB02, b02TQ);
+            tmpD = buildBCTuanB02(19, "chi_bq_chung", "chi_bq_chung", "tong_luot", "tong_chi", mavung, maTinh, dataTinhB02, dataTQB02, b02TQ);
             foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
             /* X26 = Chi bình quân ngoại trú X26={Cột J (CHI_BQ_NGOAI), dòng MA_TINH=10}; */
-            tmpD = buildBCTuanB02(26, "chi_bq_ngoai", "tong_luot_ngoai", "chi_bq_chung", mavung, maTinh, dataTinhB02, dataTQB02, b02TQ);
+            tmpD = buildBCTuanB02(26, "chi_bq_ngoai", "chi_bq_chung", "tong_luot_ngoai", "tong_chi_ngoai" , mavung, maTinh, dataTinhB02, dataTQB02, b02TQ);
             foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
             /* X33 = Chi bình quân nội trú X33={Cột K (CHI_BQ_NOI), dòng MA_TINH=10}; */
-            tmpD = buildBCTuanB02(33, "chi_bq_noi", "tong_luot_noi", "chi_bq_chung", mavung, maTinh, dataTinhB02, dataTQB02, b02TQ);
+            tmpD = buildBCTuanB02(33, "chi_bq_noi", "chi_bq_chung", "tong_luot_noi", "tong_chi_noi", mavung, maTinh, dataTinhB02, dataTQB02, b02TQ);
             foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
 
             /* ----- Dữ liệu X40 trở lên lọc dữ liệu tù B26 ------- */
