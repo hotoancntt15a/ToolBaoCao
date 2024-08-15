@@ -1,4 +1,5 @@
-﻿using NPOI.SS.UserModel;
+﻿using NPOI.SS.Formula.Functions;
+using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -34,14 +35,11 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static string lamTronTrieuDong(this string numberUS)
         {
-            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?")) { return numberUS; }
+            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?") == false) { return numberUS; }
+            if (numberUS.Contains(".")) { numberUS = numberUS.Split('.')[0]; }
             double so = double.Parse(numberUS);
-            if (so > 1000000) { so = Math.Round(so, -6); }
-            else
-            {
-                if (so > 1000) { so = Math.Round(so, -3); }
-                else { if (numberUS.Contains(".")) { so = Math.Round(so, 0); } }
-            }
+            if (so > 1000000) { so = Math.Round(so / 1000000, 0); return $"{so}000000"; }
+            if (so > 1000) { so = Math.Round(so / 1000, 0); return $"{so}000"; }
             return so.ToString();
         }
 
@@ -52,13 +50,9 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static double lamTronTrieuDong(this double numberUS)
         {
-            if (numberUS > 1000000) { numberUS = Math.Round(numberUS, -6); }
-            else
-            {
-                if (numberUS > 1000) { numberUS = Math.Round(numberUS, -3); }
-                else { numberUS = Math.Round(numberUS, 0); }
-            }
-            return numberUS;
+            if (numberUS > 1000000) { numberUS = Math.Round(numberUS / 1000000, 0); return double.Parse($"{numberUS}000000"); }
+            if (numberUS > 1000) { numberUS = Math.Round(numberUS / 1000, 0); return double.Parse($"{numberUS}000"); }
+            return Math.Round(numberUS, 0);
         }
 
         /// <summary>
@@ -68,10 +62,10 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static string lamTronNghinDong(this string numberUS)
         {
-            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?")) { return numberUS; }
+            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?") == false) { return numberUS; }
+            if (numberUS.Contains(".")) { numberUS = numberUS.Split('.')[0]; }
             double so = double.Parse(numberUS);
-            if (so > 1000) { so = Math.Round(so, -3); }
-            else { if (numberUS.Contains(".")) { so = Math.Round(so, 0); } }
+            if (so > 1000) { so = Math.Round(so / 1000, 0); return $"{so}000"; }
             return so.ToString();
         }
 
@@ -82,9 +76,8 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static double lamTronNghinDong(this double numberUS)
         {
-            if (numberUS > 1000) { numberUS = Math.Round(numberUS, -3); }
-            else { numberUS = Math.Round(numberUS, 0); }
-            return numberUS;
+            if (numberUS > 1000) { numberUS = Math.Round(numberUS / 1000, 0); return double.Parse($"{numberUS}000"); }
+            return Math.Round(numberUS, 0);
         }
 
         /// <summary>
@@ -99,6 +92,7 @@ namespace ToolBaoCao
             if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
             return $"{size}b";
         }
+
         /// <summary>
         /// Trả về dạng {numberUS}{b/kb/mb/gb}
         /// </summary>

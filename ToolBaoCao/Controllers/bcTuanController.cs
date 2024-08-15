@@ -316,30 +316,9 @@ namespace ToolBaoCao.Controllers
                     ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data";
                     return View();
                 }
-                using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
-                {
-                    var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
-                    foreach (var paragraph in document.Paragraphs)
-                    {
-                        foreach (var run in paragraph.Runs)
-                        {
-                            tmp = run.ToString();
-                            // Sử dụng Regex để tìm tất cả các match
-                            MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
-                            foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bctuan.getValue(match.Value, "", true)); }
-                            run.SetText(tmp, 0);
-                        }
-                    }
-                    tmp = Path.Combine(folderSave, $"bctuan_{idBaoCao}.docx");
-                    if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
-                    using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
-                    /*
-                     * MemoryStream memoryStream = new MemoryStream();
-                            document.Write(memoryStream);
-                            memoryStream.Position = 0;
-                            return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
-                    */
-                }
+                /* Lưu File báo cáo tuần docx */
+                createFileBCTuanDocx(pathFileTemplate, idBaoCao, folderSave, bctuan);
+                /* Tạo dữ liệu để xuất phụ lục */
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
                 var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(idtinh);
                 var dbImport = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
@@ -723,7 +702,7 @@ namespace ToolBaoCao.Controllers
             if (so2 != 0)
             {
                 so1 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => (r.Field<double>(fieldChiBQ) * r.Field<long>(fieldTongLuot)));
-                d[keys[4]] = (so1 / so2).ToString();
+                d[keys[4]] = ((so1 / so2)*100).ToString();
             }
             /* X38 = số chênh lệch X38 ={đoạn văn tùy thuộc X33 > hay < X37. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             d.Add(keys[5], "bằng");
@@ -750,8 +729,8 @@ namespace ToolBaoCao.Controllers
             else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).FormatCultureVN()}%"; } }
             /* X48 số tuyệt đối X48={nếu cột [x+1] là dương, “tăng “ & [cột [x] - (cột [x] / (cột [x+1] +100) *100 )] & “ đồng”, không thì “giảm “ & [cột [x]- (cột [x] / (cột [x+1]+100) *100 )] & “ đồng”} */
             d.Add(key3, "bằng");
-            if (x1 > 0) { d[key3] = "tăng " + Math.Abs(x - (x / (x1 + 100) * 100)).FormatCultureVN() + " đồng"; }
-            else { if (x1 < 0) { d[key3] = "giảm " + Math.Abs(x - (x / (x1 + 100) * 100)).FormatCultureVN() + " đồng"; } }
+            if (x1 > 0) { d[key3] = "tăng " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " đồng"; }
+            else { if (x1 < 0) { d[key3] = "giảm " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " đồng"; } }
             return d;
         }
 
@@ -847,7 +826,7 @@ namespace ToolBaoCao.Controllers
             if (so2 != 0)
             {
                 so1 = b02TQ.Where(row => row.Field<string>("ma_vung") == mavung).Sum(row => row.Field<long>("tong_luot_noi"));
-                bctuan["{X9}"] = (so1 / so2).ToString();
+                bctuan["{X9}"] = ((so1 / so2)*100).ToString();
             }
             /* X10 ={đoạn văn tùy thuộc X5> hay < X9. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             bctuan.Add("{X10}", "bằng");
@@ -881,7 +860,7 @@ namespace ToolBaoCao.Controllers
             if (so2 != 0)
             {
                 so1 = b02TQ.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => (r.Field<double>("ngay_dtri_bq") * r.Field<long>("tong_luot_noi")));
-                bctuan["{X16}"] = (so1 / so2).ToString();
+                bctuan["{X16}"] = ((so1 / so2)*100).ToString();
             }
             /* X17 = Số chênh lệch X17 ={đoạn văn tùy thuộc X12> hay < X16. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             bctuan.Add("{X17}", "bằng");
@@ -968,16 +947,46 @@ namespace ToolBaoCao.Controllers
                     { "iduser", idUser }
                 };
             AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
+            return bctuan;
+        }
 
+        private void createFileBCTuanDocx(string pathFileTemplate, string idBaoCao, string folderSave, Dictionary<string, string> bctuan)
+        {
             /*** 1.1 làm tròn đến triệu đồng (x1, x71, x72, x2, x3, x4) */
             bctuan["{X1}"] = bctuan["{X1}"].lamTronTrieuDong();
             bctuan["{X71}"] = bctuan["{X71}"].lamTronTrieuDong();
             bctuan["{X72}"] = bctuan["{X72}"].lamTronTrieuDong();
             bctuan["{X3}"] = bctuan["{X3}"].lamTronTrieuDong();
 
-            return bctuan;
+            /* Số tiền làm tròn đến đồng */
+            var tronSo = new List<string>() { "{X19}", "{X20}", "{X23}", "{X26}", "{X27}", "{X30}", "{X33}", "{X34}", "{X37}", "{X40}", "{X43}", "{X46}", "{X49}", "{X52}", "{X55}", "{X58}" };
+            foreach (var v in tronSo) { bctuan[v] = Math.Round(double.Parse(bctuan[v]), 0).ToString(); }
+            var tmp = "";
+            using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
+            {
+                var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
+                foreach (var paragraph in document.Paragraphs)
+                {
+                    foreach (var run in paragraph.Runs)
+                    {
+                        tmp = run.ToString();
+                        // Sử dụng Regex để tìm tất cả các match
+                        MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
+                        foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bctuan.getValue(match.Value, "", true)); }
+                        run.SetText(tmp, 0);
+                    }
+                }
+                tmp = Path.Combine(folderSave, $"bctuan_{idBaoCao}.docx");
+                if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
+                using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
+                /*
+                 * MemoryStream memoryStream = new MemoryStream();
+                        document.Write(memoryStream);
+                        memoryStream.Position = 0;
+                        return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
+                */
+            }
         }
-
         public ActionResult Update()
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
