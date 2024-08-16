@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
@@ -13,7 +10,6 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 
         public ActionResult Index()
         {
-            var tsql = @"CREATE TABLE dmcskcb ()";
             return View();
         }
 

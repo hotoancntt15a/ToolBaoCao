@@ -43,7 +43,23 @@ namespace ToolBaoCao
             /** Nhóm quản lý web */
             if (tables.Contains("taikhoan") == false)
             {
-                tsqlCreate.Add("CREATE TABLE IF NOT EXISTS taikhoan(iduser TEXT NOT NULL Primary Key, mat_khau TEXT NOT NULL, ten_hien_thi TEXT NOT NULL, gioi_tinh TEXT NOT NULL DEFAULT '', ngay_sinh TEXT NOT NULL Default '', email TEXT NOT NULL Default '', dien_thoai TEXT NOT NULL Default '', dia_chi TEXT NOT NULL Default '', hinh_dai_dien TEXT NOT NULL Default '', idtinh text not null default '', ghi_chu TEXT NOT NULL DEFAULT '', vitrilamviec text not null default '', nhom INTEGER NOT NULL default -1, locked INTEGER NOT NULL default 0, time_create double not null default 0, time_last_login double not null default 0);");
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS taikhoan (
+                    iduser text NOT NULL PRIMARY KEY,
+                    mat_khau text NOT NULL,
+                    ten_hien_thi text NOT NULL,
+                    gioi_tinh text NOT NULL DEFAULT '',
+                    ngay_sinh text NOT NULL DEFAULT '',
+                    email text NOT NULL DEFAULT '',
+                    dien_thoai text NOT NULL DEFAULT '',
+                    dia_chi text NOT NULL DEFAULT '',
+                    hinh_dai_dien text NOT NULL DEFAULT '',
+                    idtinh text NOT NULL DEFAULT '',
+                    ghi_chu text NOT NULL DEFAULT '',
+                    vitrilamviec text NOT NULL DEFAULT '',
+                    nhom INTEGER NOT NULL DEFAULT - 1,
+                    locked INTEGER NOT NULL DEFAULT 0,
+                    time_create double NOT NULL DEFAULT 0,
+                    time_last_login double NOT NULL DEFAULT 0);");
             }
             if(tables.Contains("logintime"))
             {
@@ -59,8 +75,57 @@ namespace ToolBaoCao
             }
             if (tables.Contains("wmenu") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS wmenu(id integer PRIMARY KEY, title text NOT NULL DEFAULT '', link text NOT NULL DEFAULT '', idfather integer NOT NULL DEFAULT -1, paths text NOT NULL DEFAULT '', postion integer NOT NULL DEFAULT 0, note text NOT NULL DEFAULT '', css text NOT NULL DEFAULT '' );");
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS wmenu (
+                    id integer PRIMARY KEY,
+                    title text NOT NULL DEFAULT '',
+                    link text NOT NULL DEFAULT '',
+                    idfather integer NOT NULL DEFAULT - 1,
+                    paths text NOT NULL DEFAULT '',
+                    postion integer NOT NULL DEFAULT 0,
+                    note text NOT NULL DEFAULT '',
+                  css text NOT NULL DEFAULT '' 
+                  );");
             }
+            if(tables.Contains("dmcskcb") == false)
+            {
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS dmcskcb(
+                  id text NOT NULL PRIMARY KEY,
+                  ten text NOT NULL DEFAULT '',
+                  tuyencmkt text NOT NULL DEFAULT '',
+                  hangbv text NOT NULL DEFAULT '',
+                  loaibv text NOT NULL DEFAULT '',
+                  tenhuyen text NOT NULL DEFAULT '',
+                  donvi text NOT NULL DEFAULT '',
+                  madinhdanh text NOT NULL DEFAULT '',
+                  macaptren text NOT NULL DEFAULT '',
+                  diachi text NOT NULL DEFAULT '',
+                  ttduyet text NOT NULL DEFAULT '',
+                  hieuluc text NOT NULL DEFAULT '',
+                  tuchu text NOT NULL DEFAULT '',
+                  trangthai text NOT NULL DEFAULT '',
+                  hangdv text NOT NULL DEFAULT '',
+                  hangthuoc text NOT NULL DEFAULT '',
+                  dangkykcb text NOT NULL DEFAULT '',
+                  hinhthuctochuc text NOT NULL DEFAULT '',
+                  hinhthucthanhtoan text NOT NULL DEFAULT '',
+                  ngaycapma text NOT NULL DEFAULT '',
+                  kcb text NOT NULL DEFAULT '',
+                  ngayngunghd text NOT NULL DEFAULT '',
+                  kt7 text NOT NULL DEFAULT '',
+                  kcn text NOT NULL DEFAULT '',
+                  knl text NOT NULL DEFAULT '',
+                  cpdtt43 text NOT NULL DEFAULT '',
+                  slthedacap integer NOT NULL DEFAULT 0,
+                  donvichuquan text NOT NULL DEFAULT '',
+                  mota text NOT NULL DEFAULT '',
+                  loaichuyenkhoa text NOT NULL DEFAULT '',
+                  ngaykyhopdong text NOT NULL DEFAULT '',
+                  ngayhethieuluc text NOT NULL DEFAULT '',
+                  ma_tinh text NOT NULL,
+                  ma_huyen text NOT NULL DEFAULT '',
+                  userid text NOT NULL DEFAULT '');");
+            }
+            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_dmcskcb_ma_tinh ON dmcskcb (ma_tinh);");
             /* Tạo cơ sở dữ liệu */
             try { tsql = string.Join(" ", tsqlCreate); connect.Execute(tsql); } catch (Exception ex) { ex.saveError(tsql); }
             /* if (tsqlCreate.Count > 0) { foreach (var v in tsqlCreate) { try { connect.Execute(v); } catch (Exception ex) { ex.saveError(v); } } } */
@@ -87,12 +152,12 @@ namespace ToolBaoCao
                 try
                 {
                     db.Execute(@"CREATE TABLE IF NOT EXISTS useronline (
-                        userid TEXT NOT NULL,
+                        userid text NOT NULL,
                         time1 INTEGER NOT NULL DEFAULT 0,
                         time2 INTEGER NOT NULL DEFAULT 0,
-                        ten_hien_thi TEXT NOT NULL DEFAULT '',
-                        ip TEXT NOT NULL DEFAULT '',
-                        [local] TEXT NOT NULL DEFAULT '', PRIMARY KEY (userid, ip));");
+                        ten_hien_thi text NOT NULL DEFAULT '',
+                        ip text NOT NULL DEFAULT '',
+                        [local] text NOT NULL DEFAULT '', PRIMARY KEY (userid, ip));");
                 }
                 catch { }
             }
@@ -259,6 +324,8 @@ namespace ToolBaoCao
                     ,ngay integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
                     ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */);");
             tsqlCreate.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
+            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_bctuandocx_timecreate ON bctuandocx(timecreate);");
+            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_bctuandocx_ngay ON bctuandocx(ngay);");
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
 
@@ -297,7 +364,6 @@ namespace ToolBaoCao
                 ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
                 ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
                 ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
-                ,tong_luot real not null default 0
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_pl02_id_bc ON pl02 (id_bc);");
             }
