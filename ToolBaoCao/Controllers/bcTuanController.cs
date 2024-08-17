@@ -599,6 +599,7 @@ namespace ToolBaoCao.Controllers
                     , $"{view[0]["chi_bq_giuong"]}"
                     , $"{view[0]["ngay_ttbq"]}");
             }
+            DataRow row00 = phuluc02.Rows[phuluc02.Rows.Count - 1];
             /* Vùng */
             var vung = pl2.AsEnumerable()
                 .Where(x => x.Field<string>("ma_vung") == "" && x.Field<string>("ma_tinh") != "00")
@@ -626,6 +627,7 @@ namespace ToolBaoCao.Controllers
                     $"{vung.chi_bq_giuong}",
                     $"{vung.ngay_ttbq}");
             }
+            DataRow rowVung = phuluc02.Rows[phuluc02.Rows.Count - 1];
             /* Tỉnh */
             if (viewTinh.Count == 0) { phuluc02.Rows.Add(idtinh, idtinh, "0", "0", "0", "0", "0", "0", "0"); }
             else
@@ -639,27 +641,28 @@ namespace ToolBaoCao.Controllers
                     , $"{viewTinh[0]["chi_bq_giuong"]}"
                     , $"{viewTinh[0]["ngay_ttbq"]}");
             }
+            DataRow rowTinh = phuluc02.Rows[phuluc02.Rows.Count - 1];
             /* Chênh so toàn quốc */
             var index = phuluc02.Rows.Count - 1;
             phuluc02.Rows.Add("", "Chênh so toàn quốc",
-                $"{double.Parse($"{phuluc02.Rows[index - 2][2]}") - double.Parse($"{phuluc02.Rows[index][2]}")}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][3]}") - double.Parse($"{phuluc02.Rows[index][3]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][4]}") - double.Parse($"{phuluc02.Rows[index][4]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][5]}") - double.Parse($"{phuluc02.Rows[index][5]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][6]}") - double.Parse($"{phuluc02.Rows[index][6]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][7]}") - double.Parse($"{phuluc02.Rows[index][7]}"))}",
-                $"{Math.Round(double.Parse($"{phuluc02.Rows[index - 2][8]}") - double.Parse($"{phuluc02.Rows[index][8]}"), 2)}");
+                $"{double.Parse($"{rowTinh[2]}") - double.Parse($"{row00[2]}")}",
+                $"{(double.Parse($"{rowTinh[3]}") - double.Parse($"{row00[3]}"))}",
+                $"{(double.Parse($"{rowTinh[4]}") - double.Parse($"{row00[4]}"))}",
+                $"{(double.Parse($"{rowTinh[5]}") - double.Parse($"{row00[5]}"))}",
+                $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{row00[6]}"))}",
+                $"{(double.Parse($"{rowTinh[7]}") - double.Parse($"{row00[7]}"))}",
+                $"{Math.Round(double.Parse($"{rowTinh[8]}") - double.Parse($"{row00[8]}"), 2)}");
 
             /* Chênh với Vùng */
             index++;
             phuluc02.Rows.Add("", "Chênh so vùng",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][2]}") - double.Parse($"{phuluc02.Rows[index - 1][2]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][3]}") - double.Parse($"{phuluc02.Rows[index - 1][3]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][4]}") - double.Parse($"{phuluc02.Rows[index - 1][4]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][5]}") - double.Parse($"{phuluc02.Rows[index - 1][5]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][6]}") - double.Parse($"{phuluc02.Rows[index - 1][6]}"))}",
-                $"{(double.Parse($"{phuluc02.Rows[index - 2][7]}") - double.Parse($"{phuluc02.Rows[index - 1][7]}"))}",
-                $"{Math.Round(double.Parse($"{phuluc02.Rows[index - 2][8]}") - double.Parse($"{phuluc02.Rows[index - 1][8]}"), 2)}");
+                $"{(double.Parse($"{rowTinh[2]}") - double.Parse($"{rowVung[2]}"))}",
+                $"{(double.Parse($"{rowTinh[3]}") - double.Parse($"{rowVung[3]}"))}",
+                $"{(double.Parse($"{rowTinh[4]}") - double.Parse($"{rowVung[4]}"))}",
+                $"{(double.Parse($"{rowTinh[5]}") - double.Parse($"{rowVung[5]}"))}",
+                $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{rowVung[6]}"))}",
+                $"{(double.Parse($"{rowTinh[7]}") - double.Parse($"{rowVung[7]}"))}",
+                $"{Math.Round(double.Parse($"{rowTinh[8]}") - double.Parse($"{rowVung[8]}"), 2)}");
             return phuluc02;
         }
 
@@ -796,8 +799,8 @@ namespace ToolBaoCao.Controllers
             d.Add(keys[2], "bằng");
             var so1 = double.Parse(d[keys[0]]);
             var so2 = double.Parse(d[keys[1]]);
-            if (so1 > so2) { d[keys[2]] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
-            else { if (so1 < so2) { d[keys[2]] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
+            if (so1 > so2) { d[keys[2]] = $"cao hơn {Math.Round(so1 - so2, 0).FormatCultureVN()}"; }
+            else { if (so1 < so2) { d[keys[2]] = $"thấp hơn {Math.Round(so2 - so1, 0).FormatCultureVN()}"; } }
             /* X36= xếp thứ so toàn quốc X36={Sort cột K CHI_BQ_NOI cao xuống thấp và lấy thứ tự}; */
             d.Add(keys[3], getPosition("", matinh, fieldChiBQ, data));
             /*** Vùng
@@ -815,8 +818,8 @@ namespace ToolBaoCao.Controllers
             d.Add(keys[5], "bằng");
             so1 = double.Parse(d[keys[0]]);
             so2 = double.Parse(d[keys[4]]);
-            if (so1 > so2) { d[keys[5]] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
-            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
+            if (so1 > so2) { d[keys[5]] = $"cao hơn {Math.Round(so1 - so2, 0).FormatCultureVN()}"; }
+            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {Math.Round(so2 - so1, 0).FormatCultureVN()}"; } }
             /* X39 đứng thứ so với vùng X39= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột K (CHI_BQ_NOI) cao –thấp và lấy thứ tự} */
             d.Add(keys[6], getPosition(mavung, matinh, fieldChiBQ, data));
             return d;
