@@ -672,13 +672,13 @@ namespace ToolBaoCao.Controllers
             phuluc03.Columns.Add("Mã");
             phuluc03.Columns.Add("hạng BV /Tên CSKCB ");
             phuluc03.Columns.Add("Tỷ lệ nội trú (%)");
-            phuluc03.Columns.Add("Tên CSKCB");
+            phuluc03.Columns.Add("hạng BV /Tên CSKCB (1)");
             phuluc03.Columns.Add("Ngày điều trị BQ (ngày)");
-            phuluc03.Columns.Add("Tên CSKCB (3)");
+            phuluc03.Columns.Add("hạng BV /Tên CSKCB (2)");
             phuluc03.Columns.Add("Chi BQ chung");
-            phuluc03.Columns.Add("Tên CSKCB (4)");
+            phuluc03.Columns.Add("hạng BV /Tên CSKCB (3)");
             phuluc03.Columns.Add("chi BQ nội trú");
-            phuluc03.Columns.Add("Tên CSKCB (5)");
+            phuluc03.Columns.Add("hạng BV /Tên CSKCB (4)");
             phuluc03.Columns.Add("Chi BQ ngoại trú");
             if (phuLuc01.Rows.Count > 5)
             {
