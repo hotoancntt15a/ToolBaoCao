@@ -22,12 +22,40 @@ namespace ToolBaoCao
         private static readonly string keyMD5 = typeof(AppHelper).Namespace;
         public static AppConfig appConfig = new AppConfig();
         public static readonly string pathApp = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string pathAppData = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
+        public static readonly string pathTemp = Path.Combine(pathApp, "temp");
         public static readonly string pathCodeProject = Assembly.GetExecutingAssembly().GetPathCodeProject();
         public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
-
+        /// <summary>
+        /// Kiểm tra số định dạng US, không phân biệt số âm số dương
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static bool isNumberUS(this string numberUS)
+        {
+            return Regex.IsMatch(numberUS, @"^-?\d+(.\d+)?$");
+        }
+        /// <summary>
+        /// Chỉ kiểm tra số dương định dạng US
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static bool isNumberUSDouble(this string numberUS)
+        {
+            return Regex.IsMatch(numberUS, @"^\d+(.\d+)?$");
+        }
+        /// <summary>
+        /// Chỉ kiểm tra số nguyên dương định dạng US
+        /// </summary>
+        /// <param name="numberUS"></param>
+        /// <returns></returns>
+        public static bool isNumberUSInt(this string numberUS)
+        {
+            return Regex.IsMatch(numberUS, @"^\d+$");
+        }
         /// <summary>
         /// Định dạng số US; không đúng định dạng trả lại numberUS; Số > triệu = Số tròn triệu đồng; Số > nghìn = Số tròn nghìn đồng; = Số tròn đồng
         /// </summary>
@@ -35,7 +63,7 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static string lamTronTrieuDong(this string numberUS)
         {
-            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?") == false) { return numberUS; }
+            if (Regex.IsMatch(numberUS, @"^-?\d+(.\d+)?$") == false) { return numberUS; }
             if (numberUS.Contains(".")) { numberUS = numberUS.Split('.')[0]; }
             double so = double.Parse(numberUS);
             if (so > 1000000) { so = Math.Round(so / 1000000, 0); return $"{so}000000"; }
@@ -62,7 +90,7 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static string lamTronNghinDong(this string numberUS)
         {
-            if (Regex.IsMatch(numberUS, @"-?\d+(.\d+)?") == false) { return numberUS; }
+            if (Regex.IsMatch(numberUS, @"^-?\d+(.\d+)?$") == false) { return numberUS; }
             if (numberUS.Contains(".")) { numberUS = numberUS.Split('.')[0]; }
             double so = double.Parse(numberUS);
             if (so > 1000) { so = Math.Round(so / 1000, 0); return $"{so}000"; }
@@ -263,21 +291,18 @@ namespace ToolBaoCao
             appConfig = new AppConfig(Path.Combine(pathApp, "config.json"));
             if (appConfig.Config.Settings.Count == 0)
             {
-                appConfig.Set("App.Title", "Công cụ hỗ trợ báo cáo bảo hiểm");
+                appConfig.Set("App.Title", "Công cụ phân tích bảo hiểm y tế");
                 appConfig.Set("App.PageSize", "50");
                 appConfig.Set("App.PacketSize", "1000");
             }
-            dbSqliteMain = new dbSQLite(Path.Combine(pathApp, "App_Data\\main.db"));
+            dbSqliteMain = new dbSQLite(Path.Combine(pathApp, @"App_Data\main.db"));
             dbSqliteMain.buildDataMain();
-            dbSqliteWork = new dbSQLite(Path.Combine(pathApp, "App_Data\\data.db"));
+            dbSqliteWork = new dbSQLite(Path.Combine(pathApp, @"App_Data\data.db"));
             dbSqliteWork.buildDataWork();
             /* Check Folder Exists */
             var folders = new List<string>() {
                 Path.Combine(pathApp, "cache")
-                , Path.Combine(pathApp, "temp")
-                , Path.Combine(pathApp, "temp", "data")
-                , Path.Combine(pathApp, "temp", "excel")
-                , Path.Combine(pathApp, "App_Data", "bctuan") };
+                , Path.Combine(pathApp, "temp") };
             foreach (var pathFolder in folders) { if (Directory.Exists(pathFolder) == false) { Directory.CreateDirectory(pathFolder); } }
         }
 

@@ -46,7 +46,6 @@ namespace ToolBaoCao
                 }
                 if (httpException.GetHttpCode() == 404) { throw new Exception($"UrlNotFound={HttpUtility.UrlEncode("Không tìm thấy trang " + HttpContext.Current.Request.Url.PathAndQuery)}"); }
                 string errorMessage = $"Message={HttpUtility.UrlEncode(httpException.Message)}" +
-                                      $"&Source={HttpUtility.UrlEncode(httpException.Source ?? "Unknown")}" +
                                       $"&StackTrace={HttpUtility.UrlEncode(httpException.StackTrace ?? "No stack trace")}" +
                                       $"&WebEventCode={httpException.WebEventCode}" +
                                       $"&ErrorCode={httpException.ErrorCode}";

@@ -24,6 +24,10 @@ namespace ToolBaoCao.Controllers
         public ActionResult Index()
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            var folder = Path.Combine(AppHelper.pathAppData, "bctuan");
+            if (Directory.Exists(folder) == false) { Directory.CreateDirectory(folder); }
+            folder = Path.Combine(AppHelper.pathTemp, "bctuan");
+            if (Directory.Exists(folder) == false) { Directory.CreateDirectory(folder); }
             return View();
         }
 

@@ -4,297 +4,76 @@
     else { Layout = "~/Views/Shared/_Layout.cshtml"; }
 
     var idFormBCT = "idbct" + DateTime.Now.toTimestamp().ToString();
-    DataTable dmTinh = new DataTable();
-    if (ViewBag.dmTinh != null) { dmTinh = ViewBag.dmTinh as DataTable; }
-    string tinhSelect = $"{ViewBag.tinhSelect}";
     if (ViewBag.Error != null)
     {
         <h2>@ViewBag.Title</h2>
         <div class="alert alert-warning">@ViewBag.Error</div>
         return;
     }
-    var id = Request.getValue("objectid");
-    if (id == "")
-    {
-        ViewBag.Title = "Tạo báo cáo tuần";
-        <h2>@ViewBag.Title</h2>
-        <div class="table-responsive">
-            @using (Html.BeginForm("BCTuanCreate", "BaoCao", new { area = "" }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
-            {
-                <input type="hidden" name="mode" value="taive" />
-                <table class="table table-hover">
-                    <tbody>
-                        <tr>
-                            <td style="width: 190px;" class="text-right">@Html.Label("matinh", "Tỉnh x73")</td>
-                            <td>
-                                <select name="matinh" id="matinh">
-                                    @foreach (DataRow row in dmTinh.Rows)
-                                    {
-                                        if (tinhSelect == row[0].ToString())
-                                        {
-                                            <option value="@row[0]" selected>@row[1]</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@row[0]">@row[1]</option>
-                                        }
-                                    }
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-right">@Html.Label("thoigian", "Ngày lập báo x74")</td>
-                            <td>
-                                <input type="text" name="thoigian" id="thoigian" value="@DateTime.Now.ToString("dd/MM/yyyy")" class="clsdate" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán x2:")</td>
-                            <td>
-                                <input type="text" name="x2" id="x2" value="" class="clsnumber form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3")</td>
-                            <td>
-                                <input type="text" name="x3" id="x3" value="" class="clsnumber form-control-sm" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                @Html.Label("x67", "Công tác kiểm soát chi x67:")
-                                <br />
-                                <textarea name="x67" class="form-control"></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                @Html.Label("x68", "Công tác thanh, quyết toán năm x68:")
-                                <br />
-                                <textarea name="x68" class="form-control"></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                @Html.Label("x69", "Phương hướng kỳ tiếp theo x69:")
-                                <br />
-                                <textarea name="x69" class="form-control"></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có) x70:")
-                                <br />
-                                <textarea name="x70" class="form-control"></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <a href="javascript:baocao('thuchien');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
-                                <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Thực hiện và tải về docx</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            }
-        </div>
-    }
-    else
-    {
-        DataRow item = ViewBag.data as DataRow;
-        var ngayCreate = ((long)item["timecreate"]).toDateTime().ToString("dd/MM/yyyy H:m:s");
-        ViewBag.Title = $"Sửa báo cáo tuần ngày {item["x74"]} có ID {id} vào lúc ";
-        tinhSelect = item["ma_tinh"].ToString().Trim();
-        <div class="alert alert-info">@ViewBag.Title</div>
-        <div class="table-responsive">
-            @using (Html.BeginForm("BCTuanCreate", "BaoCao", new { area = "", objectid = id }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
-            {
-                <input type="hidden" name="mode" value="taive" />
-                <input type="hidden" name="id" value="@id" />
-                <input type="hidden" name="ngay" value="@item["ngay"]" />
-                <table class="table table-hover">
-                    <tbody>
-                        <tr>
-                            <td>
-                                @Html.Label("matinh", "Tỉnh {X73}") <select name="matinh" id="matinh">
-                                    @foreach (DataRow row in dmTinh.Rows)
-                                    {
-                                        if (tinhSelect == row[0].ToString())
-                                        {
-                                            <option value="@row[0]" selected>@row[1]</option>
-                                        }
-                                    }
-                                </select>
-                                @Html.Label("thoigian", "Ngày lập báo cáo {X74}") <input type="text" id="thoigian" value="@item["x74"]" class="form-control-sm" readonly />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                I. Kết quả thực hiện trong kỳ <br />
-                                1. Tổng quát tình hình KCB toàn tỉnh <br />
-                                1.1 Tình hình thực hiện dự toán <br />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Tổng tiền các CSKCB đã đề nghị bảo hiểm thanh toán {X1} <input type="text" class="clsnumber form-control-sm" name="x1" value="@item["x1"]" />.
-                                <br />Trong đó: Nội trú {X71} <input type="text" class="clsnumber form-control-sm" name="x71" value="@item["x71"]" /> đồng;
-                                <br />Ngoại trú {X72} <input type="text" class="clsnumber form-control-sm" name="x72" value="@item["x72"]" /> đồng.
-                                <br /> Dự toán năm: {X2}<input type="text" class="clsnumber form-control-sm" name="x2" value="@item["x2"]" /> là: {X3}<input type="text" class="clsnumber form-control-sm" name="x3" value="@item["x3"]" /> đồng.
-                                <br />So sánh với dự toán, tỉnh đã sử dụng {X4=X1/X2}: <span class="x4">@item["x4"]</span>%.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                1.2 Các chỉ số đánh giá khái quát về chi KCB BHYT
-                                <br />Khái quát qua 5 chỉ số: (1) Chi bình quân chung; (2) Chi bình quân ngoại trú; (3) Chi bình quân nội trú; (4) Tỷ lệ lượt điều trị nội trú; (5) Ngày điều trị bình quân.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <br />- Tỷ lệ điều trị nội trú: {X5}<input type="text" class="clsnumber form-control-sm" name="x5" value="@item["x5"]" /> %,
-                                <br />bình quân toàn quốc: {X6}<input type="text" class="clsnumber form-control-sm" name="x6" value="@item["x6"]" /> % ({X7}<input type="text" class="form-control-sm" name="x7" value="@item["x7"]" />),
-                                <br />xếp thứ {X8}<input type="text" class="clsnumber form-control-sm" name="x8" value="@item["x8"]" style="width: 50px;" /> so với các tỉnh.
-                                <br />Bình quân vùng: {X9}<input type="text" class="clsnumber form-control-sm" name="x9" value="@item["x9"]" /> % ({X10}<input type="text" class="form-control-sm" name="x10" value="@item["x10"]" />),
-                                <br />đứng thứ {X11}<input type="text" class="clsnumber form-control-sm" name="x11" value="@item["x11"]" style="width: 50px;" /> so với vùng.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <br />- Ngày điều trị bình quân: {X12}<input type="text" class="clsnumber form-control-sm" name="x12" value="@item["x12"]" /> ngày,
-                                <br />bình quân toàn quốc: {X13}<input type="text" class="clsnumber form-control-sm" name="x13" value="@item["x13"]" /> ngày ({X14}<input type="text" class="form-control-sm" name="x14" value="@item["x14"]" />),
-                                <br />xếp thứ {X15}<input type="text" class="clsnumber form-control-sm" name="x15" value="@item["x15"]" style="width: 50px;" /> so với các tỉnh.
-                                <br />Bình quân vùng: {X16}<input type="text" class="clsnumber form-control-sm" name="x16" value="@item["x16"]" /> % ({X17}<input type="text" class="form-control-sm" name="x17" value="@item["x17"]" />),
-                                <br />đứng thứ {X18}<input type="text" class="clsnumber form-control-sm" name="x18" value="@item["x18"]" style="width: 50px;" /> so với vùng.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <br />- Chi bình quân chung: {X19}<input type="text" class="clsnumber form-control-sm" name="x19" value="@item["x19"]"/> đồng,
-                                <br />bình quân toàn quốc: {X20}<input type="text" class="clsnumber form-control-sm" name="x20" value="@item["x20"]" /> đồng ({X21}<input type="text" class="form-control-sm" name="x21" value="@item["x21"]" />)
-                                <br />xếp thứ {X22}<input type="text" class="clsnumber form-control-sm" name="x22" value="@item["x22"]" style="width: 50px;" /> so với các tỉnh.
-                                <br />Bình quân vùng: {X23}<input type="text" class="clsnumber form-control-sm" name="x23" value="@item["x23"]" /> % ({X24}<input type="text" class="form-control-sm" name="x24" value="@item["x24"]" />),
-                                <br />đứng thứ {X25}<input type="text" class="clsnumber form-control-sm" name="x25" value="@item["x25"]" style="width: 50px;" /> so với vùng.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <br />- Chi bình quân ngoại trú: {X26}<input type="text" class="clsnumber form-control-sm" name="x26" value="@item["x26"]" /> đồng,
-                                <br />bình quân toàn quốc: {X27}<input type="text" class="clsnumber form-control-sm" name="x27" value="@item["x27"]" /> đồng ({X28}<input type="text" class="form-control-sm" name="x28" value="@item["x28"]" />)
-                                <br />xếp thứ {X29}<input type="text" class="clsnumber form-control-sm" name="x29" value="@item["x29"]" style="width: 50px;" /> so với các tỉnh.
-                                <br />Bình quân vùng: {X30}<input type="text" class="clsnumber form-control-sm" name="x30" value="@item["x30"]" /> % ({X31}<input type="text" class="form-control-sm" name="x31" value="@item["x31"]" />),
-                                <br />đứng thứ {X32}<input type="text" class="clsnumber form-control-sm" name="x32" value="@item["x32"]" style="width: 50px;" /> so với vùng.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <br />- Chi bình quân nội trú: {X33}<input type="text" class="clsnumber form-control-sm" name="x33" value="@item["x33"]" /> đồng,
-                                <br />bình quân toàn quốc: {X34}<input type="text" class="clsnumber form-control-sm" name="x34" value="@item["x34"]" /> đồng ({X35}<input type="text" class="form-control-sm" name="x35" value="@item["x35"]" />)
-                                <br />xếp thứ {X36}<input type="text" class="clsnumber form-control-sm" name="x36" value="@item["x36"]" style="width: 50px;" /> so với các tỉnh.
-                                <br />Bình quân vùng: {X37}<input type="text" class="clsnumber form-control-sm" name="x37" value="@item["x37"]" /> % ({X38}<input type="text" class="form-control-sm" name="x38" value="@item["x38"]" />),
-                                <br />đứng thứ {X39}<input type="text" class="clsnumber form-control-sm" name="x39" value="@item["x39"]" style="width: 50px;" /> so với vùng.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                1.3 Các chỉ số đánh giá chi tiết theo NĐ 75.
-                                <br />Chi tiết qua 7 chỉ số nhóm chi phí: chi xét nghiệm; chi chẩn đoán hình ảnh; chi thuốc; chi phẫu thuật; chi thủ thuật; chi vật tư y tế; chi tiền giường.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.1 Chi xét nghiệm: Bình quân {X40}<input type="text" class="clsnumber form-control-sm" name="x40" value="@item["x40"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X41}<input type="text" class="clsnumber form-control-sm" name="x41" value="@item["x41"]" />, số tuyệt đối {X42}<input type="text" class="form-control-sm" name="x42" value="@item["x42"]" />.
-                                Chỉ định xét nghiệm: {X61}<input type="text" class="clsnumber form-control-sm" name="x61" value="@item["x61"]" />/100 bệnh nhân.
-                                <br />So kỳ trước: số tương đối {X62}<input type="text" class="form-control-sm" name="x62" value="@item["x62"]" />, số tuyệt đối {X63}<input type="text" class="form-control-sm" name="x63" value="@item["x63"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.2 Chi chẩn đoán hình ảnh: Bình quân {X43}<input type="text" class="clsnumber form-control-sm" name="x43" value="@item["x43"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X44}<input type="text" class="form-control-sm" name="x44" value="@item["x44"]" />, số tuyệt đối {X45}<input type="text" class="form-control-sm" name="x45" value="@item["x45"]" />.
-                                <br />Chỉ định CĐHA: {X64}<input type="text" class="clsnumber form-control-sm" name="x64" value="@item["x64"]" />/100 bệnh nhân.
-                                <br />So kỳ trước: số tương đối {X65}<input type="text" class="form-control-sm" name="x65" value="@item["x65"]" />, số tuyệt đối {X66}<input type="text" class="form-control-sm" name="x66" value="@item["x66"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.3 Chi thuốc: Bình quân {X46}<input type="text" class="clsnumber form-control-sm" name="x46" value="@item["x46"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X47}<input type="text" class="form-control-sm" name="x47" value="@item["x47"]" />, số tuyệt đối {X48}<input type="text" class="form-control-sm" name="x48" value="@item["x48"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.4 Chi phẫu thuật: Bình quân {X49}<input type="text" class="clsnumber form-control-sm" name="x49" value="@item["x49"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X50}<input type="text" class="form-control-sm" name="x50" value="@item["x50"]" />, số tuyệt đối {X51}<input type="text" class="form-control-sm" name="x51" value="@item["x51"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.5. Chi thủ thuật: Bình quân {X52}<input type="text" class="clsnumber form-control-sm" name="x52" value="@item["x52"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X53}<input type="text" class="form-control-sm" name="x53" value="@item["x53"]" />, số tuyệt đối {X54}<input type="text" class="form-control-sm" name="x54" value="@item["x54"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.6 Chi vật tư y tế: Bình quân {X55}<input type="text" class="clsnumber form-control-sm" name="x55" value="@item["x55"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X56}<input type="text" class="form-control-sm" name="x56" value="@item["x56"]" />, số tuyệt đối {X57}<input type="text" class="form-control-sm" name="x57" value="@item["x57"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3.7 Chi tiền giường: Bình quân {X58}<input type="text" class="clsnumber form-control-sm" name="x58" value="@item["x58"]" /> đồng/lượt KCB.
-                                <br />So kỳ trước: số tương đối {X59}<input type="text" class="form-control-sm" name="x59" value="@item["x59"]" />, số tuyệt đối {X60}<input type="text" class="form-control-sm" name="x60" value="@item["x60"]" />.
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>@Html.Label("x67", "2. Công tác kiểm soát chi:{x67}") <br /> <textarea name="x67" class="form-control">@item["x67"]</textarea></td>
-                        </tr>
-                        <tr>
-                            <td>@Html.Label("x68", "3. Công tác thanh, quyết toán năm:{x68}") <br /> <textarea name="x68" class="form-control">@item["x68"]</textarea></td>
-                        </tr>
-                        <tr>
-                            <td>@Html.Label("x69", "II. Phương hướng kỳ tiếp theo:{x69}") <br /> <textarea name="x69" class="form-control">@item["x69"]</textarea></td>
-                        </tr>
-                        <tr>
-                            <td>@Html.Label("x70", "III. Khó khăn, vướng mắc, đề xuất (nếu có):{x70}") <br /> <textarea name="x70" class="form-control">@item["x70"]</textarea></td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <a href="javascript:baocao('save');" class="btn btn-primary btn-sm"><i class="fa fa-save"></i> Lưu lại</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            }
-        </div>
-    }
+    ViewBag.Title = "Tạo báo cáo tuần";
 }
-<script>
-    var idform = '#@idFormBCT';
-    function baocao(sender) {
-        var tmp = $('#thoigian').val();
-        if (/^[0-3][0-9]\/[0-1][0-9]\/[2-3][0-9]{3}$/.test(tmp) == false) {
-            messageBox('<i class="fa fa-warning"></i>JS Thông báo lỗi', `Thời gian không đúng định dạng ngày/tháng/năm '${tmp}'`);
-            return;
-        }
-        var mode = (typeof (sender) == "string") ? sender.toString() : "baocao";
-        /** Soát lỗi */
-        $(idform).find("input.clsnumber").each(function () {
-            var v = $(this).val();
-            if (v == "") { $(this).val("0"); }
-            else {
-                if (isNaN(v)) {
-                    messageBox(`<i class="fa fa-warning"></i>JS Lỗi`, `Vui lòng kiểm tra lại các trường dạng số ${$(this).attr("name")}: ${v}`);
-                    $(this).focus();
-                    return false;
-                }
-            }
-        });
-        var urlPost = mode == "taive" ? "/bcTuan/Update" : "@Url.Action("Update", "bcTuan", new { area = "", objectid=id, layout = "null"})";
-        $(idform).find("input[name='mode']").val(mode);
-        $(idform).attr("action", urlPost);
-        if (mode == "taive") { $(idform).submit(); return; }
-        postform(idform, urlPost);
+<h2>@ViewBag.Title</h2>
+<div class="table-responsive">
+    @using (Html.BeginForm("Update", "bcTuan", new { area = "" }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
+    {
+        <input type="hidden" name="mode" value="update" />
+        <input type="hidden" name="layout" value="null" />
+        <input type="hidden" name="id" value="@ViewBag.id" />
+        <table class="table table-hover">
+            <tbody>
+                <tr>
+                    <td class="text-right">@Html.Label("thoigian", "Ngày lập báo x74")</td>
+                    <td>
+                        <input type="text" name="thoigian" id="thoigian" value="@DateTime.Now.ToString("dd/MM/yyyy")" class="clsdate" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">@Html.Label("x2", "Số của QĐ giao dự toán x2:")</td>
+                    <td>
+                        <input type="text" name="x2" id="x2" value="" class="clsnumber form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3")</td>
+                    <td>
+                        <input type="text" name="x3" id="x3" value="" class="clsnumber form-control-sm" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x67", "Công tác kiểm soát chi x67:")
+                        <br />
+                        <textarea name="x67" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x68", "Công tác thanh, quyết toán năm x68:")
+                        <br />
+                        <textarea name="x68" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x69", "Phương hướng kỳ tiếp theo x69:")
+                        <br />
+                        <textarea name="x69" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có) x70:")
+                        <br />
+                        <textarea name="x70" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <a href="javascript:baocao('thuchien');" class="btn btn-primary btn-sm"><i class="fa fa-play"></i> Thực hiện</a>
+                        <a href="javascript:baocao('taive');" class="btn btn-primary btn-sm"><i class="fa fa-download"></i> Thực hiện và tải về docx</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     }
-</script>
+</div>

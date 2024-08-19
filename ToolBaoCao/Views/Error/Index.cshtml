@@ -22,17 +22,13 @@
         {
             dataText = "Error";
             msg = Request.getValue("Message");
-            string tmp = Request.getValue("Source");
+            string tmp = Request.getValue("WebEventCode");
             if (tmp != "")
             {
                 classTextAglin = "text-right";
-                msg += $"<br />Source: {tmp}";
+                msg += $"<br />WebEventCode: {tmp}; ErrorCode: {Request.getValue("ErrorCode")}";
                 tmp = Request.getValue("StackTrace");
                 msg += $"<br />StackTrace: {tmp}";
-                tmp = Request.getValue("WebEventCode");
-                msg += $"<br />WebEventCode: {tmp}";
-                tmp = Request.getValue("ErrorCode");
-                msg += $"<br />ErrorCode: {tmp}";
             }
         }
     }
