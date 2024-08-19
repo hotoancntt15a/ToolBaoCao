@@ -996,7 +996,7 @@ namespace ToolBaoCao.Controllers
         private Dictionary<string, string> createBcTuan(dbSQLite dbConnect, string idBaoCao, string maTinh, string idUser, string x2 = "", string x3 = "", string x67 = "", string x68 = "", string x69 = "", string x70 = "")
         {
             var bctuan = new Dictionary<string, string>() { { "id", idBaoCao } };
-            if (x3.isNumberUSInt()) { x3 = "0"; }
+            if (x3.isNumberUSInt() == false) { x3 = "0"; }
 
             double so1 = 0; double so2 = 0;
             var tmpD = new Dictionary<string, string>();
@@ -1238,7 +1238,9 @@ namespace ToolBaoCao.Controllers
             bctuan.Add("ngay", ngayTime.toTimestamp().ToString());
             bctuan.Add("timecreate", timeCreate);
             /* Tự động cập nhật vào dữ tuyết giao */
-            var item = new Dictionary<string, string>() {
+            if (x3 != "0")
+            {
+                var item = new Dictionary<string, string>() {
                     { "namqd", $"{ngayTime.Year}" },
                     { "idtinh", maTinh },
                     { "idhuyen", "" },
@@ -1246,7 +1248,8 @@ namespace ToolBaoCao.Controllers
                     { "tong_dutoan", x3 },
                     { "iduser", idUser }
                 };
-            AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
+                AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
+            }
             return bctuan;
         }
 
@@ -1297,11 +1300,12 @@ namespace ToolBaoCao.Controllers
             var idtinh = $"{Session["idtinh"]}";
             if (idtinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             var id = Request.getValue("objectid");
+            var tsql = "";
             ViewBag.id = id;
             try
             {
                 var item = new Dictionary<string, string>();
-                var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao(idtinh);
+                var dbBaoCao = BuildDatabase.getDataBaoCaoTuan(idtinh);
                 if (Request.getValue("mode") == "update")
                 {
                     DateTime timeStart = DateTime.Now;
@@ -1315,18 +1319,41 @@ namespace ToolBaoCao.Controllers
                     };
                     if (item["x3"].isNumberUSInt() == false) { return Content($"Tổng số tiền các dòng QĐ năm nay không đúng định dạng '{item["x3"]}'".BootstrapAlter("warning")); }
                     if (item["x3"] == "0") { return Content("Chưa điền Tổng số tiền các dòng QĐ năm nay".BootstrapAlter("warning")); }
-                    dbBaoCao.Execute($"UPDATE bctuandocx SET x2='{item["x2"]}', x3='{item["x3"]}', x67='{item["x67"]}', x68='{item["x68"]}', x69='{item["x69"]}', x70='{item["x70"]}', x4=ROUND((x1/{item["x3"]}),2) WHERE id='{id.sqliteGetValueField()}'");
-                    var data = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'");
+                    tsql = $"UPDATE bctuandocx SET x2='{item["x2"]}', x3='{item["x3"]}', x67='{item["x67"]}', x68='{item["x68"]}', x69='{item["x69"]}', x70='{item["x70"]}', x4=ROUND((x1/{item["x3"]})*100,2) WHERE id='{id.sqliteGetValueField()}'";
+                    dbBaoCao.Execute(tsql);
+                    tsql = $"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'";
+                    var data = dbBaoCao.getDataTable(tsql);
                     dbBaoCao.Close();
-                    if (data.Rows.Count == 0) { return Content($"Báo cáo tuần có ID '{id}' không tồn tại hoặc đã bị xoá khỏi hệ thống".BootstrapAlter("danger")); }
+                    if (data.Rows.Count == 0)
+                    {
+                        ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{idtinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
+                        return View();
+                    }
                     var bcTuan = new Dictionary<string, string>();
                     foreach (DataColumn c in data.Columns) { bcTuan.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
-                    createFileBCTuanDocx(id, Path.Combine(AppHelper.pathAppData, "bctuan", $"tinh{idtinh}"), bcTuan);
+                    createFileBCTuanDocx(id, idtinh, bcTuan);
+                    if (item["x3"] != bcTuan["{X3}"])
+                    {
+                        var duToanGiao = new Dictionary<string, string>() {
+                            { "namqd", bcTuan["{X74}"].Substring(7) },
+                            { "idtinh", idtinh },
+                            { "idhuyen", "" },
+                            { "so_kyhieu_qd", item["x2"]},
+                            { "tong_dutoan", item["x3"] },
+                            { "iduser", $"{Session["iduser"]}" }
+                        };
+                        AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
+                    }
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
-                var d = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'");
+                tsql = $"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'";
+                var d = dbBaoCao.getDataTable(tsql);
                 dbBaoCao.Close();
-                if (d.Rows.Count == 0) { return Content($"Báo cáo tuần có ID '{id}' không tồn tại hoặc đã bị xoá khỏi hệ thống".BootstrapAlter("danger")); }
+                if (d.Rows.Count == 0)
+                {
+                    ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{idtinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống.";
+                    return View();
+                }
                 foreach (DataColumn c in d.Columns) { item.Add($"{c.ColumnName}", $"{d.Rows[0][c.ColumnName]}"); }
                 ViewBag.data = item;
             }

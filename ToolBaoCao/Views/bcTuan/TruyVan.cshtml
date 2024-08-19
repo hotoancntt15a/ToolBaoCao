@@ -13,7 +13,9 @@
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
         return;
     }
-    var idform = "frmdel" + DateTime.Now.toTimestamp().ToString(); ;
+    var idform = "frmdel" + DateTime.Now.toTimestamp().ToString();
+    var linkEdit = "";
+    var userid = $"{Session["iduser"]}";
 }
 @using (Html.BeginForm("Delete", "bcTuan", new { area = "", layout = "null" }, FormMethod.Post, new { id = idform }))
 {
@@ -29,10 +31,11 @@
         </thead>
         <tbody>
             @foreach (DataRow r in data.Rows)
-            {
+            { 
+                if(userid == $"{r["userid"]}") { linkEdit = $"<a href=\"#\" onclick=\"showgeturl('{Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })}');\">{r[1]}</a>"; } else { linkEdit = $"{r[1]}"; }
                 <tr data-id="@r["id"]">
                     <td><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
-                    <td><a href="#" onclick="showgeturl('@Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })');">@r[1]</a> [<a href="#" onclick="showgeturl('@Url.Action("Tai", "bcTuan", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
+                    <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "bcTuan", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
                     @for (int i = 2; i < data.Columns.Count; i++)
                     {
                         <td>@r[i]</td>
