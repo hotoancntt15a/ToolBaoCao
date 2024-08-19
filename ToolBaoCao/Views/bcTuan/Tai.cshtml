@@ -9,7 +9,7 @@
 }
 @{
     var id = Request.getValue("idobject");
-    var dirSave = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
+    var dirSave = new System.IO.DirectoryInfo(ViewBag.path as string);
     var i = 0;
 }
 <div class="alert alert-info">Danh sách tập tin đã xử lý cho Báo cáo tuần có ID '@id'</div>

@@ -427,17 +427,30 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Tai()
         {
+            var id = Request.getValue("idobject");
+            if (id.Contains("_") == false) { ViewBag.Error = $"Tham số không đúng '{id}'"; return View(); }
+            var tmp = id.Split('_')[1];
+            try
+            {
+                var f = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "bctuan", $"tinh{tmp}"));
+                if (f.Exists == false) { throw new Exception($"Thư mục '{f.FullName}' không tồn tại"); }
+                ViewBag.path = f.FullName;
+            }
+            catch (Exception ex) { ViewBag.Error = ex.Message; }
             return View();
         }
 
         public ActionResult Buoc3()
         {
-            if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            var idtinh = $"{Session["idtinh"]}";
+            if (idtinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            ViewBag.idtinh = idtinh;
             var idBaoCao = Request.getValue("idobject");
             ViewBag.id = idBaoCao;
-            var iduser = $"{Session["iduser"]}"; var idtinh = $"{Session["idtinh"]}";
+            var iduser = $"{Session["iduser"]}";
             /* Đường dẫn lưu */
-            var folderSave = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan");
+            var folderSave = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{idtinh}");
+            if (Directory.Exists(folderSave) == false) { Directory.CreateDirectory(folderSave); }
             ViewBag.forlderSave = folderSave;
             var folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bctuan", $"{idtinh}_{iduser}".GetMd5Hash());
             var dirTemp = new System.IO.DirectoryInfo(folderTemp);
@@ -453,14 +466,7 @@ namespace ToolBaoCao.Controllers
                 /* Tạo bctuan */
                 var bctuan = createBcTuan(dbTemp, idBaoCao, idtinh, iduser, Request.getValue("x2"), Request.getValue("x3"), Request.getValue("x67"), Request.getValue("x68"), Request.getValue("x69"), Request.getValue("x70"));
                 /* Tạo docx */
-                string pathFileTemplate = Path.Combine(AppHelper.pathApp, "App_Data", "baocaotuan.docx");
-                if (System.IO.File.Exists(pathFileTemplate) == false)
-                {
-                    ViewBag.Error = "Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data";
-                    return View();
-                }
-                /* Lưu File báo cáo tuần docx */
-                createFileBCTuanDocx(pathFileTemplate, idBaoCao, folderSave, bctuan);
+                createFileBCTuanDocx(idBaoCao, idtinh, bctuan);
                 /* Tạo dữ liệu để xuất phụ lục */
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
                 var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(idtinh);
@@ -990,7 +996,7 @@ namespace ToolBaoCao.Controllers
         private Dictionary<string, string> createBcTuan(dbSQLite dbConnect, string idBaoCao, string maTinh, string idUser, string x2 = "", string x3 = "", string x67 = "", string x68 = "", string x69 = "", string x70 = "")
         {
             var bctuan = new Dictionary<string, string>() { { "id", idBaoCao } };
-            if (Regex.IsMatch(x3, @"^\d+(\.\d+)?$") == false) { x3 = "0"; }
+            if (x3.isNumberUSInt()) { x3 = "0"; }
 
             double so1 = 0; double so2 = 0;
             var tmpD = new Dictionary<string, string>();
@@ -1244,17 +1250,19 @@ namespace ToolBaoCao.Controllers
             return bctuan;
         }
 
-        private void createFileBCTuanDocx(string pathFileTemplate, string idBaoCao, string folderSave, Dictionary<string, string> bctuan)
+        private void createFileBCTuanDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcTuan)
         {
+            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "baocaotuan.docx");
+            if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"); }
             /*** 1.1 làm tròn đến triệu đồng (x1, x71, x72, x2, x3, x4) */
-            bctuan["{X1}"] = bctuan["{X1}"].lamTronTrieuDong();
-            bctuan["{X71}"] = bctuan["{X71}"].lamTronTrieuDong();
-            bctuan["{X72}"] = bctuan["{X72}"].lamTronTrieuDong();
-            bctuan["{X3}"] = bctuan["{X3}"].lamTronTrieuDong();
+            bcTuan["{X1}"] = bcTuan["{X1}"].lamTronTrieuDong();
+            bcTuan["{X71}"] = bcTuan["{X71}"].lamTronTrieuDong();
+            bcTuan["{X72}"] = bcTuan["{X72}"].lamTronTrieuDong();
+            bcTuan["{X3}"] = bcTuan["{X3}"].lamTronTrieuDong();
 
             /* Số tiền làm tròn đến đồng */
             var tronSo = new List<string>() { "{X19}", "{X20}", "{X23}", "{X26}", "{X27}", "{X30}", "{X33}", "{X34}", "{X37}", "{X40}", "{X43}", "{X46}", "{X49}", "{X52}", "{X55}", "{X58}" };
-            foreach (var v in tronSo) { if (bctuan[v].Contains(".")) { bctuan[v] = Math.Round(double.Parse(bctuan[v]), 0).ToString(); } }
+            foreach (var v in tronSo) { if (bcTuan[v].Contains(".")) { bcTuan[v] = Math.Round(double.Parse(bcTuan[v]), 0).ToString(); } }
             var tmp = "";
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
@@ -1266,11 +1274,13 @@ namespace ToolBaoCao.Controllers
                         tmp = run.ToString();
                         // Sử dụng Regex để tìm tất cả các match
                         MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
-                        foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bctuan.getValue(match.Value, "", true)); }
+                        foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bcTuan.getValue(match.Value, "", true)); }
                         run.SetText(tmp, 0);
                     }
                 }
-                tmp = Path.Combine(folderSave, $"bctuan_{idBaoCao}.docx");
+                tmp = Path.Combine(AppHelper.pathAppData, "bctuan", $"tinh{idtinh}");
+                if (Directory.Exists(tmp) == false) { Directory.CreateDirectory(tmp); }
+                tmp = Path.Combine(tmp, $"bctuan_{idBaoCao}.docx");
                 if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
                 using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
                 /*
@@ -1284,8 +1294,43 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Update()
         {
-            if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
-
+            var idtinh = $"{Session["idtinh"]}";
+            if (idtinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            var id = Request.getValue("objectid");
+            ViewBag.id = id;
+            try
+            {
+                var item = new Dictionary<string, string>();
+                var dbBaoCao = BuildDatabase.getDbSQLiteBaoCao(idtinh);
+                if (Request.getValue("mode") == "update")
+                {
+                    DateTime timeStart = DateTime.Now;
+                    item = new Dictionary<string, string>() {
+                        { "x2", Request.getValue("x2").sqliteGetValueField() },
+                        { "x3", Request.getValue("x3").Trim() },
+                        { "x67", Request.getValue("x67").sqliteGetValueField() },
+                        { "x68", Request.getValue("x68").sqliteGetValueField() },
+                        { "x69", Request.getValue("x69").sqliteGetValueField() },
+                        { "x70", Request.getValue("x70").sqliteGetValueField() }
+                    };
+                    if (item["x3"].isNumberUSInt() == false) { return Content($"Tổng số tiền các dòng QĐ năm nay không đúng định dạng '{item["x3"]}'".BootstrapAlter("warning")); }
+                    if (item["x3"] == "0") { return Content("Chưa điền Tổng số tiền các dòng QĐ năm nay".BootstrapAlter("warning")); }
+                    dbBaoCao.Execute($"UPDATE bctuandocx SET x2='{item["x2"]}', x3='{item["x3"]}', x67='{item["x67"]}', x68='{item["x68"]}', x69='{item["x69"]}', x70='{item["x70"]}', x4=ROUND((x1/{item["x3"]}),2) WHERE id='{id.sqliteGetValueField()}'");
+                    var data = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'");
+                    dbBaoCao.Close();
+                    if (data.Rows.Count == 0) { return Content($"Báo cáo tuần có ID '{id}' không tồn tại hoặc đã bị xoá khỏi hệ thống".BootstrapAlter("danger")); }
+                    var bcTuan = new Dictionary<string, string>();
+                    foreach (DataColumn c in data.Columns) { bcTuan.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
+                    createFileBCTuanDocx(id, Path.Combine(AppHelper.pathAppData, "bctuan", $"tinh{idtinh}"), bcTuan);
+                    return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
+                }
+                var d = dbBaoCao.getDataTable($"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'");
+                dbBaoCao.Close();
+                if (d.Rows.Count == 0) { return Content($"Báo cáo tuần có ID '{id}' không tồn tại hoặc đã bị xoá khỏi hệ thống".BootstrapAlter("danger")); }
+                foreach (DataColumn c in d.Columns) { item.Add($"{c.ColumnName}", $"{d.Rows[0][c.ColumnName]}"); }
+                ViewBag.data = item;
+            }
+            catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
         }
 
@@ -1349,10 +1394,13 @@ namespace ToolBaoCao.Controllers
             }
             string idtinh = tmpl[1];
             /* Xoá hết các file trong mục lưu trữ App_Data/bctuan */
-            var folder = new DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
-            foreach (var f in folder.GetFiles($"bctuan_{id}.*")) { try { f.Delete(); } catch { } }
-            foreach (var f in folder.GetFiles($"bctuan_pl_{id}*.*")) { try { f.Delete(); } catch { } }
-            foreach (var f in folder.GetFiles($"id{id}*.*")) { try { f.Delete(); } catch { } }
+            var folder = new DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{idtinh}"));
+            if (folder.Exists)
+            {
+                foreach (var f in folder.GetFiles($"bctuan_{id}.*")) { try { f.Delete(); } catch { } }
+                foreach (var f in folder.GetFiles($"bctuan_pl_{id}*.*")) { try { f.Delete(); } catch { } }
+                foreach (var f in folder.GetFiles($"id{id}*.*")) { try { f.Delete(); } catch { } }
+            }
             /* Xoá trong cơ sở dữ liệu */
             var db = BuildDatabase.getDataBaoCaoTuan(idtinh);
             try

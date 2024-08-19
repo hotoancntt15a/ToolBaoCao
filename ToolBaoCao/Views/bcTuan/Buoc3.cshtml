@@ -13,7 +13,7 @@
 @{
     var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id as string;
-    var dirSave = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bctuan"));
+    var dirSave = new System.IO.DirectoryInfo(ViewBag.forlderSave as string);
 }
 <br />
 <h4 class="font-weight-bold">BƯỚC 3: TẢI KẾT QUẢ BÁO CÁO CÓ ID: @id</h4>
