@@ -1363,8 +1363,12 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult TruyVan()
         {
-            if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             var matinh = $"{Session["idtinh"]}";
+            if (matinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            /* Tài khoản system có thể xem được tất cả
+             * Tài khoản admin tỉnh xem được toàn bộ của tỉnh được phân
+             * Tải khoản người dùng chỉnh xem các báo cáo mình tạo ra
+             */
             try
             {
                 var mode = Request.getValue("mode");
@@ -1377,7 +1381,10 @@ namespace ToolBaoCao.Controllers
                     ViewBag.ngay1 = ngay1;
                     ViewBag.ngay2 = ngay2;
                     var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(matinh);
-                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7, id,ma_tinh,x72,x74,userid FROM bctuandocx WHERE timecreate >= {time1.toTimestamp()} AND timecreate < {time2.AddDays(1).toTimestamp()}";
+                    var where = $"WHERE timecreate >= {time1.toTimestamp()} AND timecreate < {time2.AddDays(1).toTimestamp()}";
+                    var tmp = $"{Session["nhom"]}";
+                    if (tmp != "0" && tmp != "1") { where += $" AND userid='{Session["iduser"]}'"; }
+                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7,id,ma_tinh,x72,x74,userid FROM bctuandocx {where}";
                     ViewBag.data = dbBCTuan.getDataTable(tsql);
                     dbBCTuan.Close();
                     ViewBag.tsql = tsql;
