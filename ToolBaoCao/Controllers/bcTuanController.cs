@@ -908,15 +908,15 @@ namespace ToolBaoCao.Controllers
             return rs;
         }
 
-        private string getPosition(string mavung, string matinh, string field, List<DataRow> data)
+        private string getPosition(string mavung, string matinh, string fieldSortDesc, List<DataRow> data)
         {
             if (mavung != "")
             {
                 var sortedRows = data.Where(r => r.Field<string>("ma_vung") == mavung)
-                   .OrderByDescending(row => row.Field<double>("chi_bq_noi")).ToList();
+                   .OrderByDescending(row => row.Field<double>(fieldSortDesc)).ToList();
                 return (sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1).ToString();
             }
-            var s = data.OrderByDescending(row => row.Field<double>("chi_bq_noi")).ToList();
+            var s = data.OrderByDescending(row => row.Field<double>(fieldSortDesc)).ToList();
             return (s.FindIndex(row => row.Field<string>("ma_tinh") == matinh) + 1).ToString();
         }
 
