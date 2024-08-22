@@ -29,6 +29,7 @@ namespace ToolBaoCao
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
+
         /// <summary>
         /// Kiểm tra số định dạng US, không phân biệt số âm số dương
         /// </summary>
@@ -38,6 +39,7 @@ namespace ToolBaoCao
         {
             return Regex.IsMatch(numberUS, @"^-?\d+(.\d+)?$");
         }
+
         /// <summary>
         /// Chỉ kiểm tra số dương định dạng US
         /// </summary>
@@ -47,6 +49,7 @@ namespace ToolBaoCao
         {
             return Regex.IsMatch(numberUS, @"^\d+(.\d+)?$");
         }
+
         /// <summary>
         /// Chỉ kiểm tra số nguyên dương định dạng US
         /// </summary>
@@ -56,6 +59,7 @@ namespace ToolBaoCao
         {
             return Regex.IsMatch(numberUS, @"^\d+$");
         }
+
         /// <summary>
         /// Định dạng số US; không đúng định dạng trả lại numberUS; Số > triệu = Số tròn triệu đồng; Số > nghìn = Số tròn nghìn đồng; = Số tròn đồng
         /// </summary>
@@ -351,16 +355,16 @@ namespace ToolBaoCao
             try
             {
                 var items = dbSqliteMain.getDataTable(tsql, new KeyValuePair<string, string>("@iduser", userName));
-                if (items.Rows.Count == 0) { return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng"; }
+                if (items.Rows.Count == 0)
                 {
+                    /* Không có tài khoản nào thì tạo tài khoản mặc định */
                     items = dbSqliteMain.getDataTable("SELECT * FROM taikhoan LIMIT 1");
                     if (items.Rows.Count == 0)
                     {
                         var time = DateTime.Now.toTimestamp();
                         dbSqliteMain.Execute($"INSERT INTO admins ([iduser] ,[mat_khau] ,[ten_hien_thi] ,[gioi_tinh] ,[ngay_sinh] ,[email] ,[dien_thoai] ,[dia_chi] ,[hinh_dai_dien] ,[ghi_chu] ,[time_create], nhom) VALUES ('admin', '{"admin123@".GetMd5Hash()}', 'Adminstrator', 'Nam', '{DateTime.Now:dd/MM/yyyy}', 'hotoancntt15a@gmail.com', '09140272795', 'Thành phố Lào Cai, Tỉnh Lào Cai', '', '', '{time}', 0);");
-                        items = dbSqliteMain.getDataTable(tsql, new KeyValuePair<string, string>("@iduser", userName));
-                        if (items.Rows.Count == 0) { return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng"; }
                     }
+                    return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng";
                 }
                 if (http == null) { return keyMSG.HttpConnetNull; }
                 http.Session.Clear();

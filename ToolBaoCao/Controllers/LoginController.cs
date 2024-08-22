@@ -17,6 +17,9 @@ namespace ToolBaoCao.Controllers
                 if (msg == "") { return RedirectToAction("Index", "Home"); }
                 ViewBag.Error = msg;
             }
+            /* Clear */
+            Session.Clear();
+            Request.Cookies.Clear();
             return View();
         }
 
@@ -26,16 +29,7 @@ namespace ToolBaoCao.Controllers
             if (mode == "force")
             {
                 Session.Clear();
-                Session.Abandon();
-                if (Request.Cookies != null)
-                {
-                    foreach (string cookieName in Request.Cookies.AllKeys)
-                    {
-                        HttpCookie cookie = Request.Cookies[cookieName];
-                        cookie.Expires = DateTime.Now.AddDays(-1);
-                        Response.Cookies.Add(cookie);
-                    }
-                }
+                Request.Cookies.Clear();
                 return RedirectToAction("Index");
             }
             return View();
