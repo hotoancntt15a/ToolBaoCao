@@ -5,9 +5,11 @@
 }
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
-<p class="mb-4">
-    Quản lý các tài khoản.
-</p>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    return;
+}
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -66,12 +68,3 @@
         </tbody>
     </table>
 </div>
-<script>
-    /* $(document).ready(function () { $('#tableadmins').DataTable(); }); */
-    @{
-        if(ViewBag.Error != null)
-        {
-            Html.Raw($"messageBox('<div class=\"alert alert-warning\">{ViewBag.Error}</div>', 'Thông báo lỗi');");
-        }
-    }
-</script>

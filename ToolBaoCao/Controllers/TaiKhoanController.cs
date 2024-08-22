@@ -12,11 +12,15 @@ namespace ToolBaoCao.Controllers
 
         public ActionResult Index()
         {
+            var tmp = $"{Session["nhom"]}";
             try
             {
+                if(tmp != "0" && tmp != "1") { ViewBag.Error = "Bạn không có quyền sử dụng tính năng này"; }
                 var idtinh = $"{Session["idtinh"]}".sqliteGetValueField();
                 var iduser = $"{Session["iduser"]}".sqliteGetValueField();
-                var data = AppHelper.dbSqliteMain.getDataTable($"SELECT tk.*, datetime(tk.time_create, 'auto', '+7 hour') as timecreate, IFNULL(p2.timelogin, 0) as timelogin FROM taikhoan tk LEFT JOIN logintime p2 ON tk.iduser=p2.iduser WHERE tk.idtinh='{idtinh}' AND iduser <> '{iduser}' ORDER BY tk.iduser");
+                var tsql = $"SELECT tk.*, datetime(tk.time_create, 'auto', '+7 hour') as timecreate, IFNULL(p2.timelogin, 0) as timelogin FROM taikhoan tk LEFT JOIN logintime p2 ON tk.iduser=p2.iduser WHERE tk.idtinh='{idtinh}' AND tk.iduser <> '{iduser}' ORDER BY tk.iduser";
+                ViewBag.tsql = tsql;
+                var data = AppHelper.dbSqliteMain.getDataTable(tsql);
                 ViewBag.Data = data;
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getLineHTML()}"; }
