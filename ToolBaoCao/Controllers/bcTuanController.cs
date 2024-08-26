@@ -166,6 +166,40 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
+        private void createFilePhuLucBCTuan(string idBaoCao, string matinh, dbSQLite dbBaoCaoTuan = null, Dictionary<string, string> bcTuan = null)
+        {
+            if (dbBaoCaoTuan == null) { dbBaoCaoTuan = BuildDatabase.getDataBaoCaoTuan(matinh); }
+            var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
+            if (bcTuan == null)
+            {
+                bcTuan = new Dictionary<string, string>();
+                var data = dbBaoCaoTuan.getDataTable($"SELECT * FROM bctuandocx WHERE id='{idBaoCaoVauleField}';");
+                if (data.Rows.Count > 0)
+                {
+                    foreach (DataColumn c in data.Columns)
+                    {
+                        bcTuan.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}");
+                    }
+                }
+            }
+            /* Tạo phụ lục báo cáo */
+            var pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}';");
+            var phuluc01 = createPhuLuc01(pl, matinh, bcTuan);
+
+            pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}';");
+            var phuluc02 = createPhuLuc02(pl, matinh);
+
+            pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}';");
+            var phuluc03 = createPhuLuc03(pl, matinh, phuluc01);
+
+            var xlsx = exportPhuLucBCTuan(phuluc01, phuluc02, phuluc03);
+
+            var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{matinh}", $"bctuan_pl_{idBaoCao}.xlsx");
+            if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
+            using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
+            xlsx.Close(); xlsx.Clear();
+        }
+
         private XSSFWorkbook exportPhuLucBCTuan(params DataTable[] par)
         {
             XSSFWorkbook workbook = new XSSFWorkbook();
@@ -432,9 +466,39 @@ namespace ToolBaoCao.Controllers
             var tmp = id.Split('_')[1];
             try
             {
-                var f = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "bctuan", $"tinh{tmp}"));
-                if (f.Exists == false) { throw new Exception($"Thư mục '{f.FullName}' không tồn tại"); }
-                ViewBag.path = f.FullName;
+                var d = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "bctuan", $"tinh{tmp}"));
+                if (d.Exists == false) { throw new Exception($"Thư mục '{d.FullName}' không tồn tại"); }
+                ViewBag.path = d.FullName;
+                /* Trường hợp không tìm thấy tập tin nào thì tạo lại nếu còn dữ liệu */
+                var tsql = "";
+                var matinh = tmp;
+                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_{id}.docx")) == false || System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_pl_{id}.docx")) == false)
+                {
+                    /* Tạo lại báo cáo */
+                    var dbBaoCao = BuildDatabase.getDataBaoCaoTuan(matinh);
+                    tsql = $"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'";
+                    var data = dbBaoCao.getDataTable(tsql);
+                    dbBaoCao.Close();
+                    if (data.Rows.Count == 0)
+                    {
+                        ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{matinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
+                        return View();
+                    }
+                    var bcTuan = new Dictionary<string, string>();
+                    foreach (DataColumn c in data.Columns) { bcTuan.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
+                    createFileBCTuanDocx(id, matinh, bcTuan);
+                    createFilePhuLucBCTuan(id, matinh, dbBaoCao, bcTuan);
+                    dbBaoCao.Close();
+                }
+                tmp = Path.Combine(d.FullName, $"id{id}_b26_00.docx");
+                if (System.IO.File.Exists(tmp) == false)
+                {
+                    /* Tạo lại biểu 26 Toàn quốc */
+                    var dbImport = BuildDatabase.getDataImportBaoCaoTuan(matinh);
+                    var data = dbImport.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{id.sqliteGetValueField()}' AND ma_tinh <> ''");
+                    dbImport.Close();
+                    data.saveXLSX(PathSave: Path.Combine(d.FullName, $"id{id}_b26_00.xlsx"), addColumnAutoNumber: false);
+                }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }
             return View();

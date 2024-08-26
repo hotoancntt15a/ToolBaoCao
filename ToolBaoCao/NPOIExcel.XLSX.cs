@@ -109,7 +109,8 @@ namespace zModules.NPOIExcel
             int index = RowIndex <= 0 ? 1 : RowIndex;
             int pointIndex = index - 1;
             /* Tạo hoặc lấy Sheet */
-            var sheet = FileTemplate == "" ? hssfworkbook.CreateSheet() : hssfworkbook.GetSheetAt(0);
+            if(dt.TableName == "") { dt.TableName = "NewDataTable"; }
+            var sheet = FileTemplate == "" ? hssfworkbook.CreateSheet(dt.TableName) : hssfworkbook.GetSheetAt(0);
             /* Tạo đường viền của ô */
             var cell = hssfworkbook.CreateCellStyleThin();
             /* tạo tiêu đề */
