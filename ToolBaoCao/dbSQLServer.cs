@@ -27,6 +27,13 @@ namespace ToolBaoCao
             }
         }
 
+        public string like(string field, string value)
+        {
+            if (Regex.IsMatch(value, "[%*_?]") == false) { return $"{field} = '{value.Replace("'", "''")}'"; }
+            value = value.Replace("*", "%").Replace("?", "_");
+            value = Regex.Replace(value, "[%]+", "%");
+            return $"{field} LIKE '{value.Replace("'", "''")}'";
+        }
         private SqlParameter[] ConvertObjectToParameter(object parameters)
         {
             if (parameters == null) { return null; }
@@ -230,15 +237,21 @@ namespace ToolBaoCao
                     {
                         var fields = new List<string>();
                         var tsqls = new List<string>();
+                        var joinFields = "";
                         var tsql = "";
                         /* Với mỗi bảng, tạo một truy vấn SQL để tạo bảng và điền dữ liệu vào tập tin .sql */
                         SqlCommand dataCommand = new SqlCommand($"SELECT * FROM {tableName}", connection);
                         SqlDataReader dataReader = dataCommand.ExecuteReader();
-
                         writer.WriteLine($"TRUNCATE TABLE [{tableName}];");
                         writer.WriteLine("GO");
                         while (dataReader.Read())
                         {
+                            if (joinFields == "")
+                            {
+                                /* Tạo danh sách trường import */
+                                for (int i = 0; i < dataReader.FieldCount; i++) { fields.Add(dataReader.GetName(i)); }
+                                joinFields = string.Join(",", fields);
+                            }
                             var vals = new List<string>();
                             if (fields.Count == 0)
                             {
@@ -246,7 +259,7 @@ namespace ToolBaoCao
                                 {
                                     fields.Add(dataReader.GetName(i));
                                 }
-                                tsql = $"INSERT INTO [{tableName}] ({string.Join(",", fields)}) VALUES";
+                                tsql = $"INSERT INTO [{tableName}] ({joinFields}) ({string.Join(",", fields)}) VALUES";
                             }
 
                             if (tsqls.Count >= pageSize)
@@ -263,8 +276,11 @@ namespace ToolBaoCao
                             }
                             tsqls.Add($"({string.Join(",", vals)})");
                         }
-                        if (tsqls.Count > 0) { writer.WriteLine($"{tsql} {string.Join(",", tsqls)};"); }
-                        writer.WriteLine("GO");
+                        if (tsqls.Count > 0)
+                        {
+                            writer.WriteLine($"{tsql} {string.Join(",", tsqls)};");
+                            writer.WriteLine("GO");
+                        }
                         dataReader.Close();
                         writer.Flush();
                     }
