@@ -30,6 +30,8 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
 
+        public static string SQLiteLike(this string field, string value) => dbSqliteMain.like(field, value);
+
         /// <summary>
         /// Kiểm tra số định dạng US, không phân biệt số âm số dương
         /// </summary>

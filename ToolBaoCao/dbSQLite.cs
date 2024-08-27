@@ -386,6 +386,14 @@ namespace ToolBaoCao
             return result;
         }
 
+        public string like(string field, string value)
+        {
+            if (Regex.IsMatch(value, "[%*_?]") == false) { return $"{field} = '{value.Replace("'", "''")}'"; }
+            value = value.Replace("*", "%").Replace("?", "_");
+            value = Regex.Replace(value, "[%]+", "%");
+            return $"{field} LIKE '{value.Replace("'", "''")}'";
+        }
+
         public void ExportDataToSqlFile(string outputFilePath, string version = "")
         {
             if (string.IsNullOrEmpty(version)) { version = DateTime.Now.ToString("yyyyMMdd"); }
@@ -393,20 +401,28 @@ namespace ToolBaoCao
             var tables = getAllTables();
             using (StreamWriter writer = new StreamWriter(outputFilePath, false, Encoding.UTF8))
             {
-                writer.WriteLine("--" + typeof(dbSQLite).Namespace + " v" + version);
+                writer.WriteLine("--" + typeof(dbSQLite).Namespace + " SQLITE v" + version);
                 if (connection.State == ConnectionState.Closed) { connection.Open(); }
                 int pageSizes = 500; int index = 0; List<string> tsql = new List<string>();
                 foreach (var tableName in tables)
                 {
-                    /* Với mỗi bảng, tạo một truy vấn SQL để tạo bảng và điền dữ liệu vào tập tin .sql */
                     SQLiteCommand dataCommand = new SQLiteCommand($"SELECT * FROM {tableName}", connection);
                     SQLiteDataReader dataReader = dataCommand.ExecuteReader();
 
                     writer.WriteLine($"TRUNCATE TABLE [{tableName}];");
                     writer.WriteLine("GO");
-
+                    var fields = new List<string>();
+                    var joinFields = "";
+                    int indexRow = 0;
                     while (dataReader.Read())
                     {
+                        indexRow++;
+                        if (indexRow == 1)
+                        {
+                            /* Tạo danh sách trường import */
+                            for (int i = 0; i < dataReader.FieldCount; i++) { fields.Add(dataReader.GetName(i)); }
+                            joinFields = string.Join(",", fields);
+                        }
                         var v = new List<string>() { "(" };
                         for (int i = 0; i < dataReader.FieldCount; i++)
                         {
@@ -417,9 +433,9 @@ namespace ToolBaoCao
                         v.Add(")");
                         tsql.Add(string.Join("", v));
                         index++;
-                        if (index >= pageSizes) { writer.WriteLine($"INSERT INTO [{tableName}] VALUES {string.Join(",", tsql)};"); index = 0; tsql = new List<string>(); }
+                        if (index >= pageSizes) { writer.WriteLine($"INSERT INTO [{tableName}] ({joinFields}) VALUES {string.Join(",", tsql)};"); index = 0; tsql = new List<string>(); }
                     }
-                    if (index > 0) { writer.WriteLine($"INSERT INTO [{tableName}] VALUES {string.Join(",", tsql)};"); }
+                    if (index > 0) { writer.WriteLine($"INSERT INTO [{tableName}] ({joinFields}) VALUES {string.Join(",", tsql)};"); }
                     writer.WriteLine("GO");
                     dataReader.Close();
                     writer.Flush();
