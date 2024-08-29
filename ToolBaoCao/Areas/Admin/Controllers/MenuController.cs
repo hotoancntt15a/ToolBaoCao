@@ -43,11 +43,13 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 return string.Join("", html);
             }
             var li = new List<string>();
-            var dcopy = dataMenu.AsEnumerable().Where(r => r.Field<long>("idfather") == 0).OrderBy(r => r.Field<long>("postion")).ToList();
+            var dcopy = dataMenu.AsEnumerable().Where(r => r.Field<long>("idfather") == idMenuFather).OrderBy(r => r.Field<long>("postion")).ToList();
             if (dcopy.Count > 0)
             {
+                var dt = dataMenu.Clone();
+                foreach(DataRow r in dcopy) { dt.ImportRow(r); }
                 li.Add("<ul>");
-                foreach (DataRow r in dcopy)
+                foreach (DataRow r in dt.Rows)
                 {
                     var link = $"{r["link"]}".Trim(); if (link != "") { link = $" ({link})"; }
                     li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\" title=\"{r["note"]}\"> <i class=\"{r["css"]}\"></i> {r["title"]}{link}</a>");
