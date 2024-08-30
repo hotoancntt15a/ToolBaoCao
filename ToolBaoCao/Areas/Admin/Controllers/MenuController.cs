@@ -24,43 +24,27 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 
         private string showMenuTree(DataTable dataMenu, long idMenuFather = 0, string jsfunction = "selectMenu", bool showTree = true)
         {
-            if (idMenuFather == 0)
-            {
-                var html = new List<string>() { $"<div class=\"viewmenutree\">" };
-                if (showTree) { html.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>"); }
-                if (dataMenu.Rows.Count > 0)
-                {
-                    html.Add("<ul>");
-                    foreach (DataRow r in dataMenu.Rows)
-                    {
-                        var link = $"{r["link"]}".Trim(); if (link != "") { link = $" ({link})"; }
-                        html.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\" title=\"{r["note"]}\"> <i class=\"{r["css"]}\"></i> {r["title"]}{link}</a>");
-                        if (showTree) { showMenuTree(dataMenu, (long)r["id"], jsfunction, showTree); }
-                        html.Add("</li>");
-                    }
-                    html.Add("</ul>");
-                }
-                html.Add("</div>");
-                return string.Join("", html);
-            }
             var li = new List<string>();
             var dcopy = dataMenu.AsEnumerable().Where(r => r.Field<long>("idfather") == idMenuFather).OrderBy(r => r.Field<long>("postion")).ToList();
             if (dcopy.Count > 0)
             {
+                li.Add($"<ul>");
+                if (idMenuFather == 0)
+                {
+                    li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- {(showTree ? "(ShowTree) " : "")}</a></li>");
+                }
                 var dt = dataMenu.Clone();
                 foreach (DataRow r in dcopy) { dt.ImportRow(r); }
-                li.Add("<ul>");
                 foreach (DataRow r in dt.Rows)
                 {
                     var link = $"{r["link"]}".Trim(); if (link != "") { link = $" ({link})"; }
                     li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'{r["id"]}');\" title=\"{r["note"]}\"> <i class=\"{r["css"]}\"></i> {r["title"]}{link}</a>");
-                    if (showTree) { showMenuTree(dataMenu, (long)r["id"], jsfunction, showTree); }
+                    if (showTree) { li.Add(showMenuTree(dataMenu, (long)r["id"], jsfunction, showTree)); }
                     li.Add("</li>");
                 }
                 li.Add("</ul>");
-                return string.Join("", li);
             }
-            return "";
+            return string.Join("", li);
         }
 
         public ActionResult Select()
@@ -73,7 +57,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 if (Regex.IsMatch(idfather, @"^\d+$") == false) { showtree = "1"; }
                 string where = idfather == "" ? "" : $"WHERE idfather={idfather}";
                 var dataMenu = AppHelper.dbSqliteMain.getDataTable($"SELECT * FROM wmenu {where}");
-                return Content(showMenuTree(dataMenu, long.Parse(idfather == "" ? "0" : idfather), showTree: showtree == "1"));
+                return Content("<div class=\"viewmenutree\">" + showMenuTree(dataMenu, long.Parse(idfather == "" ? "0" : idfather), showTree: showtree == "1") + "</div>");
             }
             catch (Exception ex) { return Content($"<div class=\"alert alert-warning\">{ex.getLineHTML()}</div>"); }
         }
@@ -89,7 +73,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 if (id != "") { if (Regex.IsMatch(id, @"^\d+$") == false) { throw new Exception($"ID menu không đúng {id}"); } }
                 if (mode == "delete")
                 {
-                   return View();
+                    return View();
                 }
                 if (mode == "forcedel")
                 {

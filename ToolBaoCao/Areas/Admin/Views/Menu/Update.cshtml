@@ -15,7 +15,7 @@
         if (ViewBag.Data != null) { item = ViewBag.data as Dictionary<string, string>; }
     }
     var idfrom = $"frm{DateTime.Now.toTimestamp()}";
-    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin" });
+    var urlSelectFather = Url.Action("Select", "Menu", new { area = "Admin", showtree = 1 });
 }
 <h2>@ViewBag.Title</h2>
 <form id="@idfrom" name="@idfrom" method="post">
