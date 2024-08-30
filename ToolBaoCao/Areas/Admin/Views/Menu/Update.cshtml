@@ -1,5 +1,11 @@
 ﻿@{
     if (Request.getValue("layout") == "null") { Layout = null; }
+    var mode = ViewBag.mode as string;
+    if(mode == "delete")
+    {
+    <div class="alert alert-info">Bạn có thực sự có muốn xoá Nhóm có ID '@ViewBag.id' không? <br /><a href="javascript:showgeturl('/Admin/Menu/Update?id=@ViewBag.id&layout=null&mode=forcedel');" class="btn btn-primary btn-sm"> <i class="fa fa-recycle"></i> Có </a></div>
+        return;
+    }
     ViewBag.Title = "Thêm mới menu";
     var item = new Dictionary<string, string>();
     var id = $"{ViewBag.id}";

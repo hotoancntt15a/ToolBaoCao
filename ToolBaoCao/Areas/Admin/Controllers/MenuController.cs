@@ -9,7 +9,8 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 {
     public class MenuController : ControllerCheckLogin
     {
-        // GET: Admin/Menu
+        /* GET: Admin/Menu */
+
         public ActionResult Index()
         {
             try
@@ -26,7 +27,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             if (idMenuFather == 0)
             {
                 var html = new List<string>() { $"<div class=\"viewmenutree\">" };
-                if(showTree) { html.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>");  }
+                if (showTree) { html.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>"); }
                 if (dataMenu.Rows.Count > 0)
                 {
                     html.Add("<ul>");
@@ -47,7 +48,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             if (dcopy.Count > 0)
             {
                 var dt = dataMenu.Clone();
-                foreach(DataRow r in dcopy) { dt.ImportRow(r); }
+                foreach (DataRow r in dcopy) { dt.ImportRow(r); }
                 li.Add("<ul>");
                 foreach (DataRow r in dt.Rows)
                 {
@@ -80,14 +81,15 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         public ActionResult Update(string id = "")
         {
             var timeStart = DateTime.Now;
+            var mode = Request.getValue("mode");
+            ViewBag.mode = mode;
             ViewBag.id = id;
             try
             {
                 if (id != "") { if (Regex.IsMatch(id, @"^\d+$") == false) { throw new Exception($"ID menu không đúng {id}"); } }
-                var mode = Request.getValue("mode");
                 if (mode == "delete")
                 {
-                    return Content($"<div class=\"alert alert-info\">Bạn có thực sự có muốn xoá Nhóm có ID '{id}' không? <br /><a href=\"javascript:postform('', '/Admin/Menu/Update?id={id}&layout=null&mode=forcedel');\" class=\"btn btn-primary btn-sm\"> Có </a></div>");
+                   return View();
                 }
                 if (mode == "forcedel")
                 {

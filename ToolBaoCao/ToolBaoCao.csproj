@@ -792,7 +792,6 @@
     <Content Include="Areas\Admin\Views\DMCSKCB\Index.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\Update.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\TruyVan.cshtml" />
-    <Content Include="Areas\Admin\Views\Menu\Select.cshtml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
