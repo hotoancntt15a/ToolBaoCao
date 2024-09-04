@@ -7,7 +7,6 @@
 @{
     if (Request.getValue("layout") == "null") { Layout = null; }
     var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
-    var dField = new Dictionary<string, string>();
     if (data.Rows.Count == 0)
     {
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
@@ -22,24 +21,25 @@
     <table class="table table-hover table-bordered">
         <thead>
             <tr>
-                <th>Chọn</th>
-                @for (int i = 1; i < data.Columns.Count; i++)
-                {
-                    <th>@dField.getValue(data.Columns[i].ColumnName, data.Columns[i].ColumnName)</th>
-                }
+                <th style="width: 65px;">Chọn</th>
+                <th style="width: 240px;">Mã báo cáo</th>
+                <th style="width: 90px;">Mã tỉnh</th>
+                <th style="width: 105px;">Ngày</th>
+                <th style="width: 180px;">Tiền dự toán giao</th>
+                <th>Tài khoản</th>
             </tr>
         </thead>
         <tbody>
             @foreach (DataRow r in data.Rows)
-            { 
-                if(userid == $"{r["userid"]}") { linkEdit = $"<a href=\"#\" onclick=\"showgeturl('{Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })}');\">{r[1]}</a>"; } else { linkEdit = $"{r[1]}"; }
+            {
+                if (userid == $"{r["userid"]}") { linkEdit = $"<a href=\"#\" onclick=\"showgeturl('{Url.Action("Update", "bcTuan", new { area = "", objectid = r["id"], layout = "null" })}');\">{r[1]}</a>"; } else { linkEdit = $"{r[1]}"; }
                 <tr data-id="@r["id"]">
-                    <td><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
+                    <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
                     <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "bcTuan", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
-                    @for (int i = 2; i < data.Columns.Count; i++)
-                    {
-                        <td>@r[i]</td>
-                    }
+                    <td>@r["ma_tinh"]</td>
+                    <td>@r["x74"]</td>
+                    <td class="text-right">@(((double)r["x72"]).FormatCultureVN())</td>
+                    <td>@r["userid"]</td>
                 </tr>
             }
         </tbody>

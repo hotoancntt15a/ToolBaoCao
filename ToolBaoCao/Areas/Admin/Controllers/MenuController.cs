@@ -31,7 +31,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 li.Add($"<ul>");
                 if (idMenuFather == 0)
                 {
-                    li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- {(showTree ? "(ShowTree) " : "")}</a></li>");
+                    li.Add($"<li> <a href=\"javascript:{jsfunction}(this,'0');\"> -- NEW MENU GROUP -- </a></li>");
                 }
                 var dt = dataMenu.Clone();
                 foreach (DataRow r in dcopy) { dt.ImportRow(r); }

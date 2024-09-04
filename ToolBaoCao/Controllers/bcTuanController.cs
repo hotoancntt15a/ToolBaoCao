@@ -701,7 +701,8 @@ namespace ToolBaoCao.Controllers
             if (view.Count == 0) { phuluc01.Rows.Add("00", "00", "0", "00", "0", "00", "0", "00", "0", "00", "0"); }
             else
             {
-                phuluc01.Rows.Add($"00", $"{view[0]["ten_tinh"]}", $"{view[0]["tyle_noitru"]}"
+                phuluc01.Rows.Add($"00"
+                    , $"{view[0]["ten_tinh"]}", $"{view[0]["tyle_noitru"]}"
                     , $"{view[0]["ten_tinh"]}", $"{view[0]["ngay_dtri_bq"]}"
                     , $"{view[0]["ten_tinh"]}", $"{view[0]["chi_bq_chung"]}"
                     , $"{view[0]["ten_tinh"]}", $"{view[0]["chi_bq_noi"]}"
@@ -713,15 +714,16 @@ namespace ToolBaoCao.Controllers
                     "Vùng", $"{Math.Round(double.Parse(bctuan["{X9}"]), 2)}",
                     "Vùng", $"{Math.Round(double.Parse(bctuan["{X16}"]), 2)}",
                     "Vùng", bctuan["{X23}"],
-                    "Vùng", bctuan["{X30}"],
-                    "Vùng", bctuan["{X37}"]);
+                    "Vùng", bctuan["{X37}"], /* Ngoại trú */
+                    "Vùng", bctuan["{X30}"]); /* Nội trú */
             var rowV = phuluc01.Rows[phuluc01.Rows.Count - 1];
             /* Chỉ lấy dòng Tỉnh đã chọn */
             view = pl1.AsEnumerable().Where(x => x.Field<string>("ma_tinh") == idtinh).ToList().GetRange(0, 1);
             if (view.Count == 0) { phuluc01.Rows.Add($"<b>{idtinh}", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0"); }
             else
             {
-                phuluc01.Rows.Add($"<b>{idtinh}", $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["tyle_noitru"]}"
+                phuluc01.Rows.Add($"<b>{idtinh}"
+                    , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["tyle_noitru"]}"
                     , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["ngay_dtri_bq"]}"
                     , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["chi_bq_chung"]}"
                     , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["chi_bq_noi"]}"
