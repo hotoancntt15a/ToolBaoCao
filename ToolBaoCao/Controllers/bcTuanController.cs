@@ -1166,9 +1166,9 @@ namespace ToolBaoCao.Controllers
             /* X2 = {“ Quyết định số: Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
             bctuan.Add("{X2}", x2);
             /* X3 = {Như trên, ko thấy thì lấy tổng tiền các dòng dự toán năm trước, thấy thì lấy tổng số tiền các dòng quyết định năm nay} */
-            bctuan.Add("{X3}", x3);
+            bctuan.Add("{X3}", x3.lamTronTrieuDong());
             /* X4={X1/X3 %} So sánh với dự toán, tỉnh đã sử dụng */
-            so2 = double.Parse(x3);
+            so2 = double.Parse(bctuan["{X3}"]);
             if (so2 == 0) { bctuan.Add("{X4}", "0"); }
             else { bctuan.Add("{X4}", ((double.Parse(bctuan["{X1}"]) / so2) * 100).ToString("0.##")); }
 
