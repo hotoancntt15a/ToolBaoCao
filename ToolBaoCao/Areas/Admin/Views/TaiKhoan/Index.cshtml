@@ -1,15 +1,17 @@
-﻿@{
-    ViewBag.Title = "Quản lý tài khoản";
-    var items = new DataTable();
-    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
-}
-<!-- Page Heading -->
-<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
-@if (ViewBag.Error != null)
+﻿@if (ViewBag.Error != null)
 {
     <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
     return;
 }
+@{
+    ViewBag.Title = "Quản lý tài khoản";
+    var items = new DataTable();
+    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+    var dsnhom = new Dictionary<string, string>();
+    if(ViewBag.dsnhom != null) { dsnhom = ViewBag.dsnhom as Dictionary<string, string>; }
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -27,12 +29,11 @@
                     <thead>
                         <tr>
                             <th>Tên đăng nhập</th>
-                            <th>Nhóm làm việc</th>
                             <th>Tên hiển thị</th>
-                            <th>Email</th>
-                            <th>Điện thoại</th>
+                            <th>Điện thoại/Email</th>
                             <th>Mã tỉnh</th>
                             <th>Vị trí làm việc</th>
+                            <th>Nhóm làm việc</th>
                             <th>Time create</th>
                             <th>Last Login</th>
                         </tr>
@@ -43,12 +44,11 @@
                             DateTime t2 = $"{r["timelogin"]}".toDateTime();
                             <tr>
                                 <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id=r["iduser"], layout="null" })');">@r["iduser"]</a></td>
-                                <td>@r["nhom"]</td>
                                 <td>@r["ten_hien_thi"]</td>
-                                <td>@r["Email"]</td>
-                                <td>@r["dien_thoai"]</td>
+                                <td>@r["dien_thoai"] <br />@r["Email"]</td>
                                 <td>@r["idtinh"]</td>
                                 <td>@r["vitrilamviec"]</td>
+                                <td>@dsnhom.getValue(r["nhom"].ToString())</td>
                                 <td>@r["timecreate"]</td>
                                 <td>@($"{r["timelogin"]}" == "0" ? "" : $"{t2}")</td>
                             </tr>

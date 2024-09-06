@@ -26,7 +26,6 @@
                 <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>#</th>
                             <th>Mã tỉnh</th>
                             <th>Tên tỉnh</th>
                             <th>Thứ tự hiển thị</th>
@@ -36,8 +35,7 @@
                     <tbody>
                         @foreach (DataRow r in items.Rows)
                         {
-                            <tr>
-                                <td><input type="checkbox" class="custom-checkbox" value="@r["id"]"/></td>
+                            <tr data-id="@r["id"]">
                                 <td><a href="javascript:showgeturl('@Url.Action("Update", "DMTinh", new { objectid=r["id"], layout="null" })');">@r["id"]</a></td>
                                 <td>@r["ten"]</td>
                                 <td>@r["tt"]</td>
