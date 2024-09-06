@@ -26,6 +26,12 @@ namespace ToolBaoCao
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AppHelper.LoadStart();
+            try
+            {
+                var db = BuildDatabase.getDBUserOnline();
+                db.Execute("DELETE FROM useronline;");
+            }
+            catch { }           
         }
 
         protected void Application_Error()
@@ -61,8 +67,9 @@ namespace ToolBaoCao
 
         private void Session_Start(object sender, EventArgs e)
         {
-            Session[keyMSG.SessionIPAddress] = GetUserIpAddress();
-            Session[keyMSG.SessionBrowserInfo] = GetUserBrowserInfo();
+            var http = HttpContext.Current;
+            Session[keyMSG.SessionIPAddress] = http.GetUserIpAddress();
+            Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowserInfo();
             var db = BuildDatabase.getDBUserOnline();
             int maxSeccondsOnline = 15 * 60;
             try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }
@@ -71,24 +78,6 @@ namespace ToolBaoCao
         private void Session_End(object sender, EventArgs e)
         {
             Session.Clear();
-        }
-
-        private string GetUserIpAddress()
-        {
-            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-            if (string.IsNullOrEmpty(ipAddress)) { ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"]; }
-            // Trường hợp có nhiều địa chỉ IP trong X-Forwarded-For, lấy địa chỉ đầu tiên
-            if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Contains(",")) { ipAddress = ipAddress.Split(',')[0].Trim(); }
-            return ipAddress;
-        }
-
-        private string GetUserBrowserInfo()
-        {
-            string userAgent = HttpContext.Current.Request.UserAgent;
-            HttpBrowserCapabilities browser = HttpContext.Current.Request.Browser;
-            string browserName = browser.Browser;
-            string browserVersion = browser.Version;
-            return $"{browserName} {browserVersion} ({userAgent})";
         }
     }
 }

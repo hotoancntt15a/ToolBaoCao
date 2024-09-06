@@ -32,6 +32,23 @@ namespace ToolBaoCao
 
         public static string SQLiteLike(this string field, string value) => dbSqliteMain.like(field, value);
 
+        public static string GetUserIpAddress(this HttpContext http)
+        {
+            string ipAddress = http.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            if (string.IsNullOrEmpty(ipAddress)) { ipAddress = http.Request.ServerVariables["REMOTE_ADDR"]; }
+            // Trường hợp có nhiều địa chỉ IP trong X-Forwarded-For, lấy địa chỉ đầu tiên
+            if (!string.IsNullOrEmpty(ipAddress) && ipAddress.Contains(",")) { ipAddress = ipAddress.Split(',')[0].Trim(); }
+            return ipAddress;
+        }
+
+        public static string GetUserBrowserInfo(this HttpContext http)
+        {
+            string userAgent = http.Request.UserAgent;
+            HttpBrowserCapabilities browser = http.Request.Browser;
+            string browserName = browser.Browser;
+            string browserVersion = browser.Version;
+            return $"{browserName} {browserVersion} ({userAgent})";
+        }
         public static string getMenuLeft(string nhom = "3")
         {
             if (Regex.IsMatch(nhom, @"^\d+$") == false) { nhom = "3"; }
@@ -419,6 +436,10 @@ namespace ToolBaoCao
                 if (http == null) { return keyMSG.HttpConnetNull; }
                 http.Session.Clear();
                 http.Request.Cookies.Clear();
+
+                http.Session[keyMSG.SessionIPAddress] = http.GetUserIpAddress();
+                http.Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowserInfo();
+
                 http.Session.Add("app.isLogin", "1");
                 foreach (DataColumn c in items.Columns) { http.Session.Add(c.ColumnName, $"{items.Rows[0][c.ColumnName]}"); }
                 /* IDUSER|PASS|DATETIME */
@@ -437,7 +458,8 @@ namespace ToolBaoCao
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
             var db = BuildDatabase.getDBUserOnline();
-            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");
+            var tmp = $"{http.Session["ten_hien_thi"]}".sqliteGetValueField();
+            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip, ten_hien_thi) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}', '{tmp}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");
             return "";
         }
 
