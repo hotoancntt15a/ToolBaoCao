@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Management;
 using ToolBaoCao.CaptchaImage;
 
 namespace ToolBaoCao
@@ -289,7 +288,7 @@ namespace ToolBaoCao
                     var tablesCache = new List<string> { "phanquyen", "nhomquyen", "w_menu", "wmenu", "taikhoan", "system_var" };
                     if (tablesCache.Contains(tables[0])) { fileCache = tsql.GetMd5Hash(); }
                 }
-                if (!string.IsNullOrEmpty(fileCache)) { fileCache = Path.Combine(pathApp, $"cache\\d{dataName}_{tables[0]}_query_{fileCache}.xml"); }
+                if (!string.IsNullOrEmpty(fileCache)) { fileCache = Path.Combine(pathCache, $"d{dataName}_{tables[0]}_query_{fileCache}.xml"); }
             }
             return fileCache;
         }
@@ -299,13 +298,13 @@ namespace ToolBaoCao
             if (!IsUpdateOrDelete(tsql)) return;
             var tables = GetTableNameFromTsql(tsql);
             if (tables.Count == 0) return;
-            DeleteCache(tables[0] + "_", dataName);
+            DeleteCache(tables[0] + "_");
         }
 
-        public static void DeleteCache(string nameStartWith, string dataName)
+        public static void DeleteCache(string likeName)
         {
-            if (string.IsNullOrEmpty(nameStartWith)) return;
-            var files = Directory.GetFiles(Path.Combine(pathApp, "cache"), $"d{dataName}_{nameStartWith}*");
+            if (string.IsNullOrEmpty(likeName)) return;
+            var files = Directory.GetFiles(pathCache, $"*{likeName}*.*");
             foreach (var file in files)
             {
                 if (File.Exists(file)) { try { File.Delete(file); } catch { } }

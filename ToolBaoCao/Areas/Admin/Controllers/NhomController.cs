@@ -13,8 +13,14 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             try
             {
-                var data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmnhom");
-                ViewBag.Data = data;
+                /* Danh sách menu */
+                var data = AppHelper.dbSqliteMain.getDataTable("SELECT id, title FROM wmenu WHERE idfather=0");
+                var dsMenu = new Dictionary<string, string>();
+                foreach (DataRow dr in data.Rows) { dsMenu.Add(dr["id"].ToString(), dr["title"].ToString()); }
+                ViewBag.dsmenu = dsMenu;
+                /* Danh sách nhóm */
+                data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmnhom");
+                ViewBag.Data = data; 
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();

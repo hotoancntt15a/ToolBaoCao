@@ -12,6 +12,7 @@
 @{
     var items = new DataTable();
     if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+    var tmp = "";
 }
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
@@ -29,7 +30,6 @@
                 <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Tiêu đề</th>
                             <th>Link</th>
                             <th>Đường dẫn</th>
@@ -41,9 +41,9 @@
                     <tbody>
                         @foreach (DataRow r in items.Rows)
                         {
-                            <tr>
-                                <td><a href="@Url.Action("Update", "Menu", new { id=r["id"] })">@r["id"]</a></td>
-                                <td><i class="@r["css"]"></i> @r["title"]</td>
+                            tmp = $"{r["css"]}".Trim(); if(tmp != "") { tmp = $"<i class=\"{tmp}\"></i> "; }
+                            <tr data-id="@r["id"]">
+                                <td><a href="@Url.Action("Update", "Menu", new { id=r["id"] })">@Html.Raw(tmp) @r["title"]</a></td>
                                 <td>@r["link"]</td>
                                 <td>@r["paths"]</td>
                                 <td>@r["postion"]</td>

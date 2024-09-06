@@ -12,6 +12,8 @@
 @{
     var items = new DataTable();
     if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+    var dsmenu = new Dictionary<string, string>();
+    if(ViewBag.dsmenu != null) { dsmenu = ViewBag.dsmenu as Dictionary<string, string>; }
 }
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
@@ -29,7 +31,6 @@
                 <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Tên nhóm</th>
                             <th>Menu</th>
                             <th>Ghi chú</th>
@@ -38,10 +39,9 @@
                     <tbody>
                         @foreach (DataRow r in items.Rows)
                         {
-                            <tr>
-                                <td><a href="@Url.Action("Update", "Nhom", new { id=r["id"] })">@r["id"]</a></td>
-                                <td>@r["ten"]</td>
-                                <td>@r["idwmenu"]</td>
+                            <tr data-id="@r["id"]">
+                                <td><a href="@Url.Action("Update", "Nhom", new { id=r["id"] })">@r["ten"]</a></td>
+                                <td>@dsmenu.getValue(r["idwmenu"].ToString())</td>
                                 <td>@r["ghichu"]</td>
                             </tr>
                         }
