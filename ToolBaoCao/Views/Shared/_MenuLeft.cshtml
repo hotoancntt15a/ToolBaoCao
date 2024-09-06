@@ -11,30 +11,8 @@
             <div class="sidebar-brand-text mx-3">@AppHelper.getConfig("App.Title")</div>
         </a>
     </li>
-    @{ 
-
-    }
-    @if (System.Text.RegularExpressions.Regex.IsMatch(tmp, "^[01]$"))
-    {
-        <li class="nav-item"> <!-- Divider --> <hr class="sidebar-divider d-none d-md-block" /> </li>
-        <!-- Nav Item - Dashboard -->
-        <li class="nav-item">
-            <a class="nav-link" href="@Url.Action("Index", "TaiKhoan", new { area = "" })"> <i class="fas fa-fw fa-user"></i> <span>Tài khoản</span> </a>
-        </li>
-    }
+    @Html.Raw(AppHelper.getMenuLeft(tmp))
     <li class="nav-item"> <!-- Divider --> <hr class="sidebar-divider d-none d-md-block" /> </li>
-    <li class="nav-item">
-        <!-- Heading -->
-        <div class="sidebar-heading"> Báo cáo</div>
-    </li>
-    <!-- Nav Item - Chức năng Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link" href="@Url.Action("Index", "bcTuan", new { area = "" })"> <i class="fas fa-fw fa-list"></i> <span>Tuần</span> </a>
-    </li>
-    <li class="nav-item"> <!-- Divider --> <hr class="sidebar-divider d-none d-md-block" /> </li>
-    <li class="nav-item text-center">
-        <!-- Sidebar Toggler (Sidebar) -->
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
-    </li>
+    <li class="nav-item text-center"> <!-- Sidebar Toggler (Sidebar) --> <button class="rounded-circle border-0" id="sidebarToggle"></button> </li>
 </ul>
 <!-- End of Sidebar -->

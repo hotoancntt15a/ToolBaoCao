@@ -1,5 +1,4 @@
-﻿using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.Management;
 using ToolBaoCao.CaptchaImage;
 
 namespace ToolBaoCao
@@ -35,14 +35,50 @@ namespace ToolBaoCao
 
         public static string getMenuLeft(string nhom = "3")
         {
-            if(Regex.IsMatch(nhom, @"^\d+$") == false) { nhom =  "3"; }
+            if (Regex.IsMatch(nhom, @"^\d+$") == false) { nhom = "3"; }
+            if (nhom == "0") { nhom = "1"; }
             /* mặc định nhóm người dùng */
             string fileCahce = Path.Combine(pathCache, $"menuleft_dmnhom_wmenu_{nhom}.tpl");
             if (File.Exists(fileCahce)) { return File.ReadAllText(fileCahce); }
             /* Lấy idmenu Father */
             var idFather = $"{dbSqliteMain.getValue($"SELECT idwmenu FROM dmnhom WHERE id={nhom}")}";
-            if (Regex.IsMatch(idFather, @"^\d+$") == false) { return "<li class=\"nav-item\"> <!-- Divider --> <hr class=\"sidebar-divider d-none d-md-block\" /> </li><li class=\"nav-item\"><!-- Heading --> <div class=\"sidebar-heading\"> Bạn chưa được cấp quyền </div> </li>"; }
-            return "";
+            if (Regex.IsMatch(idFather, @"^\d+$") == false)
+            {
+                return "<li class=\"nav-item\"> <hr class=\"sidebar-divider d-none d-md-block\" /> </li><li class=\"nav-item\"> <div class=\"sidebar-heading\"> Bạn chưa được cấp quyền </div> </li>";
+            }
+            var dataMenu = dbSqliteMain.getDataTable("SELECT * FROM wmenu ORDER BY postion");
+            if (dataMenu.Rows.Count == 0)
+            {
+                return "<li class=\"nav-item\"> <hr class=\"sidebar-divider d-none d-md-block\" /> </li><li class=\"nav-item\"> <div class=\"sidebar-heading\"> Không có dữ liệu menu </div> </li>";
+            }
+            var tpl = getMenuLeft2(long.Parse(idFather), dataMenu);
+            if (tpl != "") { tpl = $"<!-- {nhom} -->" + tpl; File.WriteAllText(fileCahce, tpl); }
+            return tpl;
+        }
+
+        private static string getMenuLeft2(long idFather, DataTable dataMenu)
+        {
+            var menu = dataMenu.AsEnumerable().Where(r => r.Field<long>("idfather") == idFather).OrderBy(r => r.Field<long>("postion")).ToList();
+            if (menu.Count == 0) { return ""; }
+            var li = new List<string>();
+            var dt = dataMenu.Clone();
+            foreach (DataRow r in menu) { dt.ImportRow(r); }
+            foreach (DataRow r in dt.Rows)
+            {
+                var link = $"{r["link"]}".Trim();
+                var css = $"{r["css"]}".Trim(); if (css != "") { css = $"<i class=\"{css}\"></i> "; }
+                if (link == "")
+                {
+                    li.Add("<li class=\"nav-item\"> <hr class=\"sidebar-divider d-none d-md-block\" /> </li>");
+                    li.Add($"<li class=\"nav-item\"> <div class=\"sidebar-heading\"> {css}{r["title"]}</div></li>");
+                }
+                else
+                {
+                    li.Add($"<li class=\"nav-item\"> <a class=\"nav-link\" href=\"{link}\" title=\"{r["note"]}\"> {css}<span>{r["title"]}</span></a></li>");
+                }
+                li.Add(getMenuLeft2((long)r["id"], dataMenu));
+            }
+            return string.Join("", li);
         }
 
         /// <summary>
