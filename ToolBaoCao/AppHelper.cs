@@ -23,7 +23,8 @@ namespace ToolBaoCao
         public static AppConfig appConfig = new AppConfig();
         public static readonly string pathApp = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string pathAppData = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
-        public static readonly string pathTemp = Path.Combine(pathApp, "temp");
+        public static readonly string pathTemp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+        public static readonly string pathCache = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cache");
         public static readonly string pathCodeProject = Assembly.GetExecutingAssembly().GetPathCodeProject();
         public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         public static readonly string projectName = typeof(AppHelper).Namespace;
@@ -31,6 +32,18 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteWork = new dbSQLite();
 
         public static string SQLiteLike(this string field, string value) => dbSqliteMain.like(field, value);
+
+        public static string getMenuLeft(string nhom = "3")
+        {
+            if(Regex.IsMatch(nhom, @"^\d+$") == false) { nhom =  "3"; }
+            /* mặc định nhóm người dùng */
+            string fileCahce = Path.Combine(pathCache, $"menuleft_dmnhom_wmenu_{nhom}.tpl");
+            if (File.Exists(fileCahce)) { return File.ReadAllText(fileCahce); }
+            /* Lấy idmenu Father */
+            var idFather = $"{dbSqliteMain.getValue($"SELECT idwmenu FROM dmnhom WHERE id={nhom}")}";
+            if (Regex.IsMatch(idFather, @"^\d+$") == false) { return "<li class=\"nav-item\"> <!-- Divider --> <hr class=\"sidebar-divider d-none d-md-block\" /> </li><li class=\"nav-item\"><!-- Heading --> <div class=\"sidebar-heading\"> Bạn chưa được cấp quyền </div> </li>"; }
+            return "";
+        }
 
         /// <summary>
         /// Kiểm tra số định dạng US, không phân biệt số âm số dương

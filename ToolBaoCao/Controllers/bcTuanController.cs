@@ -1341,7 +1341,7 @@ namespace ToolBaoCao.Controllers
                     foreach (var run in paragraph.Runs)
                     {
                         tmp = run.ToString();
-                        // Sử dụng Regex để tìm tất cả các match
+                        /* Sử dụng Regex để tìm tất cả các match */
                         MatchCollection matches = Regex.Matches(tmp, "{x[0-9]+}", RegexOptions.IgnoreCase);
                         foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bcTuan.getValue(match.Value, "", true)); }
                         run.SetText(tmp, 0);
@@ -1374,7 +1374,7 @@ namespace ToolBaoCao.Controllers
                 var dbBaoCao = BuildDatabase.getDataBaoCaoTuan(idtinh);
                 if (Request.getValue("mode") == "update")
                 {
-                    DateTime timeStart = DateTime.Now;
+                    var timeStart = DateTime.Now;
                     item = new Dictionary<string, string>() {
                         { "x2", Request.getValue("x2").sqliteGetValueField() },
                         { "x3", Request.getValue("x3").Trim() },
