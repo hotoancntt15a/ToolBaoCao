@@ -459,7 +459,7 @@ namespace ToolBaoCao
             catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
             var db = BuildDatabase.getDBUserOnline();
             var tmp = $"{http.Session["ten_hien_thi"]}".sqliteGetValueField();
-            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip, ten_hien_thi) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}', '{tmp}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");
+            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip, ten_hien_thi, local) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}', '{tmp}', '{http.Session[keyMSG.SessionBrowserInfo]}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");
             return "";
         }
 
