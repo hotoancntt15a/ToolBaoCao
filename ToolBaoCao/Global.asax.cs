@@ -69,7 +69,7 @@ namespace ToolBaoCao
         {
             var http = HttpContext.Current;
             Session[keyMSG.SessionIPAddress] = http.GetUserIpAddress();
-            Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowserInfo();
+            Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowser();
             var db = BuildDatabase.getDBUserOnline();
             int maxSeccondsOnline = 15 * 60;
             try { db.Execute($"DELETE useronline WHERE ({DateTime.Now.toTimestamp()} - time2) > {maxSeccondsOnline}"); } catch { }

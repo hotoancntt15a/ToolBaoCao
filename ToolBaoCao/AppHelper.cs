@@ -1,4 +1,5 @@
 ﻿using NPOI.SS.UserModel;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using ToolBaoCao.CaptchaImage;
+using UAParser;
 
 namespace ToolBaoCao
 {
@@ -43,11 +45,15 @@ namespace ToolBaoCao
 
         public static string GetUserBrowserInfo(this HttpContext http)
         {
-            string userAgent = http.Request.UserAgent;
-            HttpBrowserCapabilities browser = http.Request.Browser;
-            string browserName = browser.Browser;
-            string browserVersion = browser.Version;
-            return $"{browserName} {browserVersion} ({userAgent})";
+            var uaParser = Parser.GetDefault();
+            ClientInfo clientInfo = uaParser.Parse(http.Request.UserAgent);
+            return $"{clientInfo.UA.Family} ({http.Request.UserAgent})";
+        }
+        public static string GetUserBrowser(this HttpContext http)
+        {
+            var uaParser = Parser.GetDefault();
+            ClientInfo clientInfo = uaParser.Parse(http.Request.UserAgent);
+            return $"{clientInfo.UA.Family} - {clientInfo.OS.Family} {clientInfo.OS.Major}";
         }
         public static string getMenuLeft(string nhom = "3")
         {
@@ -438,7 +444,7 @@ namespace ToolBaoCao
                 http.Request.Cookies.Clear();
 
                 http.Session[keyMSG.SessionIPAddress] = http.GetUserIpAddress();
-                http.Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowserInfo();
+                http.Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowser();
 
                 http.Session.Add("app.isLogin", "1");
                 foreach (DataColumn c in items.Columns) { http.Session.Add(c.ColumnName, $"{items.Rows[0][c.ColumnName]}"); }
