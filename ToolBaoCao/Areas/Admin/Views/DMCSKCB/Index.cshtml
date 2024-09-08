@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Danh mục tỉnh";
+    ViewBag.Title = "Danh mục CSKCB";
     if (ViewBag.Error != null)
     {
         @Html.Raw(ViewBag.Error)
@@ -13,10 +13,10 @@
 <!-- Nav tabs -->
 <ul class="nav nav-tabs">
     <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Báo cáo Lưu</a>
+        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Danh sách</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Báo cáo mới</a>
+        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Nhập từ Excel</a>
     </li>
 </ul>
 <!-- Tab panes -->
@@ -77,6 +77,6 @@
 </div>
 <script>
     $(document).ready(function () {
-        showgeturl('@Url.Action("Buoc1", "bcTuan", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
+        showgeturl('@Url.Action("Buoc1", "DMCSKCB", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
     });
 </script>
