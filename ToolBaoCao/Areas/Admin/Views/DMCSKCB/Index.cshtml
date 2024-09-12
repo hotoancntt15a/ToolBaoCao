@@ -39,10 +39,13 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>Mã</th>
+                                    <th>Tên CSKCB</th>
                                     <th>Mã tỉnh</th>
-                                    <th>Tên tỉnh</th>
-                                    <th>Thứ tự hiển thị</th>
-                                    <th>Ghi chú</th>
+                                    <th>Mã cấp trên</th>
+                                    <th>Tuyến CMKT</th>
+                                    <th>Hạng DV</th>
+                                    <th>Tên huyện</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -52,8 +55,11 @@
                                         <td><input type="checkbox" class="custom-checkbox" value="@r["id"]" /></td>
                                         <td><a href="javascript:showgeturl('@Url.Action("Update", "DMCSKCB", new { objectid=r["id"], layout="null" })');">@r["id"]</a></td>
                                         <td>@r["ten"]</td>
-                                        <td>@r["tt"]</td>
-                                        <td>@r["ghichu"]</td>
+                                        <td>@r["matinh"]</td>
+                                        <td>@r["macaptren"]</td>
+                                        <td>@r["tuyencmkt"]</td>
+                                        <td>@r["hangdv"]</td>
+                                        <td>@r["tenhuyen"]</td>
                                     </tr>
                                 }
                             </tbody>

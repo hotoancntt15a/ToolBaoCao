@@ -10,6 +10,11 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 
         public ActionResult Index()
         {
+            try
+            {
+                ViewBag.Data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmcskcb ORDER BY matinh, ten");
+            }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
 
