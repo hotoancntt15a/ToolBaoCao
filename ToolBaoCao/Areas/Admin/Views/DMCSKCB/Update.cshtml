@@ -20,14 +20,17 @@
             <div class="input-group-append"><div class="input-group-text">Tên</div></div>
             @Html.TextBox("ten", item.getValue("ten"), new { @class = "form-control", maxlength = "255" })
         </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Thứ tự hiển thị</div></div>
-            <input type="number" name="tt" id="tt" class="form-control clsnumber" maxlength="255" value="@item.getValue("tt")" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
-            @Html.TextBox("ghichu", item.getValue("ghichu"), new { @class = "form-control", maxlength = "255" })
-        </div>
+        @{
+
+            var lsrq = new List<string>() { "tuyencmkt", "hangbv", "loaibv", "tenhuyen", "donvi", "madinhdanh", "macaptren", "diachi", "ttduyet", "hieuluc", "tuchu", "trangthai", "hangdv", "hangthuoc", "dangkykcb", "hinhthuctochuc", "hinhthucthanhtoan", "ngaycapma", "kcb", "ngayngunghd", "kt7", "kcn", "knl", "cpdtt43", "slthedacap", "donvichuquan", "mota", "loaichuyenkhoa", "ngaykyhopdong", "ngayhethieuluc", "ma_tinh", "ma_huyen" };
+            foreach (var v in lsrq)
+            {
+                <div class="input-group input-group-sm">
+                    <div class="input-group-append"><div class="input-group-text">@v</div></div>
+                    @Html.TextBox(v, item.getValue(v), new { @class = "form-control", maxlength = "255" })
+                </div>
+            }
+        }
     </div>
     <div class="col-12">
         <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform');"> <i class="fa fa-fw fa-save"></i> Lưu lại </a>
