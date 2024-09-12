@@ -1,5 +1,8 @@
-﻿@{
-    if (Request.getValue("layout") == "null") { Layout = null; }
+﻿@if (Request.getValue("layout") == "null") { Layout = null; }
+@if (ViewBag.Error != null) { 
+    <div class="alert alert-danger">@Html.Raw(ViewBag.Error)</div>
+}
+@{
     var item = ViewBag.data as Dictionary<string, object>;
     var id = ViewBag.id as string;
     var idform = "frmdelcskcb" + DateTime.Now.toTimestamp().ToString();
@@ -11,7 +14,7 @@
     <div class="form-group">
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mã</div></div>
-            <input type="number" name="id" id="id" class="form-control" maxlength="10" value="@id" @((id == "" ? "" : "readonly"))/>
+            <input type="number" name="id" id="id" class="form-control" maxlength="10" value="@id" @((id == "" ? "" : "readonly")) />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Tên</div></div>
