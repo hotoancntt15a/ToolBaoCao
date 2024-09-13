@@ -367,7 +367,13 @@ namespace ToolBaoCao.Controllers
                 /* Có phải là cơ sở không? */
                 tmpInt = (fieldCount - 1);
                 if (listValue[tmpInt] == "true" && listValue[tmpInt] != "1") { listValue[tmpInt] = "1"; }
-                else { listValue[tmpInt] = "0"; cs = false; }
+                else
+                {
+                    if (listValue[0] == "00") { listValue[tmpInt] = "1"; }
+                    else { listValue[tmpInt] = "0"; cs = false; }
+                }
+                tmp = string.Join(",", listValue);
+                if(tmp.Contains(",,")) { throw new Exception($"Biểu {bieu} không đúng định dạng."); }
                 /* Kiểm tra có đúng dữ liệu không */
                 if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
                 matinhImport = listValue[0];
