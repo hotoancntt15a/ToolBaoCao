@@ -212,19 +212,19 @@ namespace ToolBaoCao.Controllers
                 names.Add(dt.TableName);
                 var listColRight = new List<int>();
                 var listColWith = new List<int>();
-                switch (dt.TableName)
+                switch (dt.TableName.ToLower())
                 {
-                    case "PhuLuc01":
+                    case "phuluc01":
                         listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
                         listColWith = new List<int>() { 9, 18, 10, 18, 13, 18, 10, 18, 10, 18, 10 };
                         break;
 
-                    case "PhuLuc02":
+                    case "phuluc02":
                         listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
                         listColWith = new List<int>() { 9, 18, 13, 13, 13, 13, 13, 13, 13 };
                         break;
 
-                    case "PhuLuc03":
+                    case "phuluc03":
                         listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
                         listColWith = new List<int>() { 9, 33, 10, 33, 13, 33, 10, 33, 10, 33, 10 };
                         break;
