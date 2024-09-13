@@ -74,24 +74,36 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 
         public ActionResult TruyVan()
         {
+            var tsql = "";
             try
             {
                 var msg = new List<string>();
                 var w = new List<string>();
-                var idObject = Request.getValue("id");
-                if (!string.IsNullOrEmpty(idObject))
+                var tmp = Request.getValue("id");
+                if (!string.IsNullOrEmpty(tmp))
                 {
-                    idObject = Regex.Replace(idObject, "[, /|]+", ",");
-                    if (Regex.IsMatch(idObject, "^[0-9a-z,]+$", RegexOptions.IgnoreCase) == false) { msg.Add($"Mã '{idObject}' không đúng định dạng"); }
+                    tmp = Regex.Replace(tmp, "[, /|]+", ",");
+                    if (Regex.IsMatch(tmp, "^[0-9a-z,]+$", RegexOptions.IgnoreCase))
+                    {
+                        w.Add($"id IN ('{tmp.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)}')");
+                    }
+                    else { msg.Add($"Mã '{tmp}' không đúng định dạng"); }
                 }
-
-                var ten = Request.getValue("ten");
-                var ma_tinh = Request.getValue("ma_tinh");
-                var macaptren = Request.getValue("macaptren");
-                var tenhuyen = Request.getValue("tenhuyen");
-                ViewBag.Data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmcskcb ORDER BY ma_tinh, ten");
+                if (w.Count == 0)
+                {
+                    tmp = Request.getValue("ten");
+                    if (string.IsNullOrEmpty(tmp) == false) { w.Add(AppHelper.dbSqliteMain.like("ten", tmp)); }
+                    tmp = Request.getValue("ma_tinh");
+                    if (string.IsNullOrEmpty(tmp) == false) { w.Add(AppHelper.dbSqliteMain.like("ma_tinh", tmp)); }
+                    tmp = Request.getValue("macaptren");
+                    if (string.IsNullOrEmpty(tmp) == false) { w.Add(AppHelper.dbSqliteMain.like("macaptren", tmp)); }
+                    tmp = Request.getValue("tenhuyen");
+                    if (string.IsNullOrEmpty(tmp) == false) { w.Add(AppHelper.dbSqliteMain.like("tenhuyen", tmp)); }
+                }
+                tsql = $"SELECT * FROM dmcskcb {(w.Count == 0 ? "" : "WHERE " + string.Join(" AND ", w))} ORDER BY ma_tinh, ten";
+                ViewBag.Data = AppHelper.dbSqliteMain.getDataTable(tsql);
             }
-            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(tsql); }
             return View();
         }
     }

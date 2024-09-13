@@ -24,15 +24,15 @@
                 <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <a href="javascript:showgeturl('@Url.Action("Update", "DMCSKCB", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
             </div>
             <div class="card-body">
-                <form id="@idFromTruyVan" name="@idFromTruyVan" method="post" action="/Admin/DMCSKCB/TruyVan?layout=null">
+                <form id="@idFromTruyVan" name="@idFromTruyVan" method="post" action="/Admin/DMCSKCB/TruyVan?layout=null" target="_blank">
                     <table class="table table-hover">
                         <tbody>
-                            <tr><td>Mã <input type="text" name="idobject" value="" maxlength="50" /></td></tr>
-                            <tr><td>Tên <input type="text" name="ten" value="" maxlength="255" /></td></tr>
-                            <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="" maxlength="50" /></td></tr>
-                            <tr><td>Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
+                            <tr><td>Mã <input type="text" name="idobject" value="" maxlength="50" /> Tên <input type="text" name="ten" value="" maxlength="255" /></td></tr>
+                            <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="" maxlength="50" /> Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
                             <tr><td>Tên huyện <input type="text" name="tenhuyen" value="" maxlength="255" /></td></tr>
-                            <tr><td><a href="javascript:void(0);" onclick="postform('@idFromTruyVan', '', 'dscskcbview', createHTMLTable);" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</a></td></tr>
+                            <tr><td>
+                                <a href="javascript:void(0);" onclick="postform('@idFromTruyVan', '', 'dscskcbview', createHTMLTable);" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</a>
+                                </td></tr>
                         </tbody>
                     </table>
                 </form>

@@ -11,7 +11,7 @@
     <div class="form-group">
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mã</div></div>
-            <input type="number" name="id" id="id" class="form-control" maxlength="10" value="@id" @((id == "" ? "" : "readonly"))/>
+            <input type="text" name="id" id="id" class="form-control" maxlength="10" value="@id" @((id == "" ? "" : "readonly"))/>
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Tên</div></div>
@@ -19,7 +19,7 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Thứ tự hiển thị</div></div>
-            <input type="number" name="tt" id="tt" class="form-control clsnumber" maxlength="255" value="@item.getValue("tt")" />
+            <input type="number" name="tt" id="tt" class="form-control clsnumber" maxlength="255" value="@item.getValue("tt", "1")" />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Ghi chú</div></div>
