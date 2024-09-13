@@ -8,6 +8,7 @@
     var idFromTruyVan = "frmgetdscskcb" + DateTime.Now.toTimestamp().ToString();
 }
 <link href="~/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet" />
+<script src="~/vendor/datatables/jquery.dataTables.js"></script>
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
 <!-- Nav tabs -->
@@ -28,11 +29,13 @@
                     <table class="table table-hover">
                         <tbody>
                             <tr><td>Mã <input type="text" name="idobject" value="" maxlength="50" /> Tên <input type="text" name="ten" value="" maxlength="255" /></td></tr>
-                            <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="" maxlength="50" /> Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
+                            <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="@Session["idtinh"]" maxlength="50" /> Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
                             <tr><td>Tên huyện <input type="text" name="tenhuyen" value="" maxlength="255" /></td></tr>
-                            <tr><td>
-                                <a href="javascript:void(0);" onclick="postform('@idFromTruyVan', '', 'dscskcbview', createHTMLTable);" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</a>
-                                </td></tr>
+                            <tr>
+                                <td>
+                                    <a href="javascript:void(0);" onclick="postform('@idFromTruyVan', '', 'dscskcbview');" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</a>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </form>
@@ -52,11 +55,7 @@
     <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
     <div id="tabImport" class="tab-pane fade"></div>
 </div>
-<script src="~/vendor/datatables/jquery.dataTables.js"></script>
 <script>
-    function createHTMLTable() {
-        if ($('#dscskcb').length > 0) { $('#dscskcb').DataTable(); }
-    }
     $(document).ready(function () {
         showgeturl('@Url.Action("Buoc1", "DMCSKCB", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
     });

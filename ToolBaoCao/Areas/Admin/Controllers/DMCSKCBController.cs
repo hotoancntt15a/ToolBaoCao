@@ -33,6 +33,14 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     if (item["id"] == "") { return Content("Mã bỏ trống".BootstrapAlter("warning")); }
                     if (item["ten"] == "") { return Content("Tên bỏ trống".BootstrapAlter("warning")); }
                     if (Regex.IsMatch(item["id"], @"^[0-9a-z]+$", RegexOptions.IgnoreCase) == false) { return Content($"Mã không đúng '{id}'".BootstrapAlter("warning")); }
+                    if (Regex.IsMatch(item["slthedacap"], @"^\d+$") == false) { item["slthedacap"] = "0"; }
+                    if (item["ngayngunghd"] != "") { if (item["ngayngunghd"].isDateVN() == false) { throw new Exception($"Ngày ngưng hoạt động không đúng định dạng Ngày/Tháng/Năm {item["ngayngunghd"]}"); } }
+                    if (item["ngaycapma"] != "") { if (item["ngaycapma"].isDateVN() == false) { throw new Exception($"Ngày cấp mã không đúng định dạng Ngày/Tháng/Năm {item["ngaycapma"]}"); } }
+                    if (item["madinhdanh"] != "") { if (Regex.IsMatch(item["madinhdanh"], @"^[0-9a-z]+$", RegexOptions.IgnoreCase) == false) { throw new Exception($"Mã định danh không đúng {item["madinhdanh"]}"); } }
+                    if (item["macaptren"] != "") { if (Regex.IsMatch(item["macaptren"], @"^[0-9a-z]+$", RegexOptions.IgnoreCase) == false) { throw new Exception($"Mã cấp trên không đúng định dạng {item["macaptren"]}"); } }
+                    if (item["ma_tinh"] != "") { if (Regex.IsMatch(item["ma_tinh"], @"^[0-9a-z]+$", RegexOptions.IgnoreCase) == false) { throw new Exception($"Mã tỉnh không đúng định dạng {item["ma_tinh"]}"); } }
+                    if (item["ma_huyen"] != "") { if (Regex.IsMatch(item["ma_huyen"], @"^[0-9a-z]+$", RegexOptions.IgnoreCase) == false) { throw new Exception($"Mã huyện không đúng định dạng {item["ma_huyen"]}"); } }
+
                     if (id != "") { if (id != item["id"]) { return Content($"Mã '{id}' sửa chữa không khớp '{item["id"]}'"); } }
                     AppHelper.dbSqliteMain.Update("dmcskcb", item, "replace");
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());

@@ -1,5 +1,6 @@
 ﻿@if (Request.getValue("layout") == "null") { Layout = null; }
-@if (ViewBag.Error != null) { 
+@if (ViewBag.Error != null)
+{
     <div class="alert alert-danger">@Html.Raw(ViewBag.Error)</div>
 }
 @{
@@ -21,7 +22,6 @@
             @Html.TextBox("ten", item.getValue("ten"), new { @class = "form-control", maxlength = "255" })
         </div>
         @{
-
             var lsrq = new List<string>() { "tuyencmkt", "hangbv", "loaibv", "tenhuyen", "donvi", "madinhdanh", "macaptren", "diachi", "ttduyet", "hieuluc", "tuchu", "trangthai", "hangdv", "hangthuoc", "dangkykcb", "hinhthuctochuc", "hinhthucthanhtoan", "ngaycapma", "kcb", "ngayngunghd", "kt7", "kcn", "knl", "cpdtt43", "slthedacap", "donvichuquan", "mota", "loaichuyenkhoa", "ngaykyhopdong", "ngayhethieuluc", "ma_tinh", "ma_huyen" };
             foreach (var v in lsrq)
             {
