@@ -490,7 +490,7 @@ namespace ToolBaoCao.Controllers
                     createFilePhuLucBCTuan(id, matinh, dbBaoCao, bcTuan);
                     dbBaoCao.Close();
                 }
-                tmp = Path.Combine(d.FullName, $"id{id}_b26_00.docx");
+                tmp = Path.Combine(d.FullName, $"id{id}_b26_00.xlsx");
                 if (System.IO.File.Exists(tmp) == false)
                 {
                     /* Tạo lại biểu 26 Toàn quốc */
@@ -1450,7 +1450,7 @@ namespace ToolBaoCao.Controllers
                     var where = $"WHERE timecreate >= {time1.toTimestamp()} AND timecreate < {time2.AddDays(1).toTimestamp()}";
                     var tmp = $"{Session["nhom"]}";
                     if (tmp != "0" && tmp != "1") { where += $" AND userid='{Session["iduser"]}'"; }
-                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7,id,ma_tinh,x72,x74,userid FROM bctuandocx {where}";
+                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7,id,ma_tinh,x72,x74,userid FROM bctuandocx {where} ORDER BY timecreate DESC";
                     ViewBag.data = dbBCTuan.getDataTable(tsql);
                     dbBCTuan.Close();
                     ViewBag.tsql = tsql;
