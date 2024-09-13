@@ -12,11 +12,6 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 
         public ActionResult Index()
         {
-            try
-            {
-                ViewBag.Data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmcskcb ORDER BY ma_tinh, ten");
-            }
-            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
 
@@ -32,7 +27,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 {
                     var item = new Dictionary<string, string>();
                     var lsrq = new List<string>() { "id", "ten", "tuyencmkt", "hangbv", "loaibv", "tenhuyen", "donvi", "madinhdanh", "macaptren", "diachi", "ttduyet", "hieuluc", "tuchu", "trangthai", "hangdv", "hangthuoc", "dangkykcb", "hinhthuctochuc", "hinhthucthanhtoan", "ngaycapma", "kcb", "ngayngunghd", "kt7", "kcn", "knl", "cpdtt43", "slthedacap", "donvichuquan", "mota", "loaichuyenkhoa", "ngaykyhopdong", "ngayhethieuluc", "ma_tinh", "ma_huyen" };
-                    foreach(var v in lsrq) { item.Add(v, Request.getValue(v).Trim()); }
+                    foreach (var v in lsrq) { item.Add(v, Request.getValue(v).Trim()); }
                     item["userid"] = $"{Session["iduser"]}";
 
                     if (item["id"] == "") { return Content("Mã bỏ trống".BootstrapAlter("warning")); }
@@ -74,6 +69,29 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             }
             catch (Exception ex) { return Content(ex.getErrorSave().BootstrapAlter("warning")); }
             ViewBag.id = id;
+            return View();
+        }
+
+        public ActionResult TruyVan()
+        {
+            try
+            {
+                var msg = new List<string>();
+                var w = new List<string>();
+                var idObject = Request.getValue("id");
+                if (!string.IsNullOrEmpty(idObject))
+                {
+                    idObject = Regex.Replace(idObject, "[, /|]+", ",");
+                    if (Regex.IsMatch(idObject, "^[0-9a-z,]+$", RegexOptions.IgnoreCase) == false) { msg.Add($"Mã '{idObject}' không đúng định dạng"); }
+                }
+
+                var ten = Request.getValue("ten");
+                var ma_tinh = Request.getValue("ma_tinh");
+                var macaptren = Request.getValue("macaptren");
+                var tenhuyen = Request.getValue("tenhuyen");
+                ViewBag.Data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmcskcb ORDER BY ma_tinh, ten");
+            }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
     }

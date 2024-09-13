@@ -5,20 +5,15 @@
         @Html.Raw(ViewBag.Error)
         return;
     }
-    var items = new DataTable();
-    if (ViewBag.Data != null) { items = ViewBag.Data as DataTable; }
+    var idFromTruyVan = "frmgetdscskcb" + DateTime.Now.toTimestamp().ToString();
 }
 <link href="~/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet" />
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
 <!-- Nav tabs -->
 <ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Danh sách</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Nhập từ Excel</a>
-    </li>
+    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Danh sách</a> </li>
+    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Nhập từ Excel</a> </li>
 </ul>
 <!-- Tab panes -->
 <div class="tab-content">
@@ -29,44 +24,19 @@
                 <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <a href="javascript:showgeturl('@Url.Action("Update", "DMCSKCB", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
             </div>
             <div class="card-body">
-                @if (items.Rows.Count == 0)
-                {
-                    <div class="alert alert-warning">Không có dữ liệu phù hợp với truy vấn</div>
-                }
-                else
-                {
-                    <div class="table-responsive" id="dscskcb">
-                        <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Mã</th>
-                                    <th>Tên CSKCB</th>
-                                    <th>Mã tỉnh</th>
-                                    <th>Mã cấp trên</th>
-                                    <th>Tuyến CMKT</th>
-                                    <th>Hạng DV</th>
-                                    <th>Tên huyện</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (DataRow r in items.Rows)
-                                {
-                                    <tr>
-                                        <td><input type="checkbox" class="custom-checkbox" value="@r["id"]" /></td>
-                                        <td><a href="javascript:showgeturl('@Url.Action("Update", "DMCSKCB", new { objectid=r["id"], layout="null" })');">@r["id"]</a></td>
-                                        <td>@r["ten"]</td>
-                                        <td>@r["ma_tinh"]</td>
-                                        <td>@r["macaptren"]</td>
-                                        <td>@r["tuyencmkt"]</td>
-                                        <td>@r["hangdv"]</td>
-                                        <td>@r["tenhuyen"]</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
+                <form id="@idFromTruyVan" name="@idFromTruyVan" method="post" action="/Admin/DMCSKCB/TruyVan?layout=null">
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr><td>Mã <input type="text" name="idobject" value="" maxlength="50" /></td></tr>
+                            <tr><td>Tên <input type="text" name="ten" value="" maxlength="255" /></td></tr>
+                            <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="" maxlength="50" /></td></tr>
+                            <tr><td>Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
+                            <tr><td>Tên huyện <input type="text" name="tenhuyen" value="" maxlength="255" /></td></tr>
+                            <tr><td><a href="javascript:void(0);" onclick="postform('@idFromTruyVan', '', 'dscskcbview', createHTMLTable);" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</a></td></tr>
+                        </tbody>
+                    </table>
+                </form>
+                <div id="dscskcbview"></div>
             </div>
         </div>
         <div class="alert alert-warning">
@@ -84,8 +54,10 @@
 </div>
 <script src="~/vendor/datatables/jquery.dataTables.js"></script>
 <script>
-    $(document).ready(function () {
+    function createHTMLTable() {
         if ($('#dscskcb').length > 0) { $('#dscskcb').DataTable(); }
+    }
+    $(document).ready(function () {
         showgeturl('@Url.Action("Buoc1", "DMCSKCB", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
     });
 </script>
