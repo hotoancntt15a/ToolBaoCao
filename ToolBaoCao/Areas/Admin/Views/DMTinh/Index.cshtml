@@ -22,29 +22,27 @@
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Mã tỉnh</th>
-                            <th>Tên tỉnh</th>
-                            <th>Thứ tự hiển thị</th>
-                            <th>Ghi chú</th>
+            <table class="table table-bordered table-sm" id="tableadmins" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Mã tỉnh</th>
+                        <th>Tên tỉnh</th>
+                        <th>Thứ tự hiển thị</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow r in items.Rows)
+                    {
+                        <tr data-id="@r["id"]">
+                            <td><a href="javascript:showgeturl('@Url.Action("Update", "DMTinh", new { objectid=r["id"], layout="null" })');">@r["id"]</a></td>
+                            <td>@r["ten"]</td>
+                            <td>@r["tt"]</td>
+                            <td>@r["ghichu"]</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (DataRow r in items.Rows)
-                        {
-                            <tr data-id="@r["id"]">
-                                <td><a href="javascript:showgeturl('@Url.Action("Update", "DMTinh", new { objectid=r["id"], layout="null" })');">@r["id"]</a></td>
-                                <td>@r["ten"]</td>
-                                <td>@r["tt"]</td>
-                                <td>@r["ghichu"]</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         }
     </div>
 </div>

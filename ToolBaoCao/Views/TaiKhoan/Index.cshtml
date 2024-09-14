@@ -22,36 +22,34 @@
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-bordered" id="tableadmins" width="100%" cellspacing="0">
-                    <thead>
+            <table class="table table-bordered table-sm" id="tableadmins" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Tên đăng nhập</th>
+                        <th>Tên hiển thị</th>
+                        <th>Email</th>
+                        <th>Điện thoại</th>
+                        <th>Vị trí việc làm</th>
+                        <th>Time create</th>
+                        <th>Last Login</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow r in items.Rows)
+                    {
+                        DateTime t2 = $"{r["timelogin"]}".toDateTime();
                         <tr>
-                            <th>Tên đăng nhập</th>
-                            <th>Tên hiển thị</th>
-                            <th>Email</th>
-                            <th>Điện thoại</th>
-                            <th>Vị trí việc làm</th>
-                            <th>Time create</th>
-                            <th>Last Login</th>
+                            <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id = r["iduser"], layout = "null" })');">@r["iduser"]</a></td>
+                            <td>@r["ten_hien_thi"]</td>
+                            <td>@r["Email"]</td>
+                            <td>@r["dien_thoai"]</td>
+                            <td>@r["vitrilamviec"]</td>
+                            <td>@r["timecreate"]</td>
+                            <td>@($"{r["timelogin"]}" == "0" ? "" : $"{t2:dd/MM/yyyy HH:mm}")</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (DataRow r in items.Rows)
-                        {
-                            DateTime t2 = $"{r["timelogin"]}".toDateTime();
-                            <tr>
-                                <td><a href="javascript:showgeturl('@Url.Action("Update", "TaiKhoan", new { id = r["iduser"], layout = "null" })');">@r["iduser"]</a></td>
-                                <td>@r["ten_hien_thi"]</td>
-                                <td>@r["Email"]</td>
-                                <td>@r["dien_thoai"]</td>
-                                <td>@r["vitrilamviec"]</td>
-                                <td>@r["timecreate"]</td>
-                                <td>@($"{r["timelogin"]}" == "0" ? "" : $"{t2:dd/MM/yyyy HH:mm}")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         }
     </div>
 </div>

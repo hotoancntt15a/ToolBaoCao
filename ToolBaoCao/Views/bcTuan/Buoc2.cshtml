@@ -33,7 +33,7 @@
     @using (Html.BeginForm("Buoc3", "bcTuan", new { area = "", layout = "null", idobject = id, idtarget = idtarget }, FormMethod.Post, new { id = idform }))
     {
         <input type="hidden" name="mode" value="taive" />
-        <table class="table table-hover">
+        <table class="table table-hover table-sm">
             <tbody>
                 <tr>
                     <td class="text-right" style="width: 180px;">@Html.Label("x2", "Số của QĐ giao dự toán x2:")</td>
