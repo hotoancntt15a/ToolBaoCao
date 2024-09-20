@@ -648,8 +648,9 @@ namespace ToolBaoCao
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
-            if (tables.Contains("pl01") == false)
+            if (tables.Contains("thangpl01") == false)
             {
+                /* Lấy dữ liệu từ biểu b02 toàn quốc */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
@@ -664,8 +665,9 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);");
             }
-            if (tables.Contains("pl02") == false)
+            if (tables.Contains("thangpl02") == false)
             {
+                /* Lấy dữ liệu từ biểu b04 toan quốc */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
@@ -682,8 +684,9 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_thangpl02_id_bc ON thangpl02 (id_bc);");
             }
-            if (tables.Contains("pl03") == false)
+            if (tables.Contains("thangpl03") == false)
             {
+                /* Lấy dữ liệu từ biểu b02 csyt */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
@@ -698,7 +701,57 @@ namespace ToolBaoCao
                 ,tuyen_bv text not null default ''
                 ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_thangpl03_id_bc ON thangpl03 (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangpl03_id_bc ON thangpl03 (id_bc);");
+            }
+            if (tables.Contains("thangpl04") == false)
+            {
+                /* Lấy dữ liệu từ biểu b01 csyt */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04 (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB */
+                ,ten_cskcb text not null default '' /* Tên cskcb*/
+                ,dutoangiao real not null default 0 /* Dự toán tạm giao */
+                ,tien_bhtt real not null default 0 /* Tiền T- BHTT cột R-B02-10 */
+                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                CREATE INDEX IF NOT EXISTS index_thangpl04_id_bc ON thangpl04 (id_bc);");
+            }
+            if (tables.Contains("thangpl05") == false)
+            {
+                /* Lấy dữ liệu từ biểu b04 csyt*/
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl05 (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,stt integer not null /* số thứ tự */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB*/
+                ,ten_cskcb text not null default '' /* Tên cskcb */
+                ,bq_xn real not null default 0 /* BQ xét nghiệm */
+                ,bq_cdha real not null default 0 /* BQ_CĐHA */
+                ,bqptt real not null default 0 /* BQ_PTTT */
+                ,bq_vtyt real not null default 0 /* BQ_VTYT */
+                ,bq_giuong real not null default 0 /* BQ_GIUONG */
+                ,ngay_ttbq real not null default 0 /* Ngày thanh toán BQ */
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                CREATE INDEX IF NOT EXISTS index_thangpl05_id_bc ON thangpl05 (id_bc);");
+            }
+            if (tables.Contains("thangpl06") == false)
+            {
+                /* Lấy dữ liệu từ biểu b21 csyt */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl06 (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB */
+                ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB */
+                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49% */
+                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; */
+                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; */
+                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; */
+                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú */
+                ,tuyen_bv text not null default ''
+                ,hang_bv text not null default ''
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                CREATE INDEX IF NOT EXISTS index_thangpl06_id_bc ON thangpl06 (id_bc);");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }

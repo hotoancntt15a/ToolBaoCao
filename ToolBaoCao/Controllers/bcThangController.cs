@@ -1316,7 +1316,7 @@ namespace ToolBaoCao.Controllers
 
         private void createFilebcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
         {
-            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "baocaotuan.docx");
+            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "baocaothang.docx");
             if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"); }
             /*** 1.1 làm tròn đến triệu đồng (x1, x71, x72, x2, x3, x4) */
             bcThang["{X1}"] = bcThang["{X1}"].lamTronTrieuDong();
