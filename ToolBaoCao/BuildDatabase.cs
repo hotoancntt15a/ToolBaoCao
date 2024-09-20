@@ -650,7 +650,7 @@ namespace ToolBaoCao
             var tsqlCreate = new List<string>();
             if (tables.Contains("pl01") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS pl01 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
@@ -662,11 +662,11 @@ namespace ToolBaoCao
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_pl01_id_bc ON pl01 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);");
             }
             if (tables.Contains("pl02") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS pl02 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
@@ -680,11 +680,11 @@ namespace ToolBaoCao
                 ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
                 ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_pl02_id_bc ON pl02 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangpl02_id_bc ON thangpl02 (id_bc);");
             }
             if (tables.Contains("pl03") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS pl03 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
@@ -698,7 +698,7 @@ namespace ToolBaoCao
                 ,tuyen_bv text not null default ''
                 ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_pl03_id_bc ON pl03 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangpl03_id_bc ON thangpl03 (id_bc);");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
@@ -707,10 +707,53 @@ namespace ToolBaoCao
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
-            /* B02. Thống kê KCB (Tháng) */
-            if (tables.Contains("b02") == false)
+
+            /* B01. Sử dụng dự toán chi KCB tại các tỉnh, TP */
+            if (tables.Contains("thangb01") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb01 (id INTEGER primary key AUTOINCREMENT
+                ,ma_tinh text not null
+                ,tu_thang integer not null default 0
+                ,den_thang integer not null default 0
+                ,nam integer not null default 0
+                ,cs integer not null default 0
+                ,userid text not null default ''
+                ,timeup integer not null default 0
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_thangb01_id_bc ON thangb01 (id_bc);");
+            }
+            if (tables.Contains("thangb01chitiet") == false)
+            {
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb01chitiet (id INTEGER primary key AUTOINCREMENT
+                ,id2 integer not null default 0
+                ,ma_tinh text not null default ''
+                ,ten_tinh text not null default ''
+                ,ma_cskcb text not null default ''
+                ,ten_cskcb text not null default ''
+                ,ma_vung text not null default ''
+                ,dtcsyt_trongnam real not null default 0
+                ,dtcsyt_conlai real not null default 0
+                ,dtcsyt_chikcb real not null default 0
+                ,dtcsyt_tlsudungthang real not null default 0
+                ,dtcsyt_tlsudungnam real not null default 0
+                ,dtnam_tongchikcb real not null default 0
+                ,dtnam_dkbd real not null default 0
+                ,dtnam_noitinh real not null default 0
+                ,dtnam_ngoaitinh real not null default 0
+                ,dtnam_tttt real not null default 0
+                ,dtnam_ttho real not null default 0
+                ,dtnam_cskcb real not null default 0
+                ,dtnam_tongdt real not null default 0
+                ,giamtru_tien real not null default 0
+                ,giamtru_tl real not null default 0
+                ,arv real not null default 0
+                ,id_bc text not null default '');
+                CREATE INDEX IF NOT EXISTS index_thangb01chitiet_id_bc ON thangb01chitiet (id_bc);");
+            }
+            /* B02. Thống kê KCB (Tháng) */
+            if (tables.Contains("thangb02") == false)
+            {
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb02 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,ma_loai_kcb text not null
                 ,tu_thang integer not null default 0
@@ -725,11 +768,11 @@ namespace ToolBaoCao
                 ,userid text not null default ''
                 ,timeup integer not null default 0
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_b02_id_bc ON b02 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangb02_id_bc ON thangb02 (id_bc);");
             }
-            if (tables.Contains("b02chitiet") == false)
+            if (tables.Contains("thangb02chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b02chitiet (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb02chitiet (id INTEGER primary key AUTOINCREMENT
                 ,id2 integer not null default 0
                 ,ma_tinh text not null default ''
                 ,ten_tinh text not null default ''
@@ -754,13 +797,13 @@ namespace ToolBaoCao
                 ,t_bhtt_noi real not null default 0
                 ,t_bhtt_ngoai real not null default 0
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_b02chitiet_id_bc ON b02chitiet (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangb02chitiet_id_bc ON thangb02chitiet (id_bc);");
             }
 
             /* B04. Thống kê chi bình quân (Tháng) */
-            if (tables.Contains("b04") == false)
+            if (tables.Contains("thangb04") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb04 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,tu_thang integer not null default 0
                 ,den_thang integer not null default 0
@@ -775,11 +818,11 @@ namespace ToolBaoCao
                 ,userid text not null default ''
                 ,timeup integer not null default 0
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_b04_id_bc ON b04 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangb04_id_bc ON thangb04 (id_bc);");
             }
-            if (tables.Contains("b04chitiet") == false)
+            if (tables.Contains("thangb04chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b04chitiet (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb04chitiet (id INTEGER primary key AUTOINCREMENT
                 ,id2 integer not null default 0
                 ,ma_tinh text not null default ''
                 ,ten_tinh text not null default ''
@@ -795,13 +838,97 @@ namespace ToolBaoCao
                 ,ngay_ttbq real not null default 0
                 ,ma_vung text not null default ''
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_b04chitiet_id_bc ON b04chitiet (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangb04chitiet_id_bc ON thangb04chitiet (id_bc);");
+            }
+
+            /* B21. Theo dõi chỉ tiêu giám sát cơ bản */
+            if (tables.Contains("thangb21") == false)
+            {
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26 (id INTEGER primary key AUTOINCREMENT
+                ,ma_tinh text not null
+                ,nam integer not null default 0
+                ,tu_thang integer not null default 0
+                ,den_thang integer not null default 0
+                ,ma_lydo text not null default ''
+                ,loai_bv text not null default ''
+                ,hang_bv text not null default ''
+                ,tuyen_bv text not null default ''
+                ,kieu_bv text not null default ''
+                ,loai_kc text not null default ''
+                ,loai_kcb integer not null default 0
+                ,cs integer not null default 0
+                ,userid text not null default ''
+                ,timeup integer not null default 0
+                ,id_bc text not null default '');
+                 CREATE INDEX IF NOT EXISTS index_thangb21_id_bc ON thangb21 (id_bc);");
+            }
+            if (tables.Contains("thangb21chitiet") == false)
+            {
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb21chitiet (id INTEGER primary key AUTOINCREMENT
+                ,id2 integer not null default 0
+                ,ma_tinh text not null default ''
+                ,ten_tinh text not null default ''
+                ,ma_cskcb text not null default ''
+                ,ten_cskcb text not null default ''
+                ,ma_vung text not null default ''
+
+                ,slkcb_trongky real not null default 0
+                ,slkcb_tlkytruoc real not null default 0
+                ,slkcb_kytruoc real not null default 0
+                ,slkcb_trongky real not null default 0
+                ,slkcb_tlnamtruoc real not null default 0
+                ,slkcb_namtruoc real not null default 0
+
+                ,tongchi_trongky real not null default 0
+                ,tongchi_tlkytruoc real not null default 0
+                ,tongchi_kytruoc real not null default 0
+                ,tongchi_trongky real not null default 0
+                ,tongchi_tlnamtruoc real not null default 0
+                ,tongchi_namtruoc real not null default 0
+
+                ,tienbhtt_trongky real not null default 0
+                ,tienbhtt_tlkytruoc real not null default 0
+                ,tienbhtt_kytruoc real not null default 0
+                ,tienbhtt_trongky real not null default 0
+                ,tienbhtt_tlnamtruoc real not null default 0
+                ,tienbhtt_namtruoc real not null default 0
+
+                ,chibq_trongky real not null default 0
+                ,chibq_tlkytruoc real not null default 0
+                ,chibq_kytruoc real not null default 0
+                ,chibq_trongky real not null default 0
+                ,chibq_tlnamtruoc real not null default 0
+                ,chibq_namtruoc real not null default 0
+
+                ,tlvvnoitru_trongky real not null default 0
+                ,tlvvnoitru_tlkytruoc real not null default 0
+                ,tlvvnoitru_kytruoc real not null default 0
+                ,tlvvnoitru_trongky real not null default 0
+                ,tlvvnoitru_tlnamtruoc real not null default 0
+                ,tlvvnoitru_namtruoc real not null default 0
+
+                ,ngaydtbq_trongky real not null default 0
+                ,ngaydtbq_tlkytruoc real not null default 0
+                ,ngaydtbq_kytruoc real not null default 0
+                ,ngaydtbq_trongky real not null default 0
+                ,ngaydtbq_tlnamtruoc real not null default 0
+                ,ngaydtbq_namtruoc real not null default 0
+
+                ,ngaygiuong_trongky real not null default 0
+                ,ngaygiuong_tlkytruoc real not null default 0
+                ,ngaygiuong_kytruoc real not null default 0
+                ,ngaygiuong_trongky real not null default 0
+                ,ngaygiuong_tlnamtruoc real not null default 0
+                ,ngaygiuong_namtruoc real not null default 0
+
+                ,id_bc text not null default '');
+                CREATE INDEX IF NOT EXISTS index_thangb21chitiet_id_bc ON thangb21chitiet (id_bc);");
             }
 
             /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */
-            if (tables.Contains("b26") == false)
+            if (tables.Contains("thangb26") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b26 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,loai_kcb text not null default ''
                 ,thoigian integer not null default 0
@@ -815,11 +942,11 @@ namespace ToolBaoCao
                 ,userid text not null default ''
                 ,timeup integer not null default 0
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_b26_id_bc ON b26 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangb26_id_bc ON thangb26 (id_bc);");
             }
-            if (tables.Contains("b26chitiet") == false)
+            if (tables.Contains("thangb26chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS b26chitiet (id INTEGER primary key AUTOINCREMENT,
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26chitiet (id INTEGER primary key AUTOINCREMENT,
                 id2 integer not null default 0,
                 ma_tinh text not null default '',
                 ten_tinh text not null default '',
@@ -858,7 +985,7 @@ namespace ToolBaoCao
                 chi_dinh_cdha_tang real not null default 0,
                 ma_vung text not null default ''
                 ,id_bc text not null default '');
-                CREATE INDEX IF NOT EXISTS index_b26chitiet_id_bc ON b26chitiet (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangb26chitiet_id_bc ON thangb26chitiet (id_bc);");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
