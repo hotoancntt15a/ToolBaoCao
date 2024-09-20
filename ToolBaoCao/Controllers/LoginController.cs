@@ -1,6 +1,4 @@
-﻿using System;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
 {
@@ -32,6 +30,11 @@ namespace ToolBaoCao.Controllers
                 Request.Cookies.Clear();
                 return RedirectToAction("Index");
             }
+            return View();
+        }
+
+        public ActionResult quenmatkhau()
+        {
             return View();
         }
     }

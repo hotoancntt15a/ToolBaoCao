@@ -3157,6 +3157,7 @@
     <Content Include="vendor\fontawesome-free\webfonts\fa-solid-900.woff2" />
     <Content Include="vendor\fontawesome-free\webfonts\fa-v4compatibility.ttf" />
     <Content Include="vendor\fontawesome-free\webfonts\fa-v4compatibility.woff2" />
+    <Content Include="Views\Login\quenmatkhau.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />
