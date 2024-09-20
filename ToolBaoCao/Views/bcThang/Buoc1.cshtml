@@ -1,0 +1,31 @@
+﻿@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    return;
+}
+@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idformbuoc1 = "frmbuoc1" + DateTime.Now.toTimestamp().ToString();
+    var idtarget = Request.getValue("idtarget");
+}
+<br />
+<h4 class="font-weight-bold">BƯỚC 1: ĐẨY DỮ LIỆU</h4>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("Buoc2", "bcThang", new { area = "", layout = "null", idtarget=idtarget })" data-target="@idtarget">
+                    <p class="text-center">Kéo và thả tập tin Excel 2007 trở lên (Type of file: Microsoft Excel Worksheet) vào khu vực này hoặc nhấp để chọn file</p>
+                </div>
+                <div id="fileDetails" class="mt-4">
+                    <h5>Danh sách tập tin đã chọn:</h5>
+                    <ul id="fileList" class="list-group"></ul>
+                </div>
+                <button id="uploadButton" class="btn btn-primary mt-3" disabled><i class="fa fa-plus"></i> Đẩy lên máy chủ</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () { drapDropFiles(); });
+</script>

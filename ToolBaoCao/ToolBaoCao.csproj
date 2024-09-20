@@ -353,6 +353,7 @@
     <Compile Include="Areas\Admin\Controllers\TapTinController.cs" />
     <Compile Include="BuildDatabase.cs" />
     <Compile Include="CaptchaImage.cs" />
+    <Compile Include="Controllers\bcThangController.cs" />
     <Compile Include="Controllers\bcTuanController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -3158,6 +3159,14 @@
     <Content Include="vendor\fontawesome-free\webfonts\fa-v4compatibility.ttf" />
     <Content Include="vendor\fontawesome-free\webfonts\fa-v4compatibility.woff2" />
     <Content Include="Views\Login\quenmatkhau.cshtml" />
+    <Content Include="Views\bcThang\Buoc1.cshtml" />
+    <Content Include="Views\bcThang\Buoc2.cshtml" />
+    <Content Include="Views\bcThang\Buoc3.cshtml" />
+    <Content Include="Views\bcThang\Delete.cshtml" />
+    <Content Include="Views\bcThang\Index.cshtml" />
+    <Content Include="Views\bcThang\Tai.cshtml" />
+    <Content Include="Views\bcThang\TruyVan.cshtml" />
+    <Content Include="Views\bcThang\Update.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

@@ -1,0 +1,89 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idtarget = Request.getValue("idtarget");
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">
+        @Html.Raw(ViewBag.Error)
+        <br />
+        <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</a>
+    </div>
+    return;
+}
+@{
+    var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
+    var id = ViewBag.id as string;
+}
+<br />
+<h4 class="font-weight-bold">BƯỚC 2: BỔ SUNG THÔNG TIN BÁO CÁO CÓ ID '@id'</h4>
+<div class="table-responsive">
+    @if (ViewBag.files != null)
+    {
+        var list = ViewBag.files as List<string>;
+        <div class="alert alert-info">Danh sách tập tin đẩy lên thành công</div>
+        <ul>
+            @foreach (var f in list)
+            {
+                <li>@f</li>
+            }
+        </ul>
+    }
+    <div class="alert alert-info">Thông tin</div>
+    @using (Html.BeginForm("Buoc3", "bcThang", new { area = "", layout = "null", idobject = id, idtarget = idtarget }, FormMethod.Post, new { id = idform }))
+    {
+        <input type="hidden" name="mode" value="taive" />
+        <table class="table table-hover table-sm">
+            <tbody>
+                <tr>
+                    <td class="text-right" style="width: 180px;">@Html.Label("x2", "Số của QĐ giao dự toán x2:")</td>
+                    <td>
+                        <input type="text" name="x2" id="x2" value="@ViewBag.x2" style="width: 100%;" class="form-control-sm" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3")</td>
+                    <td>
+                        <input type="text" name="x3" id="x3" value="@ViewBag.x3" class="clsnumber form-control-sm" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x67", "Công tác kiểm soát chi x67:")
+                        <br />
+                        <textarea name="x67" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x68", "Công tác thanh, quyết toán năm x68:")
+                        <br />
+                        <textarea name="x68" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x69", "Phương hướng kỳ tiếp theo x69:")
+                        <br />
+                        <textarea name="x69" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có) x70:")
+                        <br />
+                        <textarea name="x70" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <a href="#" class="btn btn-primary btn-sm" onclick="postform('@idform', '', '@idtarget');"><i class="fa fa-play"></i> Thực hiện</a>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-recycle"></i> Huỷ</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+</div>
+<script>
+</script>

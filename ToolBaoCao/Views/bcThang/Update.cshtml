@@ -1,0 +1,52 @@
+﻿@{
+    ViewBag.Title = "Cập nhật báo cáo tuần";
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    if (ViewBag.Error != null)
+    {
+        <h2>@ViewBag.Title</h2>
+        <div class="alert alert-warning">@ViewBag.Error</div>
+        return;
+    }
+    var idFormBCT = "idbct" + DateTime.Now.toTimestamp().ToString();
+    var item = ViewBag.data as Dictionary<string, string>;
+}
+<h2>@ViewBag.Title @ViewBag.id</h2>@using (Html.BeginForm("Update", "bcThang", new { area = "" }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
+{
+    <input type="hidden" name="mode" value="update" />
+    <input type="hidden" name="layout" value="null" />
+    <input type="hidden" name="id" value="@ViewBag.id" />
+    <input type="hidden" name="objectid" value="@ViewBag.id" />
+    <div class="form-group">
+        <div class="input-group input-group-sm">
+            <div class="input-group-append">@Html.Label("thoigian", "Ngày lập báo x74", new { @class = "input-group-text" })</div>
+            <input type="text" name="thoigian" id="thoigian" value="@item.getValue("x74")" class="form-control" readonly />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append">@Html.Label("x2", "Số của QĐ giao dự toán x2", new { @class = "input-group-text" })</div>
+            <input type="text" name="x2" id="x2" value="@item.getValue("x2")" class="form-control" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-append">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3", new { @class = "input-group-text" })</div>
+            <input type="text" name="x3" id="x3" value="@item.getValue("x3")" class="clsnumber form-control" />
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            @Html.Label("x67", "Công tác kiểm soát chi x67:")
+            <textarea name="x67" id="x67" class="form-control">@item.getValue("x67")</textarea>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            @Html.Label("x68", "Công tác thanh, quyết toán năm x68:")
+            <textarea name="x68" id="x68" class="form-control">@item.getValue("x68")</textarea>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            @Html.Label("x69", "Phương hướng kỳ tiếp theo x69:")
+            <textarea name="x69" id="x69" class="form-control">@item.getValue("x69")</textarea>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có) x70:")
+            <textarea name="x70" id="x70" class="form-control">@item.getValue("x70")</textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <a href="#" onclick="postform('@idFormBCT');" class="btn btn-primary btn-sm"><i class="fa fa-save"></i> Lưu lại</a>
+    </div>
+}

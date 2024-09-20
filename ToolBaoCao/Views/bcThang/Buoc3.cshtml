@@ -1,0 +1,41 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idtarget = Request.getValue("idtarget");
+    var link = "";
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    <br />
+    <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</a>
+    return;
+}
+@{
+    var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
+    var id = ViewBag.id as string;
+    var dirSave = new System.IO.DirectoryInfo(ViewBag.forlderSave as string);
+}
+<br />
+<h4 class="font-weight-bold">BƯỚC 3: TẢI KẾT QUẢ BÁO CÁO CÓ ID: @id</h4>
+<div class="alert alert-info">Danh sách tập tin đã xử lý</div>
+<ul>
+    <!-- File báo cáo tuần -->
+    @foreach (var f in dirSave.GetFiles($"bcThang_{id}*.*"))
+    {
+        link = f.FullName.Replace(AppHelper.pathApp, "");
+        <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
+    }
+    <!-- File phụ lục báo cáo tuần -->
+    @foreach (var f in dirSave.GetFiles($"bcThang_pl_{id}*.*"))
+    {
+        link = f.FullName.Replace(AppHelper.pathApp, "");
+        <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
+    }
+    <!-- File tải lên phụ vục báo cáo tuần -->
+    @foreach (var f in dirSave.GetFiles($"id{id}_b26_00.*"))
+    {
+        link = f.FullName.Replace(AppHelper.pathApp, "");
+        <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
+    }
+</ul>
+<a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo mới</a>
