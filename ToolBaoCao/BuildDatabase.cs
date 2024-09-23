@@ -658,7 +658,7 @@ namespace ToolBaoCao
                 ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
                 ,ma_vung text not null default '' /* Mã vùng 0,1,2,3,4... cột C , B02 */
                 ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú, B02 */
-                ,ngay_dtri_bq real not null default 0 /*	Ngày điều trị BQ, vd 6,42, DVT: ngày; Lấy từ cột H: NGAY ĐT_BQ, B02 */
+                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: ngày; Lấy từ cột H: NGAY ĐT_BQ, B02 */
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
