@@ -187,8 +187,7 @@ namespace ToolBaoCao
 
         public static void CreateTableProcess(this dbSQLite dbConnect)
         {
-            dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS wprocess (
-                  id text NOT NULL PRIMARY KEY
+            dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS wprocess (id text NOT NULL PRIMARY KEY
                   ,name text NOT NULL DEFAULT ''
                   ,iduser text NOT NULL
                   ,args text NOT NULL DEFAULT ''
@@ -562,12 +561,81 @@ namespace ToolBaoCao
                 ,tentinh text not null default '' /* Tên tỉnh */
                 ,ngay text not null default '' /* Ngày báo cáo (Chứa luôn cả ngày đầu tháng, và năm) */
                 ,ngaydauthang text not null '' /* Ngày đầu tháng */
+                ,thang integer not null '' /* Tháng báo cáo */
                 ,nam1 integer not null default 0 /* Năm báo cáo */
                 ,nam2 integer not null default 0 /* Năm trước báo cáo */
-                ,mi11 text not null default '' /* Công tác ký hợp đồng KCB BHYT */
+                ,x1 text not null default '' /* Công tác ký hợp đồng KCB BHYT */
+                ,x33 text not null default '' /* Công tác kiểm soát chi KCB BHYT */
+                ,x34 text not null default '' /* Công tác đấu thầu thuốc */
+                ,x35 text not null default '' /* Công tác quyết toán chi KCB BHYT */
+                ,x36 text not null default '' /* Công tác khác */
+                ,x37 text not null default '' /* Phương hướng công tác tháng sau */
+                ,x38 text not null default '' /* Khó khăn, vướng mắc, đề xuất (nếu có) */
+
                 ,mi12c1 real not null default '' /* Dự toán giao {nam} */
                 ,mi12c2 real not null default '' /* Chi KCB toàn tỉnh */
                 ,mi12c3 real not null default 0 /* Tỷ lệ % SD dự toán {nam} */
+                ,mi12c4 integer not null default 0 /* xếp bn toàn quốc */
+                ,mi12c5 integer not null default 0 /* xếp thứ bao nhiêu so với vùng */
+                ,mi12c6 real not null default 0 /* Tỷ lệ % SD dự toán {nam2} */
+                ,mi12c7 real not null default 0 /* So cùng kỳ năm trước = 3-6 (mi12c3 - mi12c6) */
+
+                ,m13lc11 real not null default 0 /* Tổng lượt = 2+3 (m13lc21+m13lc31) */
+                ,m13lc21 real not null default 0 /* Lượt ngoại */
+                ,m13lc31 real not null default 0 /* Lượt nội */
+                ,m13lc41 real not null default 0 /* Tổng lượt = 5+6 (m13lc51+m13lc61) */
+                ,m13lc51 real not null default 0 /* Lượt ngoại */
+                ,m13lc61 real not null default 0 /* Lượt nội */
+
+                ,m13lc12 real not null default 0 /* Tổng lượt = 2+3 (m13lc22+m13lc32) */
+                ,m13lc22 real not null default 0 /* Lượt ngoại */
+                ,m13lc32 real not null default 0 /* Lượt nội */
+                ,m13lc42 real not null default 0 /* Tổng lượt = 5+6 (m13lc52+m13lc62) */
+                ,m13lc52 real not null default 0 /* Lượt ngoại */
+                ,m13lc62 real not null default 0 /* Lượt nội */
+
+                ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 (m13lc23+m13lc33) */
+                ,m13lc23 real not null default 0 /* Lượt ngoại */
+                ,m13lc33 real not null default 0 /* Lượt nội */
+                ,m13lc43 real not null default 0 /* Tổng lượt = 5+6 (m13lc53+m13lc63) */
+                ,m13lc53 real not null default 0 /* Lượt ngoại */
+                ,m13lc63 real not null default 0 /* Lượt nội */
+
+                ,m13lc14 real not null default 0 /* Tổng lượt = 2+3 (m13lc24+m13lc34) */
+                ,m13lc24 real not null default 0 /* Lượt ngoại */
+                ,m13lc34 real not null default 0 /* Lượt nội */
+                ,m13lc44 real not null default 0 /* Tổng lượt = 5+6 (m13lc54+m13lc64) */
+                ,m13lc54 real not null default 0 /* Lượt ngoại */
+                ,m13lc64 real not null default 0 /* Lượt nội */
+
+                ,mc13cc11 real not null default 0 /* Tổng lượt = 2+3 (mc13cc21+mc13cc31) */
+                ,mc13cc21 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc31 real not null default 0 /* Chi nội trú */
+                ,mc13cc41 real not null default 0 /* Tổng lượt = 5+6 (mc13cc51+mc13cc61) */
+                ,mc13cc51 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc61 real not null default 0 /* Chi nội trú */
+
+                ,mc13cc12 real not null default 0 /* Tổng lượt = 2+3 (mc13cc22+mc13cc32) */
+                ,mc13cc22 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc32 real not null default 0 /* Chi nội trú */
+                ,mc13cc42 real not null default 0 /* Tổng lượt = 5+6 (mc13cc52+mc13cc62) */
+                ,mc13cc52 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc62 real not null default 0 /* Chi nội trú */
+
+                ,mc13cc13 real not null default 0 /* Tổng lượt = 2+3 (mc13cc23+mc13cc33) */
+                ,mc13cc23 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc33 real not null default 0 /* Chi nội trú */
+                ,mc13cc43 real not null default 0 /* Tổng lượt = 5+6 (mc13cc53+mc13cc63) */
+                ,mc13cc53 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc63 real not null default 0 /* Chi nội trú */
+
+                ,mc13cc14 real not null default 0 /* Tổng lượt = 2+3 (mc13cc24+mc13cc34) */
+                ,mc13cc24 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc34 real not null default 0 /* Chi nội trú */
+                ,mc13cc44 real not null default 0 /* Tổng lượt = 5+6 (mc13cc54+mc13cc64) */
+                ,mc13cc54 real not null default 0 /* Chi ngoại trú */
+                ,mc13cc64 real not null default 0 /* Chi nội trú */       
+
                 ,userid text not null default '' /* Lưu ID của người dùng */
                 ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
                 ,timespan integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
