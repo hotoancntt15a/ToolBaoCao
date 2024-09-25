@@ -650,10 +650,29 @@ namespace ToolBaoCao
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
+
             if (tables.Contains("thangpl01") == false)
             {
-                /* Lấy dữ liệu từ biểu b02 toàn quốc */
+                /**
+                 Yêu cầu nhập excel từ người dùng
+                 */
+                /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB */
+                ,ten_cskcb text not null default '' /* Tên cskcb*/
+                ,dutoangiao real not null default 0 /* Dự toán tạm giao */
+                ,tien_bhtt real not null default 0 /* Tiền T- BHTT cột R-B02-10 */
+                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);");
+            }
+
+            if (tables.Contains("thangpl02a") == false)
+            {
+                /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo) */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02a (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
@@ -665,31 +684,31 @@ namespace ToolBaoCao
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangpl02a_id_bc ON thangpl02a (id_bc);");
             }
-            if (tables.Contains("thangpl02") == false)
+            if (tables.Contains("thangpl02b") == false)
             {
-                /* Lấy dữ liệu từ biểu b04 toan quốc */
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02 (id INTEGER primary key AUTOINCREMENT
+                /* Lấy dữ liệu từ biểu pl02b dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
                 ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
-                ,ma_vung text not null default '' /* Mã vùng */
-                ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
-                ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
-                ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
-                ,chi_bq_pttt real not null default 0 /* chi BQ phẫu thuật thủ thuật	Lấy từ B04. Cột G */
-                ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
-                ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
-                ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
+                ,ma_vung text not null default '' /* Mã vùng 0,1,2,3,4... cột C , B02 */
+                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú, B02 */
+                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: ngày; Lấy từ cột H: NGAY ĐT_BQ, B02 */
+                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
+                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); Cột J, B02 */
+                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_thangpl02_id_bc ON thangpl02 (id_bc);");
+                 CREATE INDEX IF NOT EXISTS index_thangpl02b_id_bc ON thangpl02b (id_bc);");
             }
-            if (tables.Contains("thangpl03") == false)
+
+
+            if (tables.Contains("thangpl03a") == false)
             {
-                /* Lấy dữ liệu từ biểu b02 csyt */
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03 (id INTEGER primary key AUTOINCREMENT
+                /* Lấy dữ liệu từ biểu pl03a csyt trong tháng */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03a (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
@@ -703,57 +722,65 @@ namespace ToolBaoCao
                 ,tuyen_bv text not null default ''
                 ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                CREATE INDEX IF NOT EXISTS index_thangpl03_id_bc ON thangpl03 (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangpl03a_id_bc ON thangpl03a (id_bc);");
             }
-            if (tables.Contains("thangpl04") == false)
+            if (tables.Contains("thangpl03b") == false)
             {
-                /* Lấy dữ liệu từ biểu b01 csyt */
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04 (id INTEGER primary key AUTOINCREMENT
+                /* Lấy dữ liệu từ biểu pl03a csyt luỹ kế của năm */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,ma_cskcb text not null /* Mã cơ sơ KCB */
-                ,ten_cskcb text not null default '' /* Tên cskcb*/
-                ,dutoangiao real not null default 0 /* Dự toán tạm giao */
-                ,tien_bhtt real not null default 0 /* Tiền T- BHTT cột R-B02-10 */
-                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
-                ,userid text not null default '' /* Lưu ID của người dùng */);
-                CREATE INDEX IF NOT EXISTS index_thangpl04_id_bc ON thangpl04 (id_bc);");
-            }
-            if (tables.Contains("thangpl05") == false)
-            {
-                /* Lấy dữ liệu từ biểu b04 csyt*/
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl05 (id INTEGER primary key AUTOINCREMENT
-                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,stt integer not null /* số thứ tự */
-                ,ma_cskcb text not null /* Mã cơ sơ KCB*/
-                ,ten_cskcb text not null default '' /* Tên cskcb */
-                ,bq_xn real not null default 0 /* BQ xét nghiệm */
-                ,bq_cdha real not null default 0 /* BQ_CĐHA */
-                ,bqptt real not null default 0 /* BQ_PTTT */
-                ,bq_vtyt real not null default 0 /* BQ_VTYT */
-                ,bq_giuong real not null default 0 /* BQ_GIUONG */
-                ,ngay_ttbq real not null default 0 /* Ngày thanh toán BQ */
-                ,userid text not null default '' /* Lưu ID của người dùng */);
-                CREATE INDEX IF NOT EXISTS index_thangpl05_id_bc ON thangpl05 (id_bc);");
-            }
-            if (tables.Contains("thangpl06") == false)
-            {
-                /* Lấy dữ liệu từ biểu b21 csyt */
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl06 (id INTEGER primary key AUTOINCREMENT
-                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
-                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
-                ,ma_cskcb text not null /* Mã cơ sơ KCB */
-                ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB */
-                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49% */
-                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; */
-                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; */
-                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; */
-                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
+                ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
+                ,ma_vung text not null default '' /* Mã vùng */
+                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
+                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
+                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
+                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú	Cột J B02 */
+                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú; Cột K B02 */
                 ,tuyen_bv text not null default ''
                 ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                CREATE INDEX IF NOT EXISTS index_thangpl06_id_bc ON thangpl06 (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangpl03b_id_bc ON thangpl03b (id_bc);");
+            }
+
+            if (tables.Contains("thangpl04a") == false)
+            {
+                /* Lấy dữ liệu từ biểu pl04a toàn quốc luỹ kế name */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04a (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,mahanhchinh text not null default '' /*  */
+                ,tenhanhchinh text not null default '' /*  */
+                ,ma_vung text not null default '' /* Mã vùng */
+                ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
+                ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
+                ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
+                ,chi_bq_pttt real not null default 0 /* chi BQ phẫu thuật thủ thuật	Lấy từ B04. Cột G */
+                ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
+                ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
+                ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                 CREATE INDEX IF NOT EXISTS index_thangpl04a_id_bc ON thangpl04a (id_bc);");
+            }
+            if (tables.Contains("thangpl04b") == false)
+            {
+                /* Lấy dữ liệu từ biểu pl04b của cơ sở trong tháng */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04b (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,mahanhchinh text not null default '' /*  */
+                ,tenhanhchinh text not null default '' /*  */
+                ,ma_vung text not null default '' /* Mã vùng */
+                ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
+                ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
+                ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
+                ,chi_bq_pttt real not null default 0 /* chi BQ phẫu thuật thủ thuật	Lấy từ B04. Cột G */
+                ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; Lấy từ B04. Cột H */
+                ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; Lấy từ B04. Cột I */
+                ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; Lấy từ B04. Cột J */
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                 CREATE INDEX IF NOT EXISTS index_thangpl04b_id_bc ON thangpl04b (id_bc);");
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
@@ -762,6 +789,25 @@ namespace ToolBaoCao
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
+            if (tables.Contains("bcthang_dutoangiao") == false)
+            {
+                /**
+                 Yêu cầu nhập excel từ người dùng
+                 */
+                /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
+                ,thang text not null /* Tháng báo cáo tháng. */
+                ,nam text not null /* Tháng báo cáo tháng. */
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB */
+                ,ten_cskcb text not null default '' /* Tên cskcb*/
+                ,dutoangiao real not null default 0 /* Dự toán tạm giao */
+                ,tien_bhtt real not null default 0 /* Tiền T- BHTT cột R-B02-10 */
+                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);
+                CREATE INDEX IF NOT EXISTS index_thangpl01_namthang ON thangpl01 (nam, thang);");
+            }
 
             /* B01. Sử dụng dự toán chi KCB tại các tỉnh, TP */
             if (tables.Contains("thangb01") == false)
