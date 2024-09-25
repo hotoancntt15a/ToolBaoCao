@@ -41,7 +41,7 @@ namespace ToolBaoCao.Controllers
             var matinh = $"{Session["idtinh"]}";
             if (matinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin dữ liệu nào đẩy lên"; return View(); }
-            var id = $"{timeStart:yyyyMMddHHmmss}_{matinh}_{timeStart.Millisecond:000}";
+            var id = $"{timeStart:yyMMddHHmmss}_{matinh}_{timeStart.Millisecond:000}";
             var timeUp = timeStart.toTimestamp().ToString();
             var folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bcThang", $"{matinh}_{Session["iduser"]}".GetMd5Hash());
             ViewBag.id = id;
@@ -282,7 +282,9 @@ namespace ToolBaoCao.Controllers
             string messageError = "";
             var timeUp = timeStart.toTimestamp().ToString();
             var userID = $"{Session["iduser"]}".Trim();
-            string bieu = ""; string matinhImport = "";
+            var matinh = $"{Session["idtinh"]}".Trim();
+            var listBieu = new List<string>();
+            string bieu = "";
             string fileExtension = Path.GetExtension(inputFile.FileName);
             int sheetIndex = 0; int packetSize = 1000;
             int indexRow = 0; int indexColumn = 0; int maxRow = 0; int jIndex = 0;
@@ -317,7 +319,7 @@ namespace ToolBaoCao.Controllers
                 if (indexRow >= maxRow) { throw new Exception("Không có dữ liệu"); }
                 string pattern = "^20[0-9][0-9]$";
                 int indexRegex = 3; int tmpInt = 0;
-                /* Bắt đầu đọc dữ liệu 
+                /* Bắt đầu đọc dữ liệu
                  * - Đọc thông số biểu
                  * Biểu b01: ma_tinh    tu_thang    den_thang   nam         cs
                  * Biểu b02: ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs
@@ -326,11 +328,11 @@ namespace ToolBaoCao.Controllers
                 switch (bieu)
                 {
                     /* Kiểm tra năm */
-                    case "b02": fieldCount = 11; indexRegex = 4; pattern = "^20[0-9][0-9]$"; break;
+                    case "b01": fieldCount = 5; indexRegex = 3; pattern = "^20[0-9][0-9]$"; break;
                     /* Kiểm tra năm */
-                    case "b04": fieldCount = 11; indexRegex = 3; pattern = "^20[0-9][0-9]$"; break;
+                    case "b02": fieldCount = 11; indexRegex = 4; pattern = "^20[0-9][0-9]$"; break;
                     /* Kiểm tra thoigian */
-                    case "b26": fieldCount = 10; indexRegex = 2; pattern = "^20[0-9][0-9][0-1][0-9][0-3][0-9]$"; break;
+                    case "b04": fieldCount = 11; indexRegex = 3; pattern = "^20[0-9][0-9]$"; break;
                     default: fieldCount = 11; break;
                 }
                 indexRow++; /* Lấy dòng có dữ liệu */
@@ -341,24 +343,45 @@ namespace ToolBaoCao.Controllers
                     NPOI.SS.UserModel.ICell c = row.GetCell(jIndex);
                     listValue.Add(c.GetValueAsString().Trim());
                 }
-                /* Yêu cầu tháng từ là từ đầu năm dương lịch */
-                if (bieu == "b02")
+                switch (bieu)
                 {
-                    if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
-                }
-                if (bieu == "b04")
-                {
-                    if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
+                    case "b01":
+                        /* 3 b01; b01_00_nam1, b01_00_nam2, b01_cs_nam1 */
+                        /* ma_tinh    tu_thang    den_thang   nam         cs */ 
+                        listBieu.Add($"b01_{listValue[0]}_{listValue[3]}{(listValue[1] != listValue[2] ? "" : $"_{listValue[2]}")}");
+                        if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
+                        break;
+                    case "b02":
+                        /* 6 b02: b02_00_nam1 b02_00_nam2 b02_00_thang1 b02_00_thang2 b02_cs_nam1 b02_cs_thang1 */
+                        /* ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs */
+                        listBieu.Add($"b02_{listValue[0]}_{listValue[4]}{(listValue[2] != listValue[3] ? "" : $"_{listValue[3]}")}");
+                        if(listValue[2] != listValue[3])
+                        {
+                            if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
+                        }                        
+                        break; 
+                    case "b04":
+                        /* 2 b04: b04_00_nam1 b04_cs_thang1 */
+                        /* ma_tinh	tu_thang	den_thang	nam	ma_loai_kcb	loai_bv	hang_bv	tuyen	kieubv	loaick	cs */
+                        listBieu.Add($"b04_{listValue[0]}_{listValue[3]}{(listValue[1] != listValue[2] ? "" : $"_{listValue[2]}")}");
+                        if (listValue[1] != listValue[2])
+                        {
+                            if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
+                        }
+                        break;
+
+                    default: fieldCount = 11; break;
                 }
                 /* Có phải là cơ sở không? */
                 tmpInt = (fieldCount - 1);
                 listValue[tmpInt] = "1";
                 if (listValue[0] == "00") { listValue[tmpInt] = "0"; cs = false; }
+
                 tmp = string.Join(",", listValue);
                 if (tmp.Contains(",,")) { throw new Exception($"Biểu {bieu} không đúng định dạng."); }
                 /* Kiểm tra có đúng dữ liệu không */
                 if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
-                matinhImport = listValue[0];
+
                 /* Lấy danh sách cột, bỏ cột ID */
                 var allColumns = dbConnect.getColumns(bieu).Select(p => p.ColumnName).ToList();
                 allColumns.RemoveAt(0);
@@ -379,20 +402,20 @@ namespace ToolBaoCao.Controllers
                 /* indexRegex + 1 do thêm cột {@id2} ID vào đằng trước */
                 switch (bieu)
                 {
-                    /* Kiểm tra tổng số lượt KCB */
+                    /* Kiểm tra Nguồn trong năm */
+                    case "b01":
+                        fieldCount = 20; indexRegex = 3 + 1; pattern = @"^\d+$"; /* nguồn trong năm */
+                        fieldNumbers = new List<int>() { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20 };
+                        break;
+                    /* Kiểm tra Tổng cộng Số lượt KCB */
                     case "b02":
-                        fieldCount = 20; indexRegex = 3 + 1; pattern = "^[0-9]+$";
-                        fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+                        fieldCount = 20; indexRegex = 3 + 1; pattern = @"^\d+$";
+                        fieldNumbers = new List<int>() { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20 };
                         break;
-                    /* Kiểm tra ngày TTBQ */
+                    /* Kiểm tra Chi lần KCB */
                     case "b04":
-                        fieldCount = 11; indexRegex = 9 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                        fieldCount = 10; indexRegex = 2 + 1; pattern = @"^\d+([.]\d+)?$";
                         fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
-                        break;
-                    /* Kiểm tra BQ chung trong kỳ */
-                    case "b26":
-                        fieldCount = 34; indexRegex = 7 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
-                        fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
                         break;
 
                     default: fieldCount = 11; break;
@@ -414,7 +437,7 @@ namespace ToolBaoCao.Controllers
                     /* Cột đầu tiên không phải là matinh dạng số */
                     string ma = row.GetCell(indexColumn).GetValueAsString().Trim();
 
-                    if (Regex.IsMatch(ma, "^[0-9]+$|^V[0-9]+$") == false) { continue; }
+                    if (Regex.IsMatch(ma, "^V?[0-9]+$") == false) { continue; }
                     /* Xây dựng tsql VALUES */
                     listValue = new List<string>() { "0", ma.sqliteGetValueField() };
                     for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
@@ -435,7 +458,7 @@ namespace ToolBaoCao.Controllers
                 dbConnect.Execute(tmp);
                 if (tsql.Count < 2) { throw new Exception("Không có dữ liệu chi tiết"); }
                 /* Lưu lại file */
-                using (FileStream stream = new FileStream(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinhImport}{fileExtension}"), FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
+                using (FileStream stream = new FileStream(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinh}{fileExtension}"), FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
             }
             catch (Exception ex2) { messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}"; }
             finally
@@ -444,7 +467,7 @@ namespace ToolBaoCao.Controllers
                 if (workbook != null) { workbook.Close(); workbook = null; }
             }
             if (messageError != "") { throw new Exception(messageError); }
-            return $"{bieu}_{matinhImport}";
+            return $"{bieu}_{matinh}";
         }
 
         public ActionResult Tai()
