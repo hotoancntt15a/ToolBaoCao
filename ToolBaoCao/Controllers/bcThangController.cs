@@ -291,12 +291,7 @@ namespace ToolBaoCao.Controllers
             IWorkbook workbook = null;
             try
             {
-                try
-                {
-                    workbook = new XSSFWorkbook(inputFile.InputStream);
-                    /* if (fileExtension.ToLower() == ".xls") { workbook = new HSSFWorkbook(fs); }
-                    else { workbook = new XSSFWorkbook(fs); } */
-                }
+                try { workbook = new XSSFWorkbook(inputFile.InputStream); }
                 catch (Exception ex) { throw new Exception($"Lỗi tập tin '{inputFile.FileName}' sai định dạng : {ex.Message}"); }
                 var sheet = workbook.GetSheetAt(sheetIndex);
                 var tsqlv = new List<string>(); maxRow = sheet.LastRowNum;
@@ -310,9 +305,9 @@ namespace ToolBaoCao.Controllers
                     foreach (var c in row.Cells)
                     {
                         tmp = c.GetValueAsString().Trim().ToLower();
-                        if (tmp.StartsWith("b26")) { bieu = "b26"; }
-                        if (tmp.StartsWith("b04")) { bieu = "b04"; }
-                        if (tmp.StartsWith("b02")) { bieu = "b02"; }
+                        if (tmp.StartsWith("b01")) { bieu = "b01"; /* 3 b01; b01_00_nam1, b01_00_nam2, b01_cs_nam1 */ }
+                        if (tmp.StartsWith("b02")) { bieu = "b02"; /* 6 b02: b02_00_nam1 b02_00_nam2 b02_00_thang1 b02_00_thang2 b02_cs_nam1 b02_cs_thang1 */ }
+                        if (tmp.StartsWith("b04")) { bieu = "b04"; /* 2 b04: b04_00_nam1 b04_cs_thang1 */ }
                         if (tmp == "ma_tinh") { indexColumn = c.ColumnIndex; break; }
                     }
                     if (tmp == "ma_tinh") { break; }
@@ -322,13 +317,11 @@ namespace ToolBaoCao.Controllers
                 if (indexRow >= maxRow) { throw new Exception("Không có dữ liệu"); }
                 string pattern = "^20[0-9][0-9]$";
                 int indexRegex = 3; int tmpInt = 0;
-                /*
-                 * Bắt đầu đọc dữ liệu
-                 */
-                /*
+                /* Bắt đầu đọc dữ liệu 
                  * - Đọc thông số biểu
-                 * Biểu B04: ma_tinh ma_loai_kcb tu_thang den_thang nam loai_bv kieubv loaick hang_bv tuyen cs + userID
-                 * Biểu B26: ma_tinh	loai_kcb	thoi_gian	loai_bv	kieubv	loaick	hang_bv	tuyen	loai_so_sanh	cs
+                 * Biểu b01: ma_tinh    tu_thang    den_thang   nam         cs
+                 * Biểu b02: ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs
+                 * Biểu b04: ma_tinh	tu_thang	den_thang	nam	ma_loai_kcb	loai_bv	hang_bv	tuyen	kieubv	loaick	cs
                  */
                 switch (bieu)
                 {
