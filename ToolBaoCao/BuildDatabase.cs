@@ -804,7 +804,9 @@ namespace ToolBaoCao
                 ,dutoangiao real not null default 0 /* Dự toán tạm giao */
                 ,tien_bhtt real not null default 0 /* Tiền T- BHTT cột R-B02-10 */
                 ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
-                ,userid text not null default '' /* Lưu ID của người dùng */);
+                ,userid text not null default ''
+                ,timeup integer not null default 0
+                ,id_bc text not null default '');
                 CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);
                 CREATE INDEX IF NOT EXISTS index_thangpl01_namthang ON thangpl01 (nam, thang);");
             }
@@ -945,7 +947,7 @@ namespace ToolBaoCao
             /* B21. Theo dõi chỉ tiêu giám sát cơ bản */
             if (tables.Contains("thangb21") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb21 (id INTEGER primary key AUTOINCREMENT
                 ,ma_tinh text not null
                 ,nam integer not null default 0
                 ,tu_thang integer not null default 0
@@ -1088,7 +1090,9 @@ namespace ToolBaoCao
                 ,id_bc text not null default '');
                 CREATE INDEX IF NOT EXISTS index_thangb26chitiet_id_bc ON thangb26chitiet (id_bc);");
             }
-            if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
+            var tsql = string.Join(Environment.NewLine, tsqlCreate);
+            AppHelper.saveError(tsql);
+            if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
         }
     }
 }
