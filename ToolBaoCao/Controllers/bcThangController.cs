@@ -82,32 +82,27 @@ namespace ToolBaoCao.Controllers
                     ,tien_bhtt
                     ,tl_sudungdt
                     ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt '{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 LIKE '%01{matinh}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%');");
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 LIKE '%01{matinh}' AND ma_cskcb <> '';");
                 /* Tạo Phục Lục 2*/
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
+                /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
+                dbTemp.Execute($@"INSERT INTO thangpl02a ('{id}' AS id_bc ,'{matinh}' AS idtinh
+                ,ma_tinh
+                ,ten_tinh
+                ,ma_vung
+                ,tyle_noitru
+                ,ngay_dtri_bq
+                ,chi_bq_chung
+                ,chi_bq_ngoai
+                ,chi_bq_noi, '{idUser}' AS userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
-                    , ROUND(bq_xn) AS chi_bq_xn
-                    , ROUND(bq_cdha) AS chi_bq_cdha
-                    , ROUND(bq_thuoc) AS chi_bq_thuoc
-                    , ROUND(bq_ptt) AS chi_bq_pttt
-                    , ROUND(bq_vtyt) AS chi_bq_vtyt
-                    , ROUND(bq_giuong) AS chi_bq_giuong
-                    , ROUND(ngay_ttbq, 2) AS ngay_ttbq
-                    , '{idUser}' AS userid
-                    FROM b04chitiet WHERE id_bc='{id}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%');");
-                /* Thêm cột vùng */
-                var mavung = $"{dbTemp.getValue($"SELECT ma_vung FROM pl02 WHERE ma_tinh='{matinh}'")}";
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung , chi_bq_xn , chi_bq_cdha , chi_bq_thuoc , chi_bq_pttt , chi_bq_vtyt , chi_bq_giuong , ngay_ttbq , userid)
-                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, '' AS ma_vung
-                    , ROUND(bq_xn) AS chi_bq_xn
-                    , ROUND(bq_cdha) AS chi_bq_cdha
-                    , ROUND(bq_thuoc) AS chi_bq_thuoc
-                    , ROUND(bq_ptt) AS chi_bq_pttt
-                    , ROUND(bq_vtyt) AS chi_bq_vtyt
-                    , ROUND(bq_giuong) AS chi_bq_giuong
-                    , ROUND(ngay_ttbq, 2) AS ngay_ttbq
-                    , '{idUser}' AS userid
-                    FROM b04chitiet WHERE id_bc='{id}' AND ma_tinh LIKE 'V%' AND ma_vung='{mavung}';");
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(chi_bq_chung) AS chi_bq_chung
+                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                    ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,'{idUser}' AS userid
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Tạo Phục Lục 3 */
                 var tablePL03 = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung
                     , ROUND(tyle_noitru, 2) AS tyle_noitru
