@@ -136,15 +136,6 @@ namespace ToolBaoCao.Controllers
                 }
                 dbTemp.Insert("pl03", tablePL03);
                 /* Đọc dữ liệu DuToanGiao dự theo thoigian của b26_00 */
-                var namDuToan = $"{dbTemp.getValue($"SELECT thoigian FROM b26 WHERE id_bc = '{id}' AND ma_tinh <> '' LIMIT 1")}";
-                namDuToan = namDuToan.Substring(0, 4);
-                data = AppHelper.dbSqliteWork.getDataTable($"SELECT so_kyhieu_qd, tong_dutoan, namqd FROM dutoangiao WHERE namqd <= {namDuToan} AND idtinh='{matinh}' ORDER BY namqd DESC LIMIT 1;");
-                if (data.Rows.Count > 0)
-                {
-                    var tmp = $"{data.Rows[0]["namqd"]}";
-                    ViewBag.x2 = $"{data.Rows[0]["so_kyhieu_qd"]}";
-                    ViewBag.x3 = $"{data.Rows[0]["tong_dutoan"]}";
-                }
                 dbTemp.Close();
             }
             catch (Exception ex)
