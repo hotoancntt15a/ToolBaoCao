@@ -963,7 +963,7 @@ namespace ToolBaoCao
                 ,userid text not null default ''
                 ,timeup integer not null default 0
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_thangb21_id_bc ON thangb21 (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangb21_id_bc ON thangb21 (id_bc);");
             }
             if (tables.Contains("thangb21chitiet") == false)
             {
@@ -977,50 +977,43 @@ namespace ToolBaoCao
 
                 ,slkcb_trongky real not null default 0
                 ,slkcb_tlkytruoc real not null default 0
-                ,slkcb_kytruoc real not null default 0
-                ,slkcb_trongky real not null default 0
+                ,slkcb_kytruoc real not null default 0 
                 ,slkcb_tlnamtruoc real not null default 0
                 ,slkcb_namtruoc real not null default 0
 
                 ,tongchi_trongky real not null default 0
                 ,tongchi_tlkytruoc real not null default 0
-                ,tongchi_kytruoc real not null default 0
-                ,tongchi_trongky real not null default 0
+                ,tongchi_kytruoc real not null default 0 
                 ,tongchi_tlnamtruoc real not null default 0
                 ,tongchi_namtruoc real not null default 0
 
                 ,tienbhtt_trongky real not null default 0
                 ,tienbhtt_tlkytruoc real not null default 0
-                ,tienbhtt_kytruoc real not null default 0
-                ,tienbhtt_trongky real not null default 0
+                ,tienbhtt_kytruoc real not null default 0 
                 ,tienbhtt_tlnamtruoc real not null default 0
                 ,tienbhtt_namtruoc real not null default 0
 
                 ,chibq_trongky real not null default 0
                 ,chibq_tlkytruoc real not null default 0
-                ,chibq_kytruoc real not null default 0
-                ,chibq_trongky real not null default 0
+                ,chibq_kytruoc real not null default 0 
                 ,chibq_tlnamtruoc real not null default 0
                 ,chibq_namtruoc real not null default 0
 
                 ,tlvvnoitru_trongky real not null default 0
                 ,tlvvnoitru_tlkytruoc real not null default 0
-                ,tlvvnoitru_kytruoc real not null default 0
-                ,tlvvnoitru_trongky real not null default 0
+                ,tlvvnoitru_kytruoc real not null default 0 
                 ,tlvvnoitru_tlnamtruoc real not null default 0
                 ,tlvvnoitru_namtruoc real not null default 0
 
                 ,ngaydtbq_trongky real not null default 0
                 ,ngaydtbq_tlkytruoc real not null default 0
-                ,ngaydtbq_kytruoc real not null default 0
-                ,ngaydtbq_trongky real not null default 0
+                ,ngaydtbq_kytruoc real not null default 0 
                 ,ngaydtbq_tlnamtruoc real not null default 0
                 ,ngaydtbq_namtruoc real not null default 0
 
                 ,ngaygiuong_trongky real not null default 0
                 ,ngaygiuong_tlkytruoc real not null default 0
-                ,ngaygiuong_kytruoc real not null default 0
-                ,ngaygiuong_trongky real not null default 0
+                ,ngaygiuong_kytruoc real not null default 0 
                 ,ngaygiuong_tlnamtruoc real not null default 0
                 ,ngaygiuong_namtruoc real not null default 0
 
