@@ -383,6 +383,7 @@ namespace ToolBaoCao.Controllers
                 if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
 
                 /* Lấy danh sách cột, bỏ cột ID */
+                bieu = $"thang{bieu}";
                 var allColumns = dbConnect.getColumns(bieu).Select(p => p.ColumnName).ToList();
                 allColumns.RemoveAt(0);
                 /* Thêm UserID */
@@ -403,18 +404,18 @@ namespace ToolBaoCao.Controllers
                 switch (bieu)
                 {
                     /* Kiểm tra Nguồn trong năm */
-                    case "b01":
+                    case "thangb01":
                         fieldCount = 20; indexRegex = 3 + 1; pattern = @"^\d+$"; /* nguồn trong năm */
                         fieldNumbers = new List<int>() { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20 };
                         break;
                     /* Kiểm tra Tổng cộng Số lượt KCB */
-                    case "b02":
+                    case "thangb02":
                         fieldCount = 20; indexRegex = 3 + 1; pattern = @"^\d+$";
                         fieldNumbers = new List<int>() { 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20 };
                         break;
                     /* Kiểm tra Chi lần KCB */
-                    case "b04":
-                        fieldCount = 10; indexRegex = 2 + 1; pattern = @"^\d+([.]\d+)?$";
+                    case "thangb04":
+                        fieldCount = 11; indexRegex = 2 + 1; pattern = @"^\d+([.]\d+)?$";
                         fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
                         break;
 
@@ -460,7 +461,10 @@ namespace ToolBaoCao.Controllers
                 /* Lưu lại file */
                 using (FileStream stream = new FileStream(Path.Combine(folderTemp, $"id{idBaoCao}_{bieu}_{matinh}{fileExtension}"), FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
             }
-            catch (Exception ex2) { messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}"; }
+            catch (Exception ex2) { 
+                messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}";
+                AppHelper.saveError(tmp);
+            }
             finally
             {
                 /* Xoá luôn dữ liệu tạm của IIS */

@@ -560,8 +560,8 @@ namespace ToolBaoCao
             tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthangdocx (id text not null primary key
                 ,tentinh text not null default '' /* Tên tỉnh */
                 ,ngay text not null default '' /* Ngày báo cáo (Chứa luôn cả ngày đầu tháng, và năm) */
-                ,ngaydauthang text not null '' /* Ngày đầu tháng */
-                ,thang integer not null '' /* Tháng báo cáo */
+                ,ngaydauthang text not null DEFAULT '' /* Ngày đầu tháng */
+                ,thang integer not null DEFAULT 0 /* Tháng báo cáo */
                 ,nam1 integer not null default 0 /* Năm báo cáo */
                 ,nam2 integer not null default 0 /* Năm trước báo cáo */
                 ,x1 text not null default '' /* Công tác ký hợp đồng KCB BHYT */
@@ -572,8 +572,8 @@ namespace ToolBaoCao
                 ,x37 text not null default '' /* Phương hướng công tác tháng sau */
                 ,x38 text not null default '' /* Khó khăn, vướng mắc, đề xuất (nếu có) */
 
-                ,mi12c1 real not null default '' /* Dự toán giao {nam} */
-                ,mi12c2 real not null default '' /* Chi KCB toàn tỉnh */
+                ,mi12c1 real not null default 0 /* Dự toán giao {nam} */
+                ,mi12c2 real not null default 0 /* Chi KCB toàn tỉnh */
                 ,mi12c3 real not null default 0 /* Tỷ lệ % SD dự toán {nam} */
                 ,mi12c4 integer not null default 0 /* xếp bn toàn quốc */
                 ,mi12c5 integer not null default 0 /* xếp thứ bao nhiêu so với vùng */
@@ -639,23 +639,21 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */
                 ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
                 ,timespan integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
-                ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */);");
-            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS bcthangdocx_ma_tinh ON bcthangdocx(ma_tinh);");
-            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_bcthangdocx_timecreate ON bcthangdocx(timecreate);");
-            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_bcthangdocx_ngay ON bcthangdocx(ngay);");
-            if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
+                ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */);
+            CREATE INDEX IF NOT EXISTS bcthangdocx_ma_tinh ON bcthangdocx(ma_tinh);
+            CREATE INDEX IF NOT EXISTS index_bcthangdocx_timecreate ON bcthangdocx(timecreate);
+            CREATE INDEX IF NOT EXISTS index_bcthangdocx_ngay ON bcthangdocx(ngay);");
+            var tsql = string.Join(Environment.NewLine, tsqlCreate);
+            if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
         }
 
         public static void CreatePhucLucBcThang(this dbSQLite dbConnect, List<string> tables = null)
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
-
             if (tables.Contains("thangpl01") == false)
             {
-                /**
-                 Yêu cầu nhập excel từ người dùng
-                 */
+                /** Yêu cầu nhập excel từ người dùng */
                 /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
@@ -703,7 +701,6 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_thangpl02b_id_bc ON thangpl02b (id_bc);");
             }
-
 
             if (tables.Contains("thangpl03a") == false)
             {
@@ -791,9 +788,7 @@ namespace ToolBaoCao
             var tsqlCreate = new List<string>();
             if (tables.Contains("bcthang_dutoangiao") == false)
             {
-                /**
-                 Yêu cầu nhập excel từ người dùng
-                 */
+                /** Yêu cầu nhập excel từ người dùng */
                 /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
                 ,thang text not null /* Tháng báo cáo tháng. */
@@ -836,6 +831,7 @@ namespace ToolBaoCao
                 ,ma_vung text not null default ''
                 ,dtcsyt_trongnam real not null default 0
                 ,dtcsyt_conlai real not null default 0
+                ,dtcsyt_nguonthang real not null default 0
                 ,dtcsyt_chikcb real not null default 0
                 ,dtcsyt_tlsudungthang real not null default 0
                 ,dtcsyt_tlsudungnam real not null default 0
@@ -941,7 +937,7 @@ namespace ToolBaoCao
                 ,ngay_ttbq real not null default 0
                 ,ma_vung text not null default ''
                 ,id_bc text not null default '');
-                 CREATE INDEX IF NOT EXISTS index_thangb04chitiet_id_bc ON thangb04chitiet (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangb04chitiet_id_bc ON thangb04chitiet (id_bc);");
             }
 
             /* B21. Theo dõi chỉ tiêu giám sát cơ bản */
@@ -1084,7 +1080,6 @@ namespace ToolBaoCao
                 CREATE INDEX IF NOT EXISTS index_thangb26chitiet_id_bc ON thangb26chitiet (id_bc);");
             }
             var tsql = string.Join(Environment.NewLine, tsqlCreate);
-            AppHelper.saveError(tsql);
             if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
         }
     }
