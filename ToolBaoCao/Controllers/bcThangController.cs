@@ -66,11 +66,11 @@ namespace ToolBaoCao.Controllers
                 }
                 ViewBag.files = list;
                 list = new List<string>();
-                if (bieus.Contains("b01_00") == false) { list.Add("Thiếu biểu B02 toàn quốc;"); }
-                if (bieus.Contains($"b01_{matinh}") == false) { list.Add($"Thiếu biểu B02 của Tỉnh có mã {matinh};"); }
-                if (bieus.Contains("b02_00") == false) { list.Add("Thiếu biểu B04 toàn quốc;"); }
-                if (bieus.Contains($"b02_{matinh}") == false) { list.Add("Thiếu biểu B26 toàn quốc;"); }
-                if (bieus.Contains($"b04_{matinh}") == false) { list.Add($"Thiếu biểu B26 của Tỉnh có mã {matinh};"); }
+                if (bieus.Contains("b01_00") == false) { list.Add($"Thiếu biểu B01 toàn quốc; {string.Join(", ", bieus)}"); }
+                if (bieus.Contains($"b01_{matinh}") == false) { list.Add($"Thiếu biểu B01 của Tỉnh có mã {matinh}; {string.Join(", ", bieus)}"); }
+                if (bieus.Contains("b02_00") == false) { list.Add($"Thiếu biểu B02 toàn quốc; {string.Join(", ", bieus)}"); }
+                if (bieus.Contains($"b02_{matinh}") == false) { list.Add($"Thiếu biểu B02 toàn quốc; {string.Join(", ", bieus)}"); }
+                if (bieus.Contains($"b04_{matinh}") == false) { list.Add($"Thiếu biểu B04 của Tỉnh có mã {matinh}; {string.Join(", ", bieus)}"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
                 /* Tạo Phục Lục 1 */
                 dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung
