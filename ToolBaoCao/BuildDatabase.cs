@@ -809,7 +809,7 @@ namespace ToolBaoCao
             /* B01. Sử dụng dự toán chi KCB tại các tỉnh, TP */
             if (tables.Contains("thangb01") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb01 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb01 (id text primary key
                 ,ma_tinh text not null
                 ,tu_thang integer not null default 0
                 ,den_thang integer not null default 0
@@ -823,7 +823,7 @@ namespace ToolBaoCao
             if (tables.Contains("thangb01chitiet") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb01chitiet (id INTEGER primary key AUTOINCREMENT
-                ,id2 integer not null default 0
+                ,id2 text not null
                 ,ma_tinh text not null default ''
                 ,ten_tinh text not null default ''
                 ,ma_cskcb text not null default ''
@@ -852,7 +852,7 @@ namespace ToolBaoCao
             /* B02. Thống kê KCB (Tháng) */
             if (tables.Contains("thangb02") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb02 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb02 (id text primary key
                 ,ma_tinh text not null
                 ,ma_loai_kcb text not null
                 ,tu_thang integer not null default 0
@@ -872,7 +872,7 @@ namespace ToolBaoCao
             if (tables.Contains("thangb02chitiet") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb02chitiet (id INTEGER primary key AUTOINCREMENT
-                ,id2 integer not null default 0
+                ,id2 text not null
                 ,ma_tinh text not null default ''
                 ,ten_tinh text not null default ''
                 ,ma_cskcb text not null default ''
@@ -902,7 +902,7 @@ namespace ToolBaoCao
             /* B04. Thống kê chi bình quân (Tháng) */
             if (tables.Contains("thangb04") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb04 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb04 (id text primary key
                 ,ma_tinh text not null
                 ,tu_thang integer not null default 0
                 ,den_thang integer not null default 0
@@ -922,7 +922,7 @@ namespace ToolBaoCao
             if (tables.Contains("thangb04chitiet") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb04chitiet (id INTEGER primary key AUTOINCREMENT
-                ,id2 integer not null default 0
+                ,id2 text not null
                 ,ma_tinh text not null default ''
                 ,ten_tinh text not null default ''
                 ,ma_cskcb text not null default ''
@@ -943,7 +943,7 @@ namespace ToolBaoCao
             /* B21. Theo dõi chỉ tiêu giám sát cơ bản */
             if (tables.Contains("thangb21") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb21 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb21 (id text primary key
                 ,ma_tinh text not null
                 ,nam integer not null default 0
                 ,tu_thang integer not null default 0
@@ -963,8 +963,8 @@ namespace ToolBaoCao
             }
             if (tables.Contains("thangb21chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb21chitiet (id INTEGER primary key AUTOINCREMENT
-                ,id2 integer not null default 0
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb21chitiet (id INTEGER primary key
+                ,id2 text not null
                 ,ma_tinh text not null default ''
                 ,ten_tinh text not null default ''
                 ,ma_cskcb text not null default ''
@@ -1020,7 +1020,7 @@ namespace ToolBaoCao
             /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */
             if (tables.Contains("thangb26") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26 (id text primary key
                 ,ma_tinh text not null
                 ,loai_kcb text not null default ''
                 ,thoigian integer not null default 0
@@ -1038,44 +1038,44 @@ namespace ToolBaoCao
             }
             if (tables.Contains("thangb26chitiet") == false)
             {
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26chitiet (id INTEGER primary key AUTOINCREMENT,
-                id2 integer not null default 0,
-                ma_tinh text not null default '',
-                ten_tinh text not null default '',
-                ma_cskcb text not null default '',
-                ten_cskcb text not null default '',
-                vitri_chibq integer not null default 0,
-                vitri_tyle_noitru integer not null default 0,
-                vitri_tlxn integer not null default 0,
-                vitri_tlcdha integer not null default 0,
-                tytrong real not null default 0,
-                chi_bq_chung real not null default 0,
-                chi_bq_chung_tang real not null default 0,
-                tyle_noitru real not null default 0,
-                tyle_noitru_tang real not null default 0,
-                lan_kham_bq real not null default 0,
-                lan_kham_bq_tang real not null default 0,
-                ngay_dtri_bq real not null default 0,
-                ngay_dtri_bq_tang real not null default 0,
-                bq_xn real not null default 0,
-                bq_xn_tang real not null default 0,
-                bq_cdha real not null default 0,
-                bq_cdha_tang real not null default 0,
-                bq_thuoc real not null default 0,
-                bq_thuoc_tang real not null default 0,
-                bq_pt real not null default 0,
-                bq_pt_tang real not null default 0,
-                bq_tt real not null default 0,
-                bq_tt_tang real not null default 0,
-                bq_vtyt real not null default 0,
-                bq_vtyt_tang real not null default 0,
-                bq_giuong real not null default 0,
-                bq_giuong_tang real not null default 0,
-                chi_dinh_xn real not null default 0,
-                chi_dinh_xn_tang real not null default 0,
-                chi_dinh_cdha real not null default 0,
-                chi_dinh_cdha_tang real not null default 0,
-                ma_vung text not null default ''
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangb26chitiet (id INTEGER primary key AUTOINCREMENT
+                ,id2 text not null
+                ,ma_tinh text not null default ''
+                ,ten_tinh text not null default ''
+                ,ma_cskcb text not null default ''
+                ,ten_cskcb text not null default ''
+                ,vitri_chibq integer not null default 0
+                ,vitri_tyle_noitru integer not null default 0
+                ,vitri_tlxn integer not null default 0
+                ,vitri_tlcdha integer not null default 0
+                ,tytrong real not null default 0
+                ,chi_bq_chung real not null default 0
+                ,chi_bq_chung_tang real not null default 0
+                ,tyle_noitru real not null default 0
+                ,tyle_noitru_tang real not null default 0
+                ,lan_kham_bq real not null default 0
+                ,lan_kham_bq_tang real not null default 0
+                ,ngay_dtri_bq real not null default 0
+                ,ngay_dtri_bq_tang real not null default 0
+                ,bq_xn real not null default 0
+                ,bq_xn_tang real not null default 0
+                ,bq_cdha real not null default 0
+                ,bq_cdha_tang real not null default 0
+                ,bq_thuoc real not null default 0
+                ,bq_thuoc_tang real not null default 0
+                ,bq_pt real not null default 0
+                ,bq_pt_tang real not null default 0
+                ,bq_tt real not null default 0
+                ,bq_tt_tang real not null default 0
+                ,bq_vtyt real not null default 0
+                ,bq_vtyt_tang real not null default 0
+                ,bq_giuong real not null default 0
+                ,bq_giuong_tang real not null default 0
+                ,chi_dinh_xn real not null default 0
+                ,chi_dinh_xn_tang real not null default 0
+                ,chi_dinh_cdha real not null default 0
+                ,chi_dinh_cdha_tang real not null default 0
+                ,ma_vung text not null default ''
                 ,id_bc text not null default '');
                 CREATE INDEX IF NOT EXISTS index_thangb26chitiet_id_bc ON thangb26chitiet (id_bc);");
             }

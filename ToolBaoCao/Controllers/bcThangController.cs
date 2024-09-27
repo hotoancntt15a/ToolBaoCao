@@ -44,6 +44,7 @@ namespace ToolBaoCao.Controllers
             var id = $"{timeStart:yyMMddHHmmss}_{matinh}_{timeStart.Millisecond:000}";
             var timeUp = timeStart.toTimestamp().ToString();
             var folderTemp = Path.Combine(AppHelper.pathApp, "temp", "bcThang", $"{matinh}_{Session["iduser"]}".GetMd5Hash());
+            var tmp = "";
             ViewBag.id = id;
             try
             {
@@ -72,15 +73,16 @@ namespace ToolBaoCao.Controllers
                 if (bieus.Contains($"b02_{matinh}") == false) { list.Add($"Thiếu biểu B02 toàn quốc; {string.Join(", ", bieus)}"); }
                 if (bieus.Contains($"b04_{matinh}") == false) { list.Add($"Thiếu biểu B04 của Tỉnh có mã {matinh}; {string.Join(", ", bieus)}"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
-                /* Tạo Phục Lục 1 */
-                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung
-                    , ROUND(tyle_noitru, 2) AS tyle_noitru
-                    , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
-                    , ROUND(chi_bq_chung) AS chi_bq_chung
-                    , ROUND(chi_bq_ngoai) AS chi_bq_ngoai
-                    , ROUND(chi_bq_noi) AS chi_bq_noi
-                    , '{idUser}' AS userid
-                    FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '' AND ma_tinh NOT LIKE 'V%';");
+                /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
+                dbTemp.Execute($@"INSERT INTO thangpl01 (id_bc
+                    ,idtinh
+                    ,ma_cskcb
+                    ,ten_cskcb
+                    ,dutoangiao
+                    ,tien_bhtt
+                    ,tl_sudungdt
+                    ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt '{idUser}' AS userid
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 LIKE '%01{matinh}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%');");
                 /* Tạo Phục Lục 2*/
                 dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
@@ -343,18 +345,21 @@ namespace ToolBaoCao.Controllers
                     NPOI.SS.UserModel.ICell c = row.GetCell(jIndex);
                     listValue.Add(c.GetValueAsString().Trim());
                 }
+                var idChiTiet = $""; /*NamThang1Thang2MaTinh*/
                 switch (bieu)
                 {
                     case "b01":
                         /* 3 b01; b01_00_nam1, b01_00_nam2, b01_cs_nam1 */
-                        /* ma_tinh    tu_thang    den_thang   nam         cs */ 
-                        listBieu.Add($"b01_{listValue[0]}_{listValue[3]}{(listValue[1] != listValue[2] ? "" : $"_{listValue[2]}")}");
+                        /* ma_tinh    tu_thang    den_thang   nam         cs */
+                        idChiTiet = $"{listValue[3]}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{(listValue[1].Length < 2 ? $"0{listValue[1]}" : listValue[1])}{listValue[0]}";
+                        listBieu.Add($"b01_{idChiTiet}");
                         if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                         break;
                     case "b02":
                         /* 6 b02: b02_00_nam1 b02_00_nam2 b02_00_thang1 b02_00_thang2 b02_cs_nam1 b02_cs_thang1 */
                         /* ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs */
-                        listBieu.Add($"b02_{listValue[0]}_{listValue[4]}{(listValue[2] != listValue[3] ? "" : $"_{listValue[3]}")}");
+                        idChiTiet = $"{listValue[4]}{(listValue[3].Length < 2 ? $"0{listValue[3]}" : listValue[3])}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{listValue[0]}";
+                        listBieu.Add($"b02_{idChiTiet}");
                         if(listValue[2] != listValue[3])
                         {
                             if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
@@ -363,7 +368,8 @@ namespace ToolBaoCao.Controllers
                     case "b04":
                         /* 2 b04: b04_00_nam1 b04_cs_thang1 */
                         /* ma_tinh	tu_thang	den_thang	nam	ma_loai_kcb	loai_bv	hang_bv	tuyen	kieubv	loaick	cs */
-                        listBieu.Add($"b04_{listValue[0]}_{listValue[3]}{(listValue[1] != listValue[2] ? "" : $"_{listValue[2]}")}");
+                        idChiTiet = $"{listValue[3]}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{(listValue[1].Length < 2 ? $"0{listValue[1]}" : listValue[1])}{listValue[0]}";
+                        listBieu.Add($"b04_{idChiTiet}");
                         if (listValue[1] != listValue[2])
                         {
                             if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
@@ -390,7 +396,9 @@ namespace ToolBaoCao.Controllers
                 listValue.Add(userID);
                 listValue.Add(timeUp);
                 listValue.Add(idBaoCao);
-                tsql.Add($"INSERT INTO {bieu} ({string.Join(",", allColumns)}) VALUES ('{string.Join("','", listValue)}');");
+                idChiTiet = idBaoCao + "_" + idChiTiet;
+                listValue.Add(idChiTiet);
+                tsql.Add($"INSERT INTO {bieu} ({string.Join(",", allColumns)}, id) VALUES ('{string.Join("','", listValue)}');");
                 /**
                  * Lấy dữ liệu chi tiết
                  */
@@ -440,7 +448,7 @@ namespace ToolBaoCao.Controllers
 
                     if (Regex.IsMatch(ma, "^V?[0-9]+$") == false) { continue; }
                     /* Xây dựng tsql VALUES */
-                    listValue = new List<string>() { "0", ma.sqliteGetValueField() };
+                    listValue = new List<string>() { idChiTiet, ma.sqliteGetValueField() };
                     for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
                     {
                         NPOI.SS.UserModel.ICell c = row.GetCell(jIndex);
