@@ -751,7 +751,7 @@
     <Content Include="ckeditor\samples\toolbarconfigurator\lib\codemirror\LICENSE" />
     <Content Include="ckeditor\SECURITY.md" />
     <Content Include="ckeditor\skins\moono-lisa\readme.md" />
-    <Content Include="App_Data\baocaotuan.docx" />
+    <Content Include="App_Data\bcTuan.docx" />
     <Content Include="Content\bootstrap.rtl.min.css.map" />
     <Content Include="Content\bootstrap.rtl.css.map" />
     <Content Include="Content\bootstrap.min.css.map" />

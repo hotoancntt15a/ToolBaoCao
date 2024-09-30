@@ -83,7 +83,7 @@ namespace ToolBaoCao.Controllers
                     ,tl_sudungdt
                     ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 LIKE '%01{matinh}' AND ma_cskcb <> '';");
-                /* Tạo Phục Lục 2*/
+                /* Tạo Phục Lục 2a */
                 /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 dbTemp.Execute($@"INSERT INTO thangpl02a ('{id}' AS id_bc ,'{matinh}' AS idtinh
@@ -103,7 +103,7 @@ namespace ToolBaoCao.Controllers
                     ,ROUND(chi_bq_noi) AS chi_bq_noi
                     ,'{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
-                /* Tạo Phục Lục 3 */
+                /* Tạo Phục Lục 2b */
                 var tablePL03 = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung
                     , ROUND(tyle_noitru, 2) AS tyle_noitru
                     , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq

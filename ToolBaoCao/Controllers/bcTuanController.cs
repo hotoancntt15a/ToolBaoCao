@@ -1054,10 +1054,12 @@ namespace ToolBaoCao.Controllers
             var so1 = ((double)row[field1] * 100);
             d.Add(key1, so1.ToString());
             /* X62 số tương đối X62={cột AE dòng có mã tỉnh=10 & “%”}; */
-            d.Add(key2, row[field2].ToString().FormatCultureVN() + "%");
+            var tmp = row[field2].ToString().FormatCultureVN();
+            tmp = (tmp.StartsWith("-") ? "giảm " + tmp.Substring(1) : $"tăng {tmp}");
+            d.Add(key2, $"{tmp}%");
             /* X63 = số tuyệt đối X63 {tính toán: [X61 trừ đi (X61 chia (cột AE+100)*100)] & “bệnh nhân”} */
             var so2 = (double)row[field2];
-            d.Add(key3, Math.Abs(so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
+            d.Add(key3, (tmp.StartsWith("t") ? "tăng " : "giảm ")+ Math.Abs(so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
             return d;
         }
 
@@ -1323,8 +1325,8 @@ namespace ToolBaoCao.Controllers
 
         private void createFileBCTuanDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcTuan)
         {
-            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "baocaotuan.docx");
-            if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"); }
+            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcTuan.docx");
+            if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcTuan.docx' trong thư mục App_Data"); }
             /*** 1.1 làm tròn đến triệu đồng (x1, x71, x72, x2, x3, x4) */
             bcTuan["{X1}"] = bcTuan["{X1}"].lamTronTrieuDong();
             bcTuan["{X71}"] = bcTuan["{X71}"].lamTronTrieuDong();
