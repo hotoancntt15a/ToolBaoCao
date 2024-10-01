@@ -74,9 +74,8 @@ namespace ToolBaoCao.Controllers
                 if (bieus.Where(p => p.StartsWith("b04")).Count() != 2) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
                 /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
-
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
-                dbTemp.Execute($@"INSERT INTO thangpl01 (id_bc
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
+                var tsql = $@"INSERT INTO thangpl01 (id_bc
                     ,idtinh
                     ,ma_cskcb
                     ,ten_cskcb
@@ -84,7 +83,8 @@ namespace ToolBaoCao.Controllers
                     ,tien_bhtt
                     ,tl_sudungdt
                     ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 LIKE '%01{matinh}' AND ma_cskcb <> '';");
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2='{tmp}';";
+                dbTemp.Execute(tsql);
                 /* Tạo Phục Lục 2a */
                 /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
@@ -158,7 +158,7 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Insert("thangpl03a", data);
                 /* Tạo phục lục 03b */
                 /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
                     ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
@@ -196,7 +196,7 @@ namespace ToolBaoCao.Controllers
                 /* Tạo thangpl04b */
                 /* Nguồn dữ liệu B04_10 của tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần, nhưng chi tiết từng CSKCB và phân nhóm theo tuyến tỉnh huyện xã */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
-                data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
+                tsql = $@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
                     , ROUND(bq_xn) AS chi_bq_xn
                     , ROUND(bq_cdha) AS chi_bq_cdha
                     , ROUND(bq_thuoc) AS chi_bq_thuoc
@@ -205,7 +205,8 @@ namespace ToolBaoCao.Controllers
                     , ROUND(bq_giuong) AS chi_bq_giuong
                     , ROUND(ngay_ttbq, 2) AS ngay_ttbq
                     , '{idUser}' AS userid
-                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';");
+                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';"; AppHelper.saveError(tsql);
+                data = dbTemp.getDataTable(tsql);
                 foreach (DataRow row in data.Rows)
                 {
                     tmp = $"{row["ma_cskcb"]}";

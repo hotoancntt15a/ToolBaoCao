@@ -785,11 +785,11 @@ namespace ToolBaoCao
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
-            if (tables.Contains("bcthang_dutoangiao") == false)
+            if (tables.Contains("bcthang_dtgiao") == false)
             {
                 /** Yêu cầu nhập excel từ người dùng */
                 /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl01 (id INTEGER primary key AUTOINCREMENT
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthang_dtgiao (id INTEGER primary key AUTOINCREMENT
                 ,thang text not null /* Tháng báo cáo tháng. */
                 ,nam text not null /* Tháng báo cáo tháng. */
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
@@ -801,8 +801,8 @@ namespace ToolBaoCao
                 ,userid text not null default ''
                 ,timeup integer not null default 0
                 ,id_bc text not null default '');
-                CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);
-                CREATE INDEX IF NOT EXISTS index_thangpl01_namthang ON thangpl01 (nam, thang);");
+                CREATE INDEX IF NOT EXISTS index_bcthang_dtgiao_id_bc ON bcthang_dtgiao (id_bc);
+                CREATE INDEX IF NOT EXISTS index_bcthang_dtgiao_namthang ON bcthang_dtgiao (nam, thang);");
             }
 
             /* B01. Sử dụng dự toán chi KCB tại các tỉnh, TP */
