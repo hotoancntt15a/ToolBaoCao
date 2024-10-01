@@ -669,7 +669,7 @@ namespace ToolBaoCao
 
             if (tables.Contains("thangpl02a") == false)
             {
-                /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
+                /* Lấy dữ liệu từ biểu b02 trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02a (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
@@ -686,7 +686,7 @@ namespace ToolBaoCao
             }
             if (tables.Contains("thangpl02b") == false)
             {
-                /* Lấy dữ liệu từ biểu pl02b dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
+                /* Lấy dữ liệu từ biểu b02 dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl02b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
@@ -704,7 +704,7 @@ namespace ToolBaoCao
 
             if (tables.Contains("thangpl03a") == false)
             {
-                /* Lấy dữ liệu từ biểu pl03a csyt trong tháng */
+                /* Lấy dữ liệu từ biểu b02 csyt trong tháng */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03a (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
@@ -723,7 +723,7 @@ namespace ToolBaoCao
             }
             if (tables.Contains("thangpl03b") == false)
             {
-                /* Lấy dữ liệu từ biểu pl03a csyt luỹ kế của năm */
+                /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
@@ -740,15 +740,14 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl03b_id_bc ON thangpl03b (id_bc);");
             }
-
             if (tables.Contains("thangpl04a") == false)
             {
-                /* Lấy dữ liệu từ biểu pl04a toàn quốc luỹ kế name */
+                /* Nguồn dữ liệu B04_00 từ tháng 1 đến tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần. */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04a (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
-                ,mahanhchinh text not null default '' /*  */
-                ,tenhanhchinh text not null default '' /*  */
+                ,ma_tinh text not null default '' /* Mã tỉnh */
+                ,ten_tinh text not null default '' /* Tên tỉnh */
                 ,ma_vung text not null default '' /* Mã vùng */
                 ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng */
                 ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; */
@@ -762,12 +761,12 @@ namespace ToolBaoCao
             }
             if (tables.Contains("thangpl04b") == false)
             {
-                /* Lấy dữ liệu từ biểu pl04b của cơ sở trong tháng */
+                /* Nguồn dữ liệu B04_10 của tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần, nhưng chi tiết từng CSKCB và phân nhóm theo tuyến tỉnh huyện xã */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
-                ,mahanhchinh text not null default '' /*  */
-                ,tenhanhchinh text not null default '' /*  */
+                ,ma_cskcb text not null default '' /* Mã cskcb  */
+                ,ten_cskcb text not null default '' /* tuyến/Hạng/Tên CSKCB */
                 ,ma_vung text not null default '' /* Mã vùng */
                 ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng */
                 ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; */

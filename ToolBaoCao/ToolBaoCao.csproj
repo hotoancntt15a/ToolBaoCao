@@ -797,6 +797,7 @@
     <Content Include="Areas\Admin\Views\DMCSKCB\Update.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\TruyVan.cshtml" />
     <Content Include="App_Data\bcThang.docx" />
+    <Content Include="App_Data\plthang.xlsx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

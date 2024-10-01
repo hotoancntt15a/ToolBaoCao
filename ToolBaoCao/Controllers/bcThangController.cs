@@ -67,13 +67,15 @@ namespace ToolBaoCao.Controllers
                 }
                 ViewBag.files = list;
                 list = new List<string>();
-                if (bieus.Contains("b01_00") == false) { list.Add($"Thiếu biểu B01 toàn quốc; {string.Join(", ", bieus)}"); }
-                if (bieus.Contains($"b01_{matinh}") == false) { list.Add($"Thiếu biểu B01 của Tỉnh có mã {matinh}; {string.Join(", ", bieus)}"); }
-                if (bieus.Contains("b02_00") == false) { list.Add($"Thiếu biểu B02 toàn quốc; {string.Join(", ", bieus)}"); }
-                if (bieus.Contains($"b02_{matinh}") == false) { list.Add($"Thiếu biểu B02 toàn quốc; {string.Join(", ", bieus)}"); }
-                if (bieus.Contains($"b04_{matinh}") == false) { list.Add($"Thiếu biểu B04 của Tỉnh có mã {matinh}; {string.Join(", ", bieus)}"); }
+                bieus = bieus.Distinct().ToList();
+                if(bieus.Count != 11) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào. {string.Join(", ", bieus)}"); }
+                if (bieus.Where(p => p.StartsWith("b01")).Count() != 3) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B01. {string.Join(", ", bieus)}"); }
+                if (bieus.Where(p => p.StartsWith("b02")).Count() != 6) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B02. {string.Join(", ", bieus)}"); }
+                if (bieus.Where(p => p.StartsWith("b04")).Count() != 2) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
                 /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
+
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 dbTemp.Execute($@"INSERT INTO thangpl01 (id_bc
                     ,idtinh
                     ,ma_cskcb
@@ -81,12 +83,12 @@ namespace ToolBaoCao.Controllers
                     ,dutoangiao
                     ,tien_bhtt
                     ,tl_sudungdt
-                    ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt '{idUser}' AS userid
+                    ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 LIKE '%01{matinh}' AND ma_cskcb <> '';");
                 /* Tạo Phục Lục 2a */
                 /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
-                dbTemp.Execute($@"INSERT INTO thangpl02a ('{id}' AS id_bc ,'{matinh}' AS idtinh
+                dbTemp.Execute($@"INSERT INTO thangpl02a (id_bc, idtinh
                 ,ma_tinh
                 ,ten_tinh
                 ,ma_vung
@@ -94,7 +96,7 @@ namespace ToolBaoCao.Controllers
                 ,ngay_dtri_bq
                 ,chi_bq_chung
                 ,chi_bq_ngoai
-                ,chi_bq_noi, '{idUser}' AS userid)
+                ,chi_bq_noi, userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
                     ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
@@ -104,29 +106,48 @@ namespace ToolBaoCao.Controllers
                     ,'{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Tạo Phục Lục 2b */
-                var tablePL03 = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    , ROUND(tyle_noitru, 2) AS tyle_noitru
-                    , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
-                    , ROUND(chi_bq_chung) AS chi_bq_chung
-                    , ROUND(chi_bq_ngoai) AS chi_bq_ngoai
-                    , ROUND(chi_bq_noi) AS chi_bq_noi
-                    , '{idUser}' AS userid
-                        FROM b02chitiet WHERE id_bc='{id}' AND ma_cskcb <> ''");
+                /* Lấy dữ liệu từ biểu b02 dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
+                dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh
+                ,ma_tinh
+                ,ten_tinh
+                ,ma_vung
+                ,tyle_noitru
+                ,ngay_dtri_bq
+                ,chi_bq_chung
+                ,chi_bq_ngoai
+                ,chi_bq_noi, userid)
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(chi_bq_chung) AS chi_bq_chung
+                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                    ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,'{idUser}' AS userid
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
+                /* Tạo Phục Lục 3a */
+                /* Lấy dữ liệu từ biểu b02 csyt trong tháng */
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
+                var data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(chi_bq_chung) AS chi_bq_chung
+                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                    ,ROUND(chi_bq_noi) AS chi_bq_noi, '' as tuyen_bv, '' as hang_bv
+                    ,'{idUser}' AS userid
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Lấy danh sách Ma_CSKCB */
-                var listIDCSKCB = string.Join(",", tablePL03.AsEnumerable().Select(x => x.Field<string>("ma_cskcb")).ToList()).Replace("'", "");
-                var data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}' AND id IN ('{listIDCSKCB.Replace(",", "','")}')");
-                tablePL03.Columns.Add("tuyen_bv");
-                tablePL03.Columns.Add("hang_bv");
-                var dsCSKCB = data.AsEnumerable().Select(x => new
+                var dsCSYT = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}'");
+                var dsCSKCB = dsCSYT.AsEnumerable().Select(x => new
                 {
                     id = x.Field<string>("id"),
                     tuyen = string.IsNullOrEmpty(x.Field<string>("tuyencmkt")) ? "*" : x.Field<string>("tuyencmkt"),
                     hang = string.IsNullOrEmpty(x.Field<string>("hangdv")) ? "*" : x.Field<string>("hangdv")
                 }).ToList();
-                foreach (DataRow row in tablePL03.Rows)
+                foreach (DataRow row in data.Rows)
                 {
-                    var idCSKCB = $"{row["ma_cskcb"]}";
-                    var v = dsCSKCB.FirstOrDefault(x => x.id == idCSKCB);
+                    tmp = $"{row["ma_cskcb"]}";
+                    var v = dsCSKCB.FirstOrDefault(x => x.id == tmp);
                     if (v == null) { row["tuyen_bv"] = "*"; row["hang_bv"] = "*"; }
                     else
                     {
@@ -134,8 +155,69 @@ namespace ToolBaoCao.Controllers
                         row["hang_bv"] = v.hang.ToLower().StartsWith("h") ? v.hang : "*";
                     }
                 }
-                dbTemp.Insert("pl03", tablePL03);
-                /* Đọc dữ liệu DuToanGiao dự theo thoigian của b26_00 */
+                dbTemp.Insert("thangpl03a", data);
+                /* Tạo phục lục 03b */
+                /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
+                data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(chi_bq_chung) AS chi_bq_chung
+                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                    ,ROUND(chi_bq_noi) AS chi_bq_noi, '' as tuyen_bv, '' as hang_bv
+                    ,'{idUser}' AS userid
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
+                foreach (DataRow row in data.Rows)
+                {
+                    tmp = $"{row["ma_cskcb"]}";
+                    var v = dsCSKCB.FirstOrDefault(x => x.id == tmp);
+                    if (v == null) { row["tuyen_bv"] = "*"; row["hang_bv"] = "*"; }
+                    else
+                    {
+                        row["tuyen_bv"] = v.tuyen;
+                        row["hang_bv"] = v.hang.ToLower().StartsWith("h") ? v.hang : "*";
+                    }
+                }
+                dbTemp.Insert("thangpl03b", data);
+                /* Tạo thangpl04a */
+                /* Nguồn dữ liệu B04_00 từ tháng 1 đến tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần. */
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb04 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
+                dbTemp.Execute($@"INSERT INTO thangpl04a (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
+                    , ROUND(bq_xn) AS chi_bq_xn
+                    , ROUND(bq_cdha) AS chi_bq_cdha
+                    , ROUND(bq_thuoc) AS chi_bq_thuoc
+                    , ROUND(bq_ptt) AS chi_bq_pttt
+                    , ROUND(bq_vtyt) AS chi_bq_vtyt
+                    , ROUND(bq_giuong) AS chi_bq_giuong
+                    , ROUND(ngay_ttbq, 2) AS ngay_ttbq
+                    , '{idUser}' AS userid
+                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';");
+                /* Tạo thangpl04b */
+                /* Nguồn dữ liệu B04_10 của tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần, nhưng chi tiết từng CSKCB và phân nhóm theo tuyến tỉnh huyện xã */
+                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
+                data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
+                    , ROUND(bq_xn) AS chi_bq_xn
+                    , ROUND(bq_cdha) AS chi_bq_cdha
+                    , ROUND(bq_thuoc) AS chi_bq_thuoc
+                    , ROUND(bq_ptt) AS chi_bq_pttt
+                    , ROUND(bq_vtyt) AS chi_bq_vtyt
+                    , ROUND(bq_giuong) AS chi_bq_giuong
+                    , ROUND(ngay_ttbq, 2) AS ngay_ttbq
+                    , '{idUser}' AS userid
+                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';");
+                foreach (DataRow row in data.Rows)
+                {
+                    tmp = $"{row["ma_cskcb"]}";
+                    var v = dsCSKCB.FirstOrDefault(x => x.id == tmp);
+                    if (v == null) { row["tuyen_bv"] = "*"; row["hang_bv"] = "*"; }
+                    else
+                    {
+                        row["tuyen_bv"] = v.tuyen;
+                        row["hang_bv"] = v.hang.ToLower().StartsWith("h") ? v.hang : "*";
+                    }
+                }
+                dbTemp.Insert("thangpl04b", data);
                 dbTemp.Close();
             }
             catch (Exception ex)
@@ -295,9 +377,9 @@ namespace ToolBaoCao.Controllers
                     foreach (var c in row.Cells)
                     {
                         tmp = c.GetValueAsString().Trim().ToLower();
-                        if (tmp.StartsWith("b01")) { bieu = "b01"; /* 3 b01; b01_00_nam1, b01_00_nam2, b01_cs_nam1 */ }
-                        if (tmp.StartsWith("b02")) { bieu = "b02"; /* 6 b02: b02_00_nam1 b02_00_nam2 b02_00_thang1 b02_00_thang2 b02_cs_nam1 b02_cs_thang1 */ }
-                        if (tmp.StartsWith("b04")) { bieu = "b04"; /* 2 b04: b04_00_nam1 b04_cs_thang1 */ }
+                        if (tmp.StartsWith("b01")) { bieu = "b01"; /* 3 b01; b0100_nam1 b0100_nam2 b01cs_nam1 */ }
+                        if (tmp.StartsWith("b02")) { bieu = "b02"; /* 6 b02: b0200_nam1 b0200_nam2 b0200_thang1 b0200_thang2 b02cs_nam1 b02cs_thang1 */ }
+                        if (tmp.StartsWith("b04")) { bieu = "b04"; /* 2 b04: b0400_nam1 b04cs_thang1 */ }
                         if (tmp == "ma_tinh") { indexColumn = c.ColumnIndex; break; }
                     }
                     if (tmp == "ma_tinh") { break; }
@@ -335,33 +417,32 @@ namespace ToolBaoCao.Controllers
                 switch (bieu)
                 {
                     case "b01":
-                        /* 3 b01; b01_00_nam1, b01_00_nam2, b01_cs_nam1 */
+                        /* 3 b01; b0100_nam1 b0100_nam2 b01cs_nam1 */
                         /* ma_tinh    tu_thang    den_thang   nam         cs */
-                        idChiTiet = $"{listValue[3]}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{(listValue[1].Length < 2 ? $"0{listValue[1]}" : listValue[1])}{listValue[0]}";
-                        listBieu.Add($"b01_{idChiTiet}");
+                        idChiTiet = $"{listValue[0]}_{listValue[3]}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{(listValue[1].Length < 2 ? $"0{listValue[1]}" : listValue[1])}";
+                        listBieu.Add($"b01{idChiTiet}");
                         if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                         break;
                     case "b02":
-                        /* 6 b02: b02_00_nam1 b02_00_nam2 b02_00_thang1 b02_00_thang2 b02_cs_nam1 b02_cs_thang1 */
+                        /* 6 b02: b0200_nam1 b0200_nam2 b0200_thang1 b0200_thang2 b02cs_nam1 b02cs_thang1 */
                         /* ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs */
-                        idChiTiet = $"{listValue[4]}{(listValue[3].Length < 2 ? $"0{listValue[3]}" : listValue[3])}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{listValue[0]}";
-                        listBieu.Add($"b02_{idChiTiet}");
+                        idChiTiet = $"{listValue[0]}_{listValue[4]}{(listValue[3].Length < 2 ? $"0{listValue[3]}" : listValue[3])}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}";
+                        listBieu.Add($"b02{idChiTiet}");
                         if(listValue[2] != listValue[3])
                         {
                             if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
                         }                        
                         break; 
                     case "b04":
-                        /* 2 b04: b04_00_nam1 b04_cs_thang1 */
+                        /* 2 b04: b0400_nam1 b04cs_thang1 */
                         /* ma_tinh	tu_thang	den_thang	nam	ma_loai_kcb	loai_bv	hang_bv	tuyen	kieubv	loaick	cs */
-                        idChiTiet = $"{listValue[3]}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{(listValue[1].Length < 2 ? $"0{listValue[1]}" : listValue[1])}{listValue[0]}";
-                        listBieu.Add($"b04_{idChiTiet}");
+                        idChiTiet = $"{listValue[0]}_{listValue[3]}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}{(listValue[1].Length < 2 ? $"0{listValue[1]}" : listValue[1])}";
+                        listBieu.Add($"b04{idChiTiet}");
                         if (listValue[1] != listValue[2])
                         {
                             if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                         }
                         break;
-
                     default: fieldCount = 11; break;
                 }
                 /* Có phải là cơ sở không? */
