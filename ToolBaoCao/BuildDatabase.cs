@@ -775,6 +775,8 @@ namespace ToolBaoCao
                 ,chi_bq_vtyt real not null default 0 /* chi BQ vật tư y tế; */
                 ,chi_bq_giuong real not null default 0 /* chi BQ tiền giường; */
                 ,ngay_ttbq real not null default 0 /* Ngày thanh toán bình quân; */
+                ,tuyen_bv text not null default ''
+                ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl04b_id_bc ON thangpl04b (id_bc);");
             }
