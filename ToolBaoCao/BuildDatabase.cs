@@ -559,8 +559,8 @@ namespace ToolBaoCao
             /* BaoCaoTuanDocx */
             tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthangdocx (id text not null primary key
                 ,tentinh text not null default '' /* Tên tỉnh */
-                ,ngay text not null default '' /* Ngày báo cáo (Chứa luôn cả ngày đầu tháng, và năm) */
-                ,ngaydauthang text not null DEFAULT '' /* Ngày đầu tháng */
+                ,ngay1 text not null default '' /* Ngày báo cáo (Chứa luôn cả ngày đầu tháng, và năm) */
+                ,ngay2 text not null DEFAULT '' /* Ngày đầu tháng */
                 ,thang integer not null DEFAULT 0 /* Tháng báo cáo */
                 ,nam1 integer not null default 0 /* Năm báo cáo */
                 ,nam2 integer not null default 0 /* Năm trước báo cáo */
@@ -572,13 +572,13 @@ namespace ToolBaoCao
                 ,x37 text not null default '' /* Phương hướng công tác tháng sau */
                 ,x38 text not null default '' /* Khó khăn, vướng mắc, đề xuất (nếu có) */
 
-                ,mi12c1 real not null default 0 /* Dự toán giao {nam} */
-                ,mi12c2 real not null default 0 /* Chi KCB toàn tỉnh */
-                ,mi12c3 real not null default 0 /* Tỷ lệ % SD dự toán {nam} */
-                ,mi12c4 integer not null default 0 /* xếp bn toàn quốc */
-                ,mi12c5 integer not null default 0 /* xếp thứ bao nhiêu so với vùng */
-                ,mi12c6 real not null default 0 /* Tỷ lệ % SD dự toán {nam2} */
-                ,mi12c7 real not null default 0 /* So cùng kỳ năm trước = 3-6 (mi12c3 - mi12c6) */
+                ,x2 real not null default 0 /* Dự toán giao {nam} */
+                ,x3 real not null default 0 /* Chi KCB toàn tỉnh */
+                ,x4 real not null default 0 /* Tỷ lệ % SD dự toán {nam} */
+                ,x5 integer not null default 0 /* xếp bn toàn quốc */
+                ,x6 integer not null default 0 /* xếp thứ bao nhiêu so với vùng */
+                ,x7 real not null default 0 /* Tỷ lệ % SD dự toán {nam2} */
+                ,x8 real not null default 0 /* So cùng kỳ năm trước = 3-6 (x4 - x7) */
 
                 ,m13lc11 real not null default 0 /* Tổng lượt = 2+3 (m13lc21+m13lc31) */
                 ,m13lc21 real not null default 0 /* Lượt ngoại */

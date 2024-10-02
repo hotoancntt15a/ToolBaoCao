@@ -1133,24 +1133,45 @@ namespace ToolBaoCao.Controllers
 
         private Dictionary<string, string> createbcThang(dbSQLite dbConnect, string idBaoCao, string maTinh, string idUser, string x1 = "", string x33 = "", string x34 = "", string x35 = "", string x36 = "", string x37 = "", string x38 = "")
         {
-            var bcThang = new Dictionary<string, string>() { { "id", idBaoCao } };
-            
+            var bcThang = new Dictionary<string, string>() { { "id", idBaoCao }, { "x1", x1 }, { "x33", x33 }, { "x34", x34 }, { "x35", x35 }, { "x36", x36 }, { "x37", x37 }, { "x38", x38 } };
+            string tmp = AppHelper.dbSqliteMain.getValue($"SELECT ten FROM dmtinh WHERE id='{maTinh}';").ToString();
+            bcThang.Add("tentinh", tmp);
+            var data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' LIMIT 1;");
+            if(data.Rows.Count == 0) { throw new Exception("[creatbcThang] Biểu 04 không có dữ liệu"); }
+            bcThang.Add("nam1", $"{data.Rows[0]["nam"]}");
+            bcThang.Add("nam2", (int.Parse($"{data.Rows[0]["nam"]}") - 1).ToString());
+            bcThang.Add("thang", $"{data.Rows[0]["den_thang"]}");
+            bcThang.Add("ngay2", $"01/{bcThang["thang"]}/{bcThang["nam1"]}");
+            var time = new DateTime(int.Parse(bcThang["nam1"]), int.Parse(bcThang["thang"]), 1);
+            time = time.AddMonths(1).AddDays(-1);
+            bcThang["ngay1"] = $"{time:dd/MM/yyyy}";
+
+            /* ,x2 real not null default 0 /* Dự toán giao {nam}
+                ,x3 real not null default 0 /* Chi KCB toàn tỉnh
+                ,x4 real not null default 0 /* Tỷ lệ % SD dự toán {nam}
+                ,x5 integer not null default 0 /* xếp bn toàn quốc
+                ,x6 integer not null default 0 /* xếp thứ bao nhiêu so với vùng
+                ,x7 real not null default 0 /* Tỷ lệ % SD dự toán {nam2}
+                ,x8 real not null default 0 /* So cùng kỳ năm trước = 3-6 (x4 - x7) */
+            tmp = $"{dbConnect.getValue($"SELECT id FROM thangb01 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=1 AND nam={bcThang["nam1"]} LIMIT 1;")}";
+            data = dbConnect.getDataTable($"SELECT * FROM thangb01chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh='{maTinh}' LIMIT 1;");
+            if (data.Rows.Count == 0) { throw new Exception($"[creatbcThang] Biểu 01 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam"]} không có dữ liệu"); }
+            bcThang.Add("x2", $"{data.Rows[0]["dtcsyt_trongnam"]}");
+            bcThang.Add("x3", $"{data.Rows[0]["dtcsyt_chikcb"]}");
+            bcThang.Add("x4", $"{data.Rows[0]["dtcsyt_tlsudungnam"]}");
+
+            bcThang.Add("x5", $"{data.Rows[0]["dtcsyt_trongnam"]}");
+            bcThang.Add("x6", $"{data.Rows[0]["dtcsyt_trongnam"]}");
+            bcThang.Add("x7", $"{data.Rows[0]["dtcsyt_trongnam"]}");
+            bcThang.Add("x8", Math.Round(double.Parse(bcThang["x4"]) - double.Parse(bcThang["x7"]), 2).ToString()));
             return bcThang;
         }
 
         private void createFilebcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
         {
-            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "baocaothang.docx");
-            if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'baocaotuan.docx' trong thư mục App_Data"); }
-            /*** 1.1 làm tròn đến triệu đồng (x1, x71, x72, x2, x3, x4) */
-            bcThang["{X1}"] = bcThang["{X1}"].lamTronTrieuDong();
-            bcThang["{X71}"] = bcThang["{X71}"].lamTronTrieuDong();
-            bcThang["{X72}"] = bcThang["{X72}"].lamTronTrieuDong();
-            bcThang["{X3}"] = bcThang["{X3}"].lamTronTrieuDong();
+            string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcThang.docx");
+            if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
 
-            /* Số tiền làm tròn đến đồng */
-            var tronSo = new List<string>() { "{X19}", "{X20}", "{X23}", "{X26}", "{X27}", "{X30}", "{X33}", "{X34}", "{X37}", "{X40}", "{X43}", "{X46}", "{X49}", "{X52}", "{X55}", "{X58}" };
-            foreach (var v in tronSo) { if (bcThang[v].Contains(".")) { bcThang[v] = Math.Round(double.Parse(bcThang[v]), 0).ToString(); } }
             var tmp = "";
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
