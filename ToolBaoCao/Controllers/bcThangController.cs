@@ -229,14 +229,14 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private void createFilePhuLucbcThang(string idBaoCao, string matinh, dbSQLite dbBaoCaoTuan = null, Dictionary<string, string> bcThang = null)
+        private void createFilePhuLucbcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, Dictionary<string, string> bcThang = null)
         {
-            if (dbBaoCaoTuan == null) { dbBaoCaoTuan = BuildDatabase.getDataBaoCaoTuan(matinh); }
+            if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
             var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
             if (bcThang == null)
             {
                 bcThang = new Dictionary<string, string>();
-                var data = dbBaoCaoTuan.getDataTable($"SELECT * FROM bcThangdocx WHERE id='{idBaoCaoVauleField}';");
+                var data = dbBCThang.getDataTable($"SELECT * FROM bcThangdocx WHERE id='{idBaoCaoVauleField}';");
                 if (data.Rows.Count > 0)
                 {
                     foreach (DataColumn c in data.Columns)
@@ -246,13 +246,13 @@ namespace ToolBaoCao.Controllers
                 }
             }
             /* Tạo phụ lục báo cáo */
-            var pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}';");
+            var pl = dbBCThang.getDataTable($"SELECT * FROM thangpl01 WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc01 = createPhuLuc01(pl, matinh, bcThang);
 
-            pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}';");
+            pl = dbBCThang.getDataTable($"SELECT * FROM thangpl02a WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc02 = createPhuLuc02(pl, matinh);
 
-            pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}';");
+            pl = dbBCThang.getDataTable($"SELECT * FROM thangpl03a WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc03 = createPhuLuc03(pl, matinh, phuluc01);
 
             var xlsx = exportPhuLucbcThang(phuluc01, phuluc02, phuluc03);
@@ -634,24 +634,33 @@ namespace ToolBaoCao.Controllers
                 /* Di chuyển tập tin Excel */
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 
-                /* Báo cáo tuần chuyển */
+                /* Báo cáo tháng chuyển */
                 dbbcThang.Update("bcThangdocx", bcThang);
                 dbbcThang.Close();
 
-                /* Di chuyển dữ liệu import */
-                var data = dbTemp.getDataTable($"SELECT * FROM b02 WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbImport.Insert("b02", data);
-                data = dbTemp.getDataTable($"SELECT * FROM b04 WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbImport.Insert("b04", data);
-                data = dbTemp.getDataTable($"SELECT * FROM b26 WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbImport.Insert("b26", data);
-                /* Dữ liệu chi tiết */
-                data = dbTemp.getDataTable($"SELECT * FROM b02chitiet WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbImport.Insert("b02chitiet", data);
-                data = dbTemp.getDataTable($"SELECT * FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbImport.Insert("b04chitiet", data);
-                data = dbTemp.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{idBaoCaoVauleField}';");
-                data.Columns.RemoveAt(0); dbImport.Insert("b26chitiet", data);
+                var data = new DataTable();
+                list = new List<string>() { "thangpl01", "thangpl02a", "thangpl02b", "thangpl03a", "thangpl03b", "thangpl04a", "thangpl04b" };
+                foreach (var v in list)
+                {
+                    data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
+                    data.Columns.RemoveAt(0);
+                    dbbcThang.Insert(v, data);
+                }
+                list = new List<string>() { "thangb01", "thangb02", "thangb04" };
+                foreach (var v in list)
+                {
+                    data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
+                    dbImport.Insert(v, data);
+                }
+                list = new List<string>() { "thangb01chitiet", "thangb02chitiet", "thangb04chitiet" };
+                foreach (var v in list)
+                {
+                    data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
+                    data.Columns.RemoveAt(0);
+                    dbImport.Insert(v, data);
+                }
+                createFilePhuLucbcThang(idBaoCao, idtinh, dbbcThang, bcThang);
+
                 dbTemp.Close();
             }
             catch (Exception ex)
@@ -1264,8 +1273,8 @@ namespace ToolBaoCao.Controllers
 
             /* Tăng giảm so với cùng kỳ năm trước
              *  ,m13cc13 real not null default 0 /* Tổng lượt = 2+3 (x27-x21)
-                ,m13cc23 real not null default 0 /* Chi ngoại trú = (x28-x22) 
-                ,m13cc33 real not null default 0 /* Chi nội trú = (x29-x23) 
+                ,m13cc23 real not null default 0 /* Chi ngoại trú = (x28-x22)
+                ,m13cc33 real not null default 0 /* Chi nội trú = (x29-x23)
                 ,m13cc43 real not null default 0 /* Tổng lượt = 5+6 (x30-x24)
                 ,m13cc53 real not null default 0 /* Chi ngoại trú = (x31-x25)
                 ,m13cc63 real not null default 0 /* Chi nội trú = (x32-x26) */
