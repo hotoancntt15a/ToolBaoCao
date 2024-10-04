@@ -626,16 +626,11 @@ namespace ToolBaoCao.Controllers
                 createFilebcThangDocx(idBaoCao, idtinh, bcThang);
                 /* Tạo dữ liệu để xuất phụ lục */
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
-                var dbbcThang = BuildDatabase.getDataBaoCaoTuan(idtinh);
-                var dbImport = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
+                var dbbcThang = BuildDatabase.getDataBCThang(idtinh);
+                var dbImport = BuildDatabase.getDataImportBCThang(idtinh);
                 /* Tạo phụ lục báo cáo */
                 /* dmCSKCB */
                 var dmCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten, macaptren FROM dmckscb WHERE ma_tinh='{idtinh}'").AsEnumerable();
-
-                /*
-                 * XSSFWorkbook xlsx = XLSX.exportExcel(pl1, pl2, pl3);
-                        var output = xlsx.WriteToStream();
-                        return File(output.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"PL{tmp}.xlsx"); */
                 /* Di chuyển tập tin Excel */
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 

@@ -531,9 +531,9 @@ namespace ToolBaoCao
         }
 
         /**
-         * Dữ liệu báo cáo tuần
+         * Dữ liệu báo cáo tháng
          * */
-        public static dbSQLite getDataBcThang(string matinh = "")
+        public static dbSQLite getDataBCThang(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoThang{matinh}.db");
             var db = new dbSQLite(pathDB);
@@ -543,7 +543,7 @@ namespace ToolBaoCao
             return db;
         }
 
-        public static dbSQLite getDataImportBaoCaoThang(string matinh = "")
+        public static dbSQLite getDataImportBCThang(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"ImportBaoCaoThang{matinh}.db");
             var db = new dbSQLite(pathDB);
