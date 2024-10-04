@@ -594,19 +594,19 @@ namespace ToolBaoCao
                 ,x19 real not null default 0 /* Lượt ngoại {nam2} luỹ kế */
                 ,x20 real not null default 0 /* Lượt nội {nam2} luỹ kế */
 
-                ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 (m13lc23+m13lc33) */
-                ,m13lc23 real not null default 0 /* Lượt ngoại */
-                ,m13lc33 real not null default 0 /* Lượt nội */
-                ,m13lc43 real not null default 0 /* Tổng lượt = 5+6 (m13lc53+m13lc63) */
-                ,m13lc53 real not null default 0 /* Lượt ngoại */
-                ,m13lc63 real not null default 0 /* Lượt nội */
+                ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 (x15-x9) */
+                ,m13lc23 real not null default 0 /* Lượt ngoại = (x16-x10) */
+                ,m13lc33 real not null default 0 /* Lượt nội = (x17-x11)  */
+                ,m13lc43 real not null default 0 /* Tổng lượt = 5+6 (x18-x12) */
+                ,m13lc53 real not null default 0 /* Lượt ngoại = (x19-x13) */
+                ,m13lc63 real not null default 0 /* Lượt nội = (x20-x14) */
 
-                ,m13lc14 real not null default 0 /* Tổng lượt = 2+3 (m13lc24+m13lc34) */
-                ,m13lc24 real not null default 0 /* Lượt ngoại */
-                ,m13lc34 real not null default 0 /* Lượt nội */
-                ,m13lc44 real not null default 0 /* Tổng lượt = 5+6 (m13lc54+m13lc64) */
-                ,m13lc54 real not null default 0 /* Lượt ngoại */
-                ,m13lc64 real not null default 0 /* Lượt nội */
+                ,m13lc14 real not null default 0 /* Tổng lượt = 2+3 ((m13lc13/x15)*100) */
+                ,m13lc24 real not null default 0 /* Lượt ngoại = (m13lc23/x16)*100 */
+                ,m13lc34 real not null default 0 /* Lượt nội = (m13lc33/x17)*100 */
+                ,m13lc44 real not null default 0 /* Tổng lượt = 5+6 ((m13lc43/x18)*100) */
+                ,m13lc54 real not null default 0 /* Lượt ngoại = (m13lc53/x19)*100 */
+                ,m13lc64 real not null default 0 /* Lượt nội = (m13lc63/x20)*100 */
 
                 ,x21 real not null default 0 /* Tổng chi = 2+3 (x22+x23) */
                 ,x22 real not null default 0 /* Chi ngoại trú {nam1} */
@@ -622,19 +622,19 @@ namespace ToolBaoCao
                 ,x31 real not null default 0 /* Chi ngoại trú {nam2} luỹ kế */
                 ,x32 real not null default 0 /* Chi nội trú {nam2} luỹ kế */
 
-                ,mc13cc13 real not null default 0 /* Tổng lượt = 2+3 (mc13cc23+mc13cc33) */
-                ,mc13cc23 real not null default 0 /* Chi ngoại trú */
-                ,mc13cc33 real not null default 0 /* Chi nội trú */
-                ,mc13cc43 real not null default 0 /* Tổng lượt = 5+6 (mc13cc53+mc13cc63) */
-                ,mc13cc53 real not null default 0 /* Chi ngoại trú */
-                ,mc13cc63 real not null default 0 /* Chi nội trú */
+                ,m13cc13 real not null default 0 /* Tổng lượt = 2+3 (x27-x21) */
+                ,m13cc23 real not null default 0 /* Chi ngoại trú = (x28-x22) */
+                ,m13cc33 real not null default 0 /* Chi nội trú = (x29-x23) */
+                ,m13cc43 real not null default 0 /* Tổng lượt = 5+6 (x30-x24) */
+                ,m13cc53 real not null default 0 /* Chi ngoại trú = (x31-x25) */
+                ,m13cc63 real not null default 0 /* Chi nội trú = (x32-x26) */
 
-                ,mc13cc14 real not null default 0 /* Tổng lượt = 2+3 (mc13cc24+mc13cc34) */
-                ,mc13cc24 real not null default 0 /* Chi ngoại trú */
-                ,mc13cc34 real not null default 0 /* Chi nội trú */
-                ,mc13cc44 real not null default 0 /* Tổng lượt = 5+6 (mc13cc54+mc13cc64) */
-                ,mc13cc54 real not null default 0 /* Chi ngoại trú */
-                ,mc13cc64 real not null default 0 /* Chi nội trú */       
+                ,m13cc14 real not null default 0 /* Tổng lượt = 2+3 ((mc13cc13/x27)*100) */
+                ,m13cc24 real not null default 0 /* Chi ngoại trú = (mc13cc23/x28)*100 */
+                ,m13cc34 real not null default 0 /* Chi nội trú = (mc13cc33/x29)*100 */
+                ,m13cc44 real not null default 0 /* Tổng lượt = 5+6 ((mc13cc43/x30)*100) */
+                ,m13cc54 real not null default 0 /* Chi ngoại trú = (mc13cc53/x31)*100 */
+                ,m13cc64 real not null default 0 /* Chi nội trú = (mc13cc63/x32)*100 */       
 
                 ,userid text not null default '' /* Lưu ID của người dùng */
                 ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
