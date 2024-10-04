@@ -79,10 +79,10 @@ namespace ToolBaoCao.Controllers
                     ,idtinh
                     ,ma_cskcb
                     ,ten_cskcb
-                    ,dutoangiao
+                    ,dtgiao
                     ,tien_bhtt
                     ,tl_sudungdt
-                    ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dutoangiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
+                    ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2='{tmp}';";
                 dbTemp.Execute(tsql);
                 /* Tạo Phục Lục 2a */
@@ -246,16 +246,18 @@ namespace ToolBaoCao.Controllers
                 }
             }
             /* Tạo phụ lục báo cáo */
-            var pl = dbBCThang.getDataTable($"SELECT * FROM thangpl01 WHERE id_bc='{idBaoCaoVauleField}';");
-            var phuluc01 = createPhuLuc01(pl, matinh, bcThang);
+            dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = 0 WHERE id_bc='{idBaoCaoVauleField}' AND dtgiao = 0;");
+            dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = ROUND(tien_bhtt/dtgiao, 2) WHERE id_bc='{idBaoCaoVauleField}' AND dtgiao > 0;");
+            var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBaoCaoVauleField}' ORDER BY ma_cskcb;");
+            PL01.TableName = "PL01";
 
-            pl = dbBCThang.getDataTable($"SELECT * FROM thangpl02a WHERE id_bc='{idBaoCaoVauleField}';");
+            var pl = dbBCThang.getDataTable($"SELECT * FROM thangpl02a WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc02 = createPhuLuc02(pl, matinh);
 
             pl = dbBCThang.getDataTable($"SELECT * FROM thangpl03a WHERE id_bc='{idBaoCaoVauleField}';");
-            var phuluc03 = createPhuLuc03(pl, matinh, phuluc01);
+            var phuluc03 = createPhuLuc03(pl, matinh, PL01);
 
-            var xlsx = exportPhuLucbcThang(phuluc01, phuluc02, phuluc03);
+            var xlsx = exportPhuLucbcThang(PL01, phuluc02, phuluc03);
 
             var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_pl_{idBaoCao}.xlsx");
             if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
@@ -669,166 +671,6 @@ namespace ToolBaoCao.Controllers
                 DeletebcThang(idtinh);
             }
             return View();
-        }
-
-        private DataTable createPhuLuc01(DataTable pl1, string idtinh, Dictionary<string, string> bcThang)
-        {
-            var tmp = "";
-            var phuluc01 = new DataTable("PhuLuc01");
-            phuluc01.Columns.Add("Mã Tỉnh");
-            phuluc01.Columns.Add("Tên tỉnh");
-            phuluc01.Columns.Add("Tỷ lệ nội trú (%)");
-            phuluc01.Columns.Add("Tên tỉnh (2)");
-            phuluc01.Columns.Add("Ngày điều trị BQ (ngày)");
-            phuluc01.Columns.Add("Tên tỉnh (3)");
-            phuluc01.Columns.Add("Chi BQ chung");
-            phuluc01.Columns.Add("Tên tỉnh (4)");
-            phuluc01.Columns.Add("chi BQ nội trú");
-            phuluc01.Columns.Add("Tên tỉnh (5)");
-            phuluc01.Columns.Add("Chi BQ ngoại trú");
-            /* Lấy mã vùng */
-            var mavung = $"{pl1.AsEnumerable().Where(x => x.Field<string>("ma_tinh") == idtinh).Select(x => x.Field<string>("ma_vung")).FirstOrDefault()}";
-            /* Lọc danh sách bỏ */
-            var view = pl1.AsEnumerable().Where(x => x.Field<string>("ma_tinh") != "00" && x.Field<string>("ma_vung") == mavung).OrderByDescending(x => x.Field<double>("tyle_noitru")).ToList();
-            /* Sắp xếp theo tỷ lệ nội trú */
-            foreach (DataRow r in view)
-            {
-                var dr = phuluc01.NewRow();
-                tmp = $"{r["ma_tinh"]}".Trim();
-                if (idtinh == tmp)
-                {
-                    dr[0] = $"<b>{r["ma_tinh"]}";
-                    dr[1] = $"<b>{r["ten_tinh"]}";
-                    dr[2] = $"<b>{r["tyle_noitru"]}";
-                }
-                else
-                {
-                    dr[0] = $"{r["ma_tinh"]}";
-                    dr[1] = $"{r["ten_tinh"]}";
-                    dr[2] = $"{r["tyle_noitru"]}";
-                }
-                for (int i = 3; i < phuluc01.Columns.Count; i++) { dr[i] = ""; }
-                phuluc01.Rows.Add(dr);
-            }
-            /* Sắp xếp theo Ngày điều trị BQ (ngày) */
-            view = view.OrderByDescending(x => x.Field<double>("ngay_dtri_bq")).ToList();
-            for (int i = 0; i < phuluc01.Rows.Count; i++)
-            {
-                tmp = $"{view[i]["ma_tinh"]}".Trim();
-                if (tmp == idtinh)
-                {
-                    phuluc01.Rows[i][3] = $"<b>{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][4] = $"<b>{view[i]["ngay_dtri_bq"]}";
-                }
-                else
-                {
-                    phuluc01.Rows[i][3] = $"{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][4] = $"{view[i]["ngay_dtri_bq"]}";
-                }
-            }
-            /* Sắp xếp theo Chi_bq_chung (ngày) */
-            view = view.OrderByDescending(x => x.Field<double>("chi_bq_chung")).ToList();
-            for (int i = 0; i < phuluc01.Rows.Count; i++)
-            {
-                tmp = $"{view[i]["ma_tinh"]}".Trim();
-                if (tmp == idtinh)
-                {
-                    phuluc01.Rows[i][5] = $"<b>{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][6] = $"<b>{view[i]["chi_bq_chung"]}";
-                }
-                else
-                {
-                    phuluc01.Rows[i][5] = $"{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][6] = $"{view[i]["chi_bq_chung"]}";
-                }
-            }
-            /* Sắp xếp theo chi BQ nội trú */
-            view = view.OrderByDescending(x => x.Field<double>("chi_bq_noi")).ToList();
-            for (int i = 0; i < phuluc01.Rows.Count; i++)
-            {
-                tmp = $"{view[i]["ma_tinh"]}".Trim();
-                if (tmp == idtinh)
-                {
-                    phuluc01.Rows[i][7] = $"<b>{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][8] = $"<b>{view[i]["chi_bq_noi"]}";
-                }
-                else
-                {
-                    phuluc01.Rows[i][7] = $"{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][8] = $"{view[i]["chi_bq_noi"]}";
-                }
-            }
-            /* Sắp xếp theo Chi BQ ngoại trú */
-            view = view.OrderByDescending(x => x.Field<double>("chi_bq_ngoai")).ToList();
-            for (int i = 0; i < phuluc01.Rows.Count; i++)
-            {
-                tmp = $"{view[i]["ma_tinh"]}".Trim();
-                if (tmp == idtinh)
-                {
-                    phuluc01.Rows[i][9] = $"<b>{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][10] = $"<b>{view[i]["chi_bq_ngoai"]}";
-                }
-                else
-                {
-                    phuluc01.Rows[i][9] = $"{view[i]["ten_tinh"]}";
-                    phuluc01.Rows[i][10] = $"{view[i]["chi_bq_ngoai"]}";
-                }
-            }
-            /* Dòng trống */
-            phuluc01.Rows.Add("", "", "0", "", "0", "", "0", "", "0", "", "0");
-            /* Toàn Quốc */
-            view = pl1.AsEnumerable().Where(x => x.Field<string>("ma_tinh") == "00").ToList().GetRange(0, 1);
-            if (view.Count == 0) { phuluc01.Rows.Add("00", "00", "0", "00", "0", "00", "0", "00", "0", "00", "0"); }
-            else
-            {
-                phuluc01.Rows.Add($"00"
-                    , $"{view[0]["ten_tinh"]}", $"{view[0]["tyle_noitru"]}"
-                    , $"{view[0]["ten_tinh"]}", $"{view[0]["ngay_dtri_bq"]}"
-                    , $"{view[0]["ten_tinh"]}", $"{view[0]["chi_bq_chung"]}"
-                    , $"{view[0]["ten_tinh"]}", $"{view[0]["chi_bq_noi"]}"
-                    , $"{view[0]["ten_tinh"]}", $"{view[0]["chi_bq_ngoai"]}");
-            }
-            var row00 = phuluc01.Rows[phuluc01.Rows.Count - 1];
-            /* Xây dựng Vùng */
-            phuluc01.Rows.Add($"V{(mavung.Length == 1 ? $"0{mavung}" : mavung)}",
-                    "Vùng", $"{Math.Round(double.Parse(bcThang["{X9}"]), 2)}",
-                    "Vùng", $"{Math.Round(double.Parse(bcThang["{X16}"]), 2)}",
-                    "Vùng", bcThang["{X23}"],
-                    "Vùng", bcThang["{X37}"], /* Ngoại trú */
-                    "Vùng", bcThang["{X30}"]); /* Nội trú */
-            var rowV = phuluc01.Rows[phuluc01.Rows.Count - 1];
-            /* Chỉ lấy dòng Tỉnh đã chọn */
-            view = pl1.AsEnumerable().Where(x => x.Field<string>("ma_tinh") == idtinh).ToList().GetRange(0, 1);
-            if (view.Count == 0) { phuluc01.Rows.Add($"<b>{idtinh}", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0", $"<b>{idtinh}", "<b>0"); }
-            else
-            {
-                phuluc01.Rows.Add($"<b>{idtinh}"
-                    , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["tyle_noitru"]}"
-                    , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["ngay_dtri_bq"]}"
-                    , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["chi_bq_chung"]}"
-                    , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["chi_bq_noi"]}"
-                    , $"<b>{view[0]["ten_tinh"]}", $"<b>{view[0]["chi_bq_ngoai"]}");
-            }
-            var index = phuluc01.Rows.Count - 1;
-            var rowTinh = phuluc01.NewRow();
-            for (int i = 0; i < rowTinh.Table.Columns.Count; i++) { rowTinh[i] = $"{phuluc01.Rows[index][i]}".Substring(3); }
-            /* Chênh với toàn quốc */
-            phuluc01.Rows.Add("", "Chênh so toàn quốc"
-                , $"{Math.Round(double.Parse($"{rowTinh[2]}") - double.Parse($"{row00[2]}"), 2)}",
-                "", $"{Math.Round(double.Parse($"{rowTinh[4]}") - double.Parse($"{row00[4]}"), 2)}",
-                "", $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{row00[6]}"))}",
-                "", $"{(double.Parse($"{rowTinh[8]}") - double.Parse($"{row00[8]}"))}",
-                "", $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{row00[10]}"))}");
-
-            /* Chênh với Vùng */
-            index++;
-            phuluc01.Rows.Add("", "Chênh so vùng",
-                $"{Math.Round(double.Parse($"{rowTinh[2]}") - double.Parse($"{rowV[2]}"), 2)}",
-                "", $"{Math.Round(double.Parse($"{rowTinh[4]}") - double.Parse($"{rowV[4]}"), 2)}",
-                "", $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{rowV[6]}"))}",
-                "", $"{(double.Parse($"{rowTinh[8]}") - double.Parse($"{rowV[8]}"))}",
-                "", $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{rowV[10]}"))}");
-            return phuluc01;
         }
 
         private DataTable createPhuLuc02(DataTable pl2, string idtinh)

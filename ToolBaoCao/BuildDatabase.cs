@@ -660,9 +660,9 @@ namespace ToolBaoCao
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB */
                 ,ten_cskcb text not null default '' /* Tên cskcb*/
-                ,dutoangiao real not null default 0 /* Dự toán tạm giao */
+                ,dtgiao real not null default 0 /* Dự toán tạm giao */
                 ,tien_bhtt real not null default 0 /* Tiền T- BHTT */
-                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
+                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dtgiao)*100  */
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl01_id_bc ON thangpl01 (id_bc);");
             }
