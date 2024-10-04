@@ -68,7 +68,7 @@ namespace ToolBaoCao.Controllers
                 ViewBag.files = list;
                 list = new List<string>();
                 bieus = bieus.Distinct().ToList();
-                if(bieus.Count != 11) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào. {string.Join(", ", bieus)}"); }
+                if (bieus.Count != 11) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b01")).Count() != 3) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B01. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b02")).Count() != 6) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B02. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b04")).Count() != 2) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
@@ -423,16 +423,18 @@ namespace ToolBaoCao.Controllers
                         listBieu.Add($"b01{idChiTiet}");
                         if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                         break;
+
                     case "b02":
                         /* 6 b02: b0200_nam1 b0200_nam2 b0200_thang1 b0200_thang2 b02cs_nam1 b02cs_thang1 */
                         /* ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs */
                         idChiTiet = $"{listValue[0]}_{listValue[4]}{(listValue[3].Length < 2 ? $"0{listValue[3]}" : listValue[3])}{(listValue[2].Length < 2 ? $"0{listValue[2]}" : listValue[2])}";
                         listBieu.Add($"b02{idChiTiet}");
-                        if(listValue[2] != listValue[3])
+                        if (listValue[2] != listValue[3])
                         {
                             if (listValue[2] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[2]}'"); }
-                        }                        
-                        break; 
+                        }
+                        break;
+
                     case "b04":
                         /* 2 b04: b0400_nam1 b04cs_thang1 */
                         /* ma_tinh	tu_thang	den_thang	nam	ma_loai_kcb	loai_bv	hang_bv	tuyen	kieubv	loaick	cs */
@@ -443,6 +445,7 @@ namespace ToolBaoCao.Controllers
                             if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                         }
                         break;
+
                     default: fieldCount = 11; break;
                 }
                 /* Có phải là cơ sở không? */
@@ -536,7 +539,8 @@ namespace ToolBaoCao.Controllers
                 /* Lưu lại file */
                 using (FileStream stream = new FileStream(Path.Combine(folderTemp, $"id{idBaoCao}_{listBieu[0]}{fileExtension}"), FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
             }
-            catch (Exception ex2) { 
+            catch (Exception ex2)
+            {
                 messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}";
                 AppHelper.saveError(tmp);
             }
@@ -1135,9 +1139,10 @@ namespace ToolBaoCao.Controllers
         {
             var bcThang = new Dictionary<string, string>() { { "id", idBaoCao }, { "x1", x1 }, { "x33", x33 }, { "x34", x34 }, { "x35", x35 }, { "x36", x36 }, { "x37", x37 }, { "x38", x38 } };
             string tmp = AppHelper.dbSqliteMain.getValue($"SELECT ten FROM dmtinh WHERE id='{maTinh}';").ToString();
+            string mavung = "";
             bcThang.Add("tentinh", tmp);
             var data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' LIMIT 1;");
-            if(data.Rows.Count == 0) { throw new Exception("[creatbcThang] Biểu 04 không có dữ liệu"); }
+            if (data.Rows.Count == 0) { throw new Exception("[creatbcThang] Biểu 04 không có dữ liệu"); }
             bcThang.Add("nam1", $"{data.Rows[0]["nam"]}");
             bcThang.Add("nam2", (int.Parse($"{data.Rows[0]["nam"]}") - 1).ToString());
             bcThang.Add("thang", $"{data.Rows[0]["den_thang"]}");
@@ -1148,22 +1153,93 @@ namespace ToolBaoCao.Controllers
 
             /* ,x2 real not null default 0 /* Dự toán giao {nam}
                 ,x3 real not null default 0 /* Chi KCB toàn tỉnh
-                ,x4 real not null default 0 /* Tỷ lệ % SD dự toán {nam}
-                ,x5 integer not null default 0 /* xếp bn toàn quốc
-                ,x6 integer not null default 0 /* xếp thứ bao nhiêu so với vùng
-                ,x7 real not null default 0 /* Tỷ lệ % SD dự toán {nam2}
-                ,x8 real not null default 0 /* So cùng kỳ năm trước = 3-6 (x4 - x7) */
+                ,x4 real not null default 0 /* Tỷ lệ % SD dự toán {nam} */
             tmp = $"{dbConnect.getValue($"SELECT id FROM thangb01 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=1 AND nam={bcThang["nam1"]} LIMIT 1;")}";
-            data = dbConnect.getDataTable($"SELECT * FROM thangb01chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh='{maTinh}' LIMIT 1;");
-            if (data.Rows.Count == 0) { throw new Exception($"[creatbcThang] Biểu 01 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam"]} không có dữ liệu"); }
-            bcThang.Add("x2", $"{data.Rows[0]["dtcsyt_trongnam"]}");
-            bcThang.Add("x3", $"{data.Rows[0]["dtcsyt_chikcb"]}");
-            bcThang.Add("x4", $"{data.Rows[0]["dtcsyt_tlsudungnam"]}");
+            var ldata = dbConnect.getDataTable($"SELECT * FROM thangb01chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh <> '00';").AsEnumerable().ToList();
+            if (ldata.Count() == 0) { throw new Exception($"[creatbcThang] Biểu 01 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam1"]} không có dữ liệu"); }
+            var item = ldata.FirstOrDefault(p => p.Field<string>("ma_tinh") == maTinh);
+            if (item == null) { throw new Exception($"[creatbcThang] Biểu 01 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam1"]} không có dữ liệu của tỉnh {maTinh}"); }
 
-            bcThang.Add("x5", $"{data.Rows[0]["dtcsyt_trongnam"]}");
+            mavung = $"{item["ma_vung"]}";
+            bcThang.Add("x2", $"{item["dtcsyt_trongnam"]}");
+            bcThang.Add("x3", $"{item["dtcsyt_chikcb"]}");
+            bcThang.Add("x4", $"{item["dtcsyt_tlsudungnam"]}");
+
+            /* x5 integer not null default 0 /* xếp bn toàn quốc */
+            tmp = getPosition("", maTinh, "dtcsyt_tlsudungnam", ldata);
+            bcThang.Add("x5", tmp);
+            /* x6 integer not null default 0 /* xếp thứ bao nhiêu so với vùng */
+            tmp = getPosition(mavung, maTinh, "dtcsyt_tlsudungnam", ldata);
             bcThang.Add("x6", $"{data.Rows[0]["dtcsyt_trongnam"]}");
-            bcThang.Add("x7", $"{data.Rows[0]["dtcsyt_trongnam"]}");
-            bcThang.Add("x8", Math.Round(double.Parse(bcThang["x4"]) - double.Parse(bcThang["x7"]), 2).ToString()));
+            /* x7 real not null default 0 /* Tỷ lệ % SD dự toán {nam2} */
+            tmp = $"{dbConnect.getValue($"SELECT id FROM thangb01 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=1 AND nam={bcThang["nam2"]} LIMIT 1;")}";
+            bcThang.Add("x7", $"{dbConnect.getValue($"SELECT IFNULL(dtcsyt_tlsudungnam, 0) AS X FROM thangb01chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh = '{maTinh}'")}");
+            /* x8 real not null default 0 /* So cùng kỳ năm trước = 3-6 (x4 - x7) */
+            bcThang.Add("x8", Math.Round((double.Parse(bcThang["x4"]) - double.Parse(bcThang["x7"])), 2).ToString());
+
+            /* ,x9 real not null default 0 /* Tổng lượt = 2+3 (x10+x11)
+                ,x10 real not null default 0 /* Lượt ngoại {nam1}
+                ,x11 real not null default 0 /* Lượt nội {nam1}
+            ,x21 real not null default 0 /* Tổng chi = 2+3 (x22+x23)
+                ,x22 real not null default 0 /* Chi ngoại trú {nam1}
+                ,x23 real not null default 0 /* Chi nội trú {nam1}  */
+            tmp = $"{dbConnect.getValue($"SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=den_thang AND nam='{bcThang["nam1"]}' LIMIT 1")}";
+            item = dbConnect.getDataTable($"SELECT * FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh='{maTinh}' LIMIT 1").AsEnumerable().FirstOrDefault();
+            if (item == null) { throw new Exception($"[creatbcThang] Biểu 02 Toàn quốc tháng {bcThang["thang"]} năm {bcThang["nam1"]} không có dữ liệu của tỉnh {maTinh}"); }
+            bcThang.Add("x9", $"{item["tong_luot"]}"); 
+            bcThang.Add("x10", $"{item["tong_luot_ngoai"]}"); 
+            bcThang.Add("x11", $"{item["tong_luot_noi"]}");
+            bcThang.Add("x21", $"{item["tong_chi"]}");
+            bcThang.Add("x22", $"{item["tong_chi_ngoai"]}");
+            bcThang.Add("x23", $"{item["tong_chi_noi"]}");
+            /* ,x12 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế 
+                ,x13 real not null default 0 /* Lượt ngoại {nam1} luỹ kế
+                ,x14 real not null default 0 /* Lượt nội {nam1} luỹ kế 
+            ,x24 real not null default 0 /* Tổng chi = 5+6 (x25+x26)
+                ,x25 real not null default 0 /* Chi ngoại trú {nam1} luỹ kế
+                ,x26 real not null default 0 /* Chi nội trú {nam1} luỹ kế */
+            tmp = $"{dbConnect.getValue($"SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=1 AND nam='{bcThang["nam1"]}' LIMIT 1")}";
+            item = dbConnect.getDataTable($"SELECT * FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh='{maTinh}' LIMIT 1").AsEnumerable().FirstOrDefault();
+            if (item == null) { throw new Exception($"[creatbcThang] Biểu 02 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam1"]} không có dữ liệu của tỉnh {maTinh}"); }
+            bcThang.Add("x12", $"{item["tong_luot"]}");
+            bcThang.Add("x13", $"{item["tong_luot_ngoai"]}");
+            bcThang.Add("x14", $"{item["tong_luot_noi"]}");
+            bcThang.Add("x24", $"{item["tong_chi"]}");
+            bcThang.Add("x25", $"{item["tong_chi_ngoai"]}");
+            bcThang.Add("x26", $"{item["tong_chi_noi"]}");
+
+            /* ,x15 real not null default 0 /* Tổng lượt = 2+3 (x10+x11)
+                ,x16 real not null default 0 /* Lượt ngoại {nam2}
+                ,x17 real not null default 0 /* Lượt nội {nam2}
+            ,x27 real not null default 0 /* Tổng chi = 2+3 (x22+x23)
+                ,x28 real not null default 0 /* Chi ngoại trú {nam2}
+                ,x29 real not null default 0 /* Chi nội trú {nam2}  */
+            tmp = $"{dbConnect.getValue($"SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=den_thang AND nam='{bcThang["nam2"]}' LIMIT 1")}";
+            item = dbConnect.getDataTable($"SELECT * FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh='{maTinh}' LIMIT 1").AsEnumerable().FirstOrDefault();
+            if (item == null) { throw new Exception($"[creatbcThang] Biểu 02 Toàn quốc tháng {bcThang["thang"]} năm {bcThang["nam2"]} không có dữ liệu của tỉnh {maTinh}"); }
+            bcThang.Add("x15", $"{item["tong_luot"]}");
+            bcThang.Add("x16", $"{item["tong_luot_ngoai"]}");
+            bcThang.Add("x17", $"{item["tong_luot_noi"]}");
+            bcThang.Add("x27", $"{item["tong_chi"]}");
+            bcThang.Add("x28", $"{item["tong_chi_ngoai"]}");
+            bcThang.Add("x29", $"{item["tong_chi_noi"]}");
+
+            /* ,x18 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế 
+                ,x19 real not null default 0 /* Lượt ngoại {nam2} luỹ kế
+                ,x20 real not null default 0 /* Lượt nội {nam2} luỹ kế 
+            ,x30 real not null default 0 /* Tổng chi = 5+6 (x25+x26)
+                ,x31 real not null default 0 /* Chi ngoại trú {nam2} luỹ kế
+                ,x32 real not null default 0 /* Chi nội trú {nam2} luỹ kế */
+            tmp = $"{dbConnect.getValue($"SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=1 AND nam='{bcThang["nam2"]}' LIMIT 1")}";
+            item = dbConnect.getDataTable($"SELECT * FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2='{tmp}' AND ma_tinh='{maTinh}' LIMIT 1").AsEnumerable().FirstOrDefault();
+            if (item == null) { throw new Exception($"[creatbcThang] Biểu 02 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam2"]} không có dữ liệu của tỉnh {maTinh}"); }
+            bcThang.Add("x18", $"{item["tong_luot"]}");
+            bcThang.Add("x19", $"{item["tong_luot_ngoai"]}");
+            bcThang.Add("x20", $"{item["tong_luot_noi"]}");
+            bcThang.Add("x30", $"{item["tong_chi"]}");
+            bcThang.Add("x31", $"{item["tong_chi_ngoai"]}");
+            bcThang.Add("x32", $"{item["tong_chi_noi"]}");
+
             return bcThang;
         }
 
