@@ -33,24 +33,44 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
 
-        public static bool CheckAndExtractDbFileInZip(string zipFilePath, string extractFolderPath, string ext)
+        public static bool ExtractFileZip(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;
             using (ZipArchive archive = ZipFile.OpenRead(zipFilePath))
             {
-                foreach (ZipArchiveEntry entry in archive.Entries)
+                if (ext == "") { archive.ExtractToDirectory(extractFolderPath); dbFileFound = true; }
+                else
                 {
-                    if (entry.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                    if (allFileExt > 0)
                     {
-                        dbFileFound = true;
-                        string destinationPath = Path.Combine(extractFolderPath, entry.FullName);
-                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
-                        entry.ExtractToFile(destinationPath, overwrite: true);
+                        int i = 0;
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            if (entry.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                            {
+                                i++;
+                                dbFileFound = true; 
+                                entry.ExtractToFile(Path.Combine(extractFolderPath, entry.FullName), overwrite: true);
+                                if (i > allFileExt) { break; }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            if (entry.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                            {
+                                dbFileFound = true; 
+                                entry.ExtractToFile(Path.Combine(extractFolderPath, entry.FullName), overwrite: true);
+                            }
+                        }
                     }
                 }
             }
             return dbFileFound;
         }
+
         public static string SQLiteLike(this string field, string value) => dbSqliteMain.like(field, value);
 
         public static string GetUserIpAddress(this HttpContext http)
@@ -68,12 +88,14 @@ namespace ToolBaoCao
             ClientInfo clientInfo = uaParser.Parse(http.Request.UserAgent);
             return $"{clientInfo.UA.Family} ({http.Request.UserAgent})";
         }
+
         public static string GetUserBrowser(this HttpContext http)
         {
             var uaParser = Parser.GetDefault();
             ClientInfo clientInfo = uaParser.Parse(http.Request.UserAgent);
             return $"{clientInfo.UA.Family} - {clientInfo.OS.Family} {clientInfo.OS.Major}";
         }
+
         public static string getMenuLeft(string nhom = "3")
         {
             if (Regex.IsMatch(nhom, @"^\d+$") == false) { nhom = "3"; }

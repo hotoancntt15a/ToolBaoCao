@@ -199,6 +199,19 @@ namespace ToolBaoCao
             ");
         }
         /**
+         Dữ liệu lần import XML
+         */
+        public static dbSQLite getDataXML(string matinh)
+        {
+            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"xml{matinh}.db");
+            var db = new dbSQLite(pathDB);
+            db.Execute(@"CREATE TABLE IF NOT EXISTS xml (id text NOT NULL PRIMARY KEY
+                  ,name text NOT NULL DEFAULT ''
+                  ,iduser text NOT NULL
+                  ,time1 integer NOT NULL DEFAULT 0);");
+            return db;
+        }
+        /**
          * Dữ liệu báo cáo tuần
          * */
         public static dbSQLite getDataBaoCaoTuan(string matinh = "")

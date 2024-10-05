@@ -6,7 +6,7 @@
 <div class="alert alert-info">Dữ liệu truy vấn báo cáo được tạo từ @Request.getValue("ngay1") đến @Request.getValue("ngay2")</div>
 @{
     if (Request.getValue("layout") == "null") { Layout = null; }
-    var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
+    var data = ViewBag.data == null ? new List<System.IO.FileInfo>() : ViewBag.data as List<System.IO.FileInfo>;
     if (data.Rows.Count == 0)
     {
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
@@ -22,24 +22,16 @@
         <thead>
             <tr>
                 <th style="width: 65px;">Chọn</th>
-                <th style="width: 240px;">Mã báo cáo</th>
-                <th style="width: 90px;">Mã tỉnh</th>
-                <th style="width: 105px;">Ngày</th>
-                <th style="width: 180px;">Tiền dự toán giao</th>
-                <th>Tài khoản</th>
+                <th>Mã báo cáo</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (DataRow r in data.Rows)
+            @foreach (System.IO.FileInfo fi in data)
             {
-                if (userid == $"{r["userid"]}") { linkEdit = $"<a href=\"#\" onclick=\"showgeturl('{Url.Action("Update", "XML", new { area = "", objectid = r["id"], layout = "null" })}');\">{r[1]}</a>"; } else { linkEdit = $"{r[1]}"; }
-                <tr data-id="@r["id"]">
-                    <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
-                    <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "XML", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
-                    <td>@r["ma_tinh"]</td>
-                    <td>@r["x74"]</td>
-                    <td class="text-right">@(((double)r["x72"]).FormatCultureVN())</td>
-                    <td>@r["userid"]</td>
+                linkEdit = $"<a href=\"{Url.Action("Update", "XML", new { area = "", objectid = fi.FullName, layout = "null" })}\">{fi.Name}</a>";
+                <tr data-id="@fi.Name">
+                    <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@fi.Name" /></td>
+                    <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "XML", new { idobject = fi.Name, layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
                 </tr>
             }
         </tbody>
