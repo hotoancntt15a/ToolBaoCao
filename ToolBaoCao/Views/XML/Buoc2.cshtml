@@ -1,0 +1,91 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idtarget = Request.getValue("idtarget");
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">
+        @Html.Raw(ViewBag.Error)
+        <br />
+        <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "XML", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</a>
+    </div>
+    return;
+}
+@{
+    var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
+    var id = ViewBag.id as string;
+}
+<br />
+<h4 class="font-weight-bold">BƯỚC 2: BỔ SUNG THÔNG TIN BÁO CÁO THÁNG CÓ ID '@id'</h4>
+<div class="table-responsive">
+    @if (ViewBag.files != null)
+    {
+        var list = ViewBag.files as List<string>;
+        <div class="alert alert-info">Danh sách tập tin đẩy lên thành công</div>
+        <ul>
+            @foreach (var f in list)
+            {
+                <li>@f</li>
+            }
+        </ul>
+    }
+    <div class="alert alert-info">Thông tin</div>
+    @using (Html.BeginForm("Buoc3", "XML", new { area = "", layout = "null", idobject = id, idtarget = idtarget }, FormMethod.Post, new { id = idform }))
+    {
+        <input type="hidden" name="mode" value="taive" />
+        <table class="table table-hover table-sm">
+            <tbody>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x1", "Công tác ký hợp đồng KCB BHYT (x1):")
+                        <br /><textarea name="x1" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x33", "Công tác kiểm soát chi KCB BHYT (x33):")
+                        <br /><textarea name="x33" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x34", "Công tác đấu thầu thuốc (x34):")
+                        <br /><textarea name="x34" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x35", "Công tác quyết toán chi KCB BHYT (x35):")
+                        <br /><textarea name="x35" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x36", "Công tác khác (x36):")
+                        <br /><textarea name="x36" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x37", "Phương hướng công tác tháng sau (x35):")
+                        <br /><textarea name="x37" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        @Html.Label("x38", "Khó khăn, vướng mắc, đề xuất (nếu có) (x38):")
+                        <br /><textarea name="x38" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <a href="#" class="btn btn-primary btn-sm" onclick="postform('@idform', '', '@idtarget');"><i class="fa fa-play"></i> Thực hiện</a>
+                        <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "XML", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-recycle"></i> Huỷ</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+</div>
+<script>
+</script>

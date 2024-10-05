@@ -360,6 +360,7 @@
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\TaiController.cs" />
     <Compile Include="Controllers\TaiKhoanController.cs" />
+    <Compile Include="Controllers\XMLController.cs" />
     <Compile Include="Convert.cs" />
     <Compile Include="dbSQLite.cs" />
     <Compile Include="dbSQLServer.cs" />
@@ -3171,6 +3172,13 @@
     <Content Include="Views\bcThang\Tai.cshtml" />
     <Content Include="Views\bcThang\TruyVan.cshtml" />
     <Content Include="Views\bcThang\Update.cshtml" />
+    <Content Include="Views\XML\Update.cshtml" />
+    <Content Include="Views\XML\Buoc1.cshtml" />
+    <Content Include="Views\XML\Buoc2.cshtml" />
+    <Content Include="Views\XML\Delete.cshtml" />
+    <Content Include="Views\XML\Index.cshtml" />
+    <Content Include="Views\XML\Tai.cshtml" />
+    <Content Include="Views\XML\TruyVan.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

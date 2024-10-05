@@ -1,0 +1,56 @@
+﻿@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    return;
+}
+<div class="alert alert-info">Dữ liệu truy vấn báo cáo được tạo từ @Request.getValue("ngay1") đến @Request.getValue("ngay2")</div>
+@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
+    if (data.Rows.Count == 0)
+    {
+        <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
+        return;
+    }
+    var idform = "frmdel" + DateTime.Now.toTimestamp().ToString();
+    var linkEdit = "";
+    var userid = $"{Session["iduser"]}";
+}
+@using (Html.BeginForm("Delete", "XML", new { area = "", layout = "null" }, FormMethod.Post, new { id = idform }))
+{
+    <table class="table table-hover table-bordered table-sm">
+        <thead>
+            <tr>
+                <th style="width: 65px;">Chọn</th>
+                <th style="width: 240px;">Mã báo cáo</th>
+                <th style="width: 90px;">Mã tỉnh</th>
+                <th style="width: 105px;">Ngày</th>
+                <th style="width: 180px;">Tiền dự toán giao</th>
+                <th>Tài khoản</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (DataRow r in data.Rows)
+            {
+                if (userid == $"{r["userid"]}") { linkEdit = $"<a href=\"#\" onclick=\"showgeturl('{Url.Action("Update", "XML", new { area = "", objectid = r["id"], layout = "null" })}');\">{r[1]}</a>"; } else { linkEdit = $"{r[1]}"; }
+                <tr data-id="@r["id"]">
+                    <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
+                    <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "XML", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
+                    <td>@r["ma_tinh"]</td>
+                    <td>@r["x74"]</td>
+                    <td class="text-right">@(((double)r["x72"]).FormatCultureVN())</td>
+                    <td>@r["userid"]</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<table class="table table-hover">
+    <tbody>
+        <tr>
+            <td>
+                <a href="#" onclick="postform('@idform')" class="btn btn-primary btn-sm"> <i class="fa fa-recycle"></i> Xoá báo cáo </a>
+            </td>
+        </tr>
+    </tbody>
+</table>

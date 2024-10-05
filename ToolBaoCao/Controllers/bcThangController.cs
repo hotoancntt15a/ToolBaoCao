@@ -12,7 +12,7 @@ using zModules.NPOIExcel;
 
 namespace ToolBaoCao.Controllers
 {
-    public class bcThangController : Controller
+    public class bcThangController : ControllerCheckLogin
     {
         public ActionResult Index()
         {
@@ -232,6 +232,9 @@ namespace ToolBaoCao.Controllers
         private void createFilePhuLucbcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, Dictionary<string, string> bcThang = null)
         {
             if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
+            var fileName = $"bcThang_pl_{idBaoCao}.xlsx";
+            var pathPLBCThang = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
+            System.IO.File.Copy(Path.Combine(AppHelper.pathAppData, "plthang.xlsx"), pathPLBCThang, true);
             var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
             if (bcThang == null)
             {
@@ -259,7 +262,7 @@ namespace ToolBaoCao.Controllers
 
             var xlsx = exportPhuLucbcThang(PL01, phuluc02, phuluc03);
 
-            var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_pl_{idBaoCao}.xlsx");
+            var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
             if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
             using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
