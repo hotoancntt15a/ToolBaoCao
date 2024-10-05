@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -32,6 +33,24 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
 
+        public static bool CheckAndExtractDbFileInZip(string zipFilePath, string extractFolderPath, string ext)
+        {
+            bool dbFileFound = false;
+            using (ZipArchive archive = ZipFile.OpenRead(zipFilePath))
+            {
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    if (entry.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                    {
+                        dbFileFound = true;
+                        string destinationPath = Path.Combine(extractFolderPath, entry.FullName);
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                        entry.ExtractToFile(destinationPath, overwrite: true);
+                    }
+                }
+            }
+            return dbFileFound;
+        }
         public static string SQLiteLike(this string field, string value) => dbSqliteMain.like(field, value);
 
         public static string GetUserIpAddress(this HttpContext http)
