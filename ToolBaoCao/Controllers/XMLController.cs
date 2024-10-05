@@ -157,5 +157,20 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
+        public ActionResult Update()
+        {
+            var idtinh = $"{Session["idtinh"]}";
+            if (idtinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            var id = Request.getValue("objectid");
+            var tsql = "";
+            ViewBag.id = id;
+            try
+            {
+                var item = new Dictionary<string, string>();
+                ViewBag.data = item;
+            }
+            catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
+            return View();
+        }
     }
 }
