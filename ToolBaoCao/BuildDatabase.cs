@@ -206,9 +206,12 @@ namespace ToolBaoCao
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"xml{matinh}.db");
             var db = new dbSQLite(pathDB);
             db.Execute(@"CREATE TABLE IF NOT EXISTS xml (id text NOT NULL PRIMARY KEY
-                  ,name text NOT NULL DEFAULT ''
-                  ,iduser text NOT NULL
-                  ,time1 integer NOT NULL DEFAULT 0);");
+                ,name text NOT NULL DEFAULT ''
+                ,trangthai integer not null 0
+                ,time1 integer not null
+                ,time2 integer not null 0
+                ,iduser text NOT NULL
+                ,time1 integer NOT NULL DEFAULT 0);");
             return db;
         }
         /**
