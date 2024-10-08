@@ -338,7 +338,7 @@ namespace ToolBaoCao
             return tableNames;
         }
 
-        public static bool IsUpdateOrDelete(string sql) => Regex.IsMatch(sql, @"^\s*(UPDATE|DELETE)\s+", RegexOptions.IgnoreCase);
+        public static bool IsUpdateOrDelete(string sql) => Regex.IsMatch(sql, @"^\s*(UPDATE|DELETE|INSERT)\s+", RegexOptions.IgnoreCase);
 
         public static string GetPathFileCacheQuery(string tsql, string dataName)
         {

@@ -4,9 +4,11 @@ function getFileSize(size) {
     if (size > 1024) { return `${(size / 1024).toFixed(2)}KB`; }
     return `${size}B`;
 }
-function drapDropFiles() {
+function drapDropFiles(ext = "") {
     var uploadArea = $('#uploadfile'); if (uploadArea.length == 0) { return; } /** Nếu không tồn tại thì không áp dụng */
     var uploadButton = $('#uploadButton');
+    ext = ext.trim();
+    var exts = ext.replace(" ", "").toLowerCase().split(',').filter(extension => extension !== ''); /* .xlsx,.xls,.db,.zip, ... */
     var fileList = [];
     /* Ngăn chặn hành vi mặc định của trình duyệt */
     uploadArea.on('dragenter dragover', function (e) { e.stopPropagation(); e.preventDefault(); uploadArea.addClass('hover'); });
@@ -26,6 +28,9 @@ function drapDropFiles() {
         fileList = [];
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
+            if (ext != "") {
+                if (!exts.some(extension => file.name.toLowerCase().endsWith(extension))) { continue; }
+            }            
             var fileSize = getFileSize(file.size);
             var listItem = $('<li class="list-group-item d-flex justify-content-between align-items-center"></li>');
             var fileInfo = $('<span></span>').text(`${file.name} (${fileSize})`);
