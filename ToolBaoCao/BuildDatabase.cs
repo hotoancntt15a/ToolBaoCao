@@ -207,11 +207,12 @@ namespace ToolBaoCao
             var db = new dbSQLite(pathDB);
             db.Execute(@"CREATE TABLE IF NOT EXISTS xml (id text NOT NULL PRIMARY KEY
                 ,name text NOT NULL DEFAULT ''
-                ,trangthai integer not null 0
-                ,time1 integer not null
-                ,time2 integer not null 0
-                ,iduser text NOT NULL
-                ,time1 integer NOT NULL DEFAULT 0);");
+                ,args text NOT NULL DEFAULT ''
+                ,args2 text NOT NULL DEFAULT ''
+                ,pageindex integer NOT NULL DEFAULT 1
+                ,time1 integer NOT NULL
+                ,time2 integer NOT NULL 0
+                ,iduser text NOT NULL DEFAULT '');");
             return db;
         }
         /**
