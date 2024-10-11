@@ -188,14 +188,14 @@ namespace ToolBaoCao
         public static void CreateTableProcess(this dbSQLite dbConnect)
         {
             dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS wprocess (id text NOT NULL PRIMARY KEY
-                  ,name text NOT NULL DEFAULT ''
-                  ,iduser text NOT NULL
-                  ,args text NOT NULL DEFAULT ''
-                  ,args2 text NOT NULL DEFAULT ''
-                  ,pageindex integer NOT NULL DEFAULT 1
-                  ,time1 integer NOT NULL DEFAULT 0
-                  ,time2 integer NOT NULL DEFAULT 0);
-                 CREATE INDEX IF NOT EXISTS index_wprocess_iduser ON wproccess (iduser);
+                ,name text NOT NULL DEFAULT ''
+                ,iduser text NOT NULL
+                ,args text NOT NULL DEFAULT ''
+                ,args2 text NOT NULL DEFAULT ''
+                ,pageindex integer NOT NULL DEFAULT 1
+                ,time1 integer NOT NULL DEFAULT 0
+                ,time2 integer NOT NULL DEFAULT 0);
+                CREATE INDEX IF NOT EXISTS index_wprocess_iduser ON wproccess (iduser);
             ");
         }
         /**
@@ -209,6 +209,7 @@ namespace ToolBaoCao
                 ,name text NOT NULL DEFAULT ''
                 ,args text NOT NULL DEFAULT ''
                 ,args2 text NOT NULL DEFAULT ''
+                ,title text NOT NULL DEFAULT ''
                 ,pageindex integer NOT NULL DEFAULT 1
                 ,time1 integer NOT NULL
                 ,time2 integer NOT NULL 0

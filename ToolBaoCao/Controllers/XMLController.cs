@@ -39,7 +39,15 @@ namespace ToolBaoCao.Controllers
             if (d.Exists == false) { d.Create(); }
             return View();
         }
+        private void CopyXML()
+        {
+            try {
+            }
+            catch(Exception ex)
+            {
 
+            }
+        }
         public ActionResult Buoc2()
         {
             var timeStart = DateTime.Now;
@@ -162,7 +170,6 @@ namespace ToolBaoCao.Controllers
             var idtinh = $"{Session["idtinh"]}";
             if (idtinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             var id = Request.getValue("objectid");
-            var tsql = "";
             ViewBag.id = id;
             try
             {
