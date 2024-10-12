@@ -39,15 +39,11 @@ namespace ToolBaoCao.Controllers
             if (d.Exists == false) { d.Create(); }
             return View();
         }
+
         private void CopyXML()
         {
-            try {
-            }
-            catch(Exception ex)
-            {
-
-            }
         }
+
         public ActionResult Buoc2()
         {
             var timeStart = DateTime.Now;
@@ -108,7 +104,7 @@ namespace ToolBaoCao.Controllers
                         }
                         continue;
                     }
-                    if(tmp == ".db")
+                    if (tmp == ".db")
                     {
                         var fdb = Path.Combine(folderTemp, $"xml_{id}_{i}.db");
                         Request.Files[i].SaveAs(fdb);
@@ -143,6 +139,7 @@ namespace ToolBaoCao.Controllers
             }
             return View();
         }
+
         public ActionResult TruyVan()
         {
             var matinh = $"{Session["idtinh"]}";
@@ -165,6 +162,7 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
+
         public ActionResult Update()
         {
             var idtinh = $"{Session["idtinh"]}";

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Web;
+﻿using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
@@ -21,8 +16,21 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             string key = Request.getValue("key");
             string value = Request.getValue("value");
             if (key == "") { return Content(keyMSG.NotVariable); }
-            if(value == "") { AppHelper.appConfig.Remove(key); }
-            else { AppHelper.appConfig.Set(key, value); }            
+            if (value == "") { AppHelper.appConfig.Remove(key); }
+            else
+            {
+                if (key == "maxRequestLengthMB")
+                {
+                    if (Regex.IsMatch(value, @"^\d+$") == false) { value = "0"; }
+                    WebConfigHelper.UpdateMaxLength(int.Parse(value));
+                }
+                if (key == "maxAllowedContentLengthMB")
+                {
+                    if (Regex.IsMatch(value, @"^\d+$") == false) { value = "0"; }
+                    WebConfigHelper.UpdateMaxLength(maxAllowedContentLengthMB: int.Parse(value));
+                }
+                AppHelper.appConfig.Set(key, value);
+            }
             return Content("Lưu thành công".BootstrapAlter());
         }
 
@@ -30,6 +38,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
         {
             return View();
         }
+
         public ActionResult views()
         {
             return View();

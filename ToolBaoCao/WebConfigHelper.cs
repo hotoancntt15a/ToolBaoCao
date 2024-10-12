@@ -35,41 +35,46 @@ namespace ToolBaoCao
             return 10;
         }
 
-        public static void UpdateMaxLength(int maxRequestLengthMB, int maxAllowedContentLengthMB)
+        public static void UpdateMaxLength(int maxRequestLengthMB = 0, int maxAllowedContentLengthMB = 0)
         {
+            if (maxAllowedContentLengthMB == 0 && maxRequestLengthMB == 0) { return; }
             string webConfigPath = System.Web.HttpContext.Current.Server.MapPath("~/web.config");
 
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(webConfigPath);
-
-            // Cập nhật maxRequestLength trong httpRuntime
-            XmlNode httpRuntimeNode = xmlDoc.SelectSingleNode("//system.web/httpRuntime");
-            if (httpRuntimeNode != null)
+            if (maxRequestLengthMB > 0)
             {
-                XmlAttribute maxRequestLengthAttr = httpRuntimeNode.Attributes["maxRequestLength"];
-                if (maxRequestLengthAttr != null) { maxRequestLengthAttr.Value = (maxRequestLengthMB * 1024).ToString(); }
-                else
+                /* Cập nhật maxRequestLength trong httpRuntime */
+                XmlNode httpRuntimeNode = xmlDoc.SelectSingleNode("//system.web/httpRuntime");
+                if (httpRuntimeNode != null)
                 {
-                    maxRequestLengthAttr = xmlDoc.CreateAttribute("maxRequestLength");
-                    maxRequestLengthAttr.Value = (maxRequestLengthMB * 1024).ToString();
-                    httpRuntimeNode.Attributes.Append(maxRequestLengthAttr);
+                    XmlAttribute maxRequestLengthAttr = httpRuntimeNode.Attributes["maxRequestLength"];
+                    if (maxRequestLengthAttr != null) { maxRequestLengthAttr.Value = (maxRequestLengthMB * 1024).ToString(); }
+                    else
+                    {
+                        maxRequestLengthAttr = xmlDoc.CreateAttribute("maxRequestLength");
+                        maxRequestLengthAttr.Value = (maxRequestLengthMB * 1024).ToString();
+                        httpRuntimeNode.Attributes.Append(maxRequestLengthAttr);
+                    }
                 }
             }
-
-            // Cập nhật maxAllowedContentLength trong requestLimits
-            XmlNode requestLimitsNode = xmlDoc.SelectSingleNode("//system.webServer/security/requestFiltering/requestLimits");
-            if (requestLimitsNode != null)
+            if (maxAllowedContentLengthMB > 0)
             {
-                XmlAttribute maxAllowedContentLengthAttr = requestLimitsNode.Attributes["maxAllowedContentLength"];
-                if (maxAllowedContentLengthAttr != null)
+                /* Cập nhật maxAllowedContentLength trong requestLimits */
+                XmlNode requestLimitsNode = xmlDoc.SelectSingleNode("//system.webServer/security/requestFiltering/requestLimits");
+                if (requestLimitsNode != null)
                 {
-                    maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1024 * 1024).ToString();
-                }
-                else
-                {
-                    maxAllowedContentLengthAttr = xmlDoc.CreateAttribute("maxAllowedContentLength");
-                    maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1024 * 1024).ToString();
-                    requestLimitsNode.Attributes.Append(maxAllowedContentLengthAttr);
+                    XmlAttribute maxAllowedContentLengthAttr = requestLimitsNode.Attributes["maxAllowedContentLength"];
+                    if (maxAllowedContentLengthAttr != null)
+                    {
+                        maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1024 * 1024).ToString();
+                    }
+                    else
+                    {
+                        maxAllowedContentLengthAttr = xmlDoc.CreateAttribute("maxAllowedContentLength");
+                        maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1024 * 1024).ToString();
+                        requestLimitsNode.Attributes.Append(maxAllowedContentLengthAttr);
+                    }
                 }
             }
             xmlDoc.Save(webConfigPath);
