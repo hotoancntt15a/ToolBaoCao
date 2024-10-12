@@ -67,12 +67,12 @@ namespace ToolBaoCao
                     XmlAttribute maxAllowedContentLengthAttr = requestLimitsNode.Attributes["maxAllowedContentLength"];
                     if (maxAllowedContentLengthAttr != null)
                     {
-                        maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1024 * 1024).ToString();
+                        maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1048576).ToString();
                     }
                     else
                     {
                         maxAllowedContentLengthAttr = xmlDoc.CreateAttribute("maxAllowedContentLength");
-                        maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1024 * 1024).ToString();
+                        maxAllowedContentLengthAttr.Value = (maxAllowedContentLengthMB * 1048576).ToString();
                         requestLimitsNode.Attributes.Append(maxAllowedContentLengthAttr);
                     }
                 }

@@ -1,5 +1,4 @@
 ﻿using NPOI.SS.UserModel;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -49,7 +48,7 @@ namespace ToolBaoCao
                             if (entry.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
                             {
                                 i++;
-                                dbFileFound = true; 
+                                dbFileFound = true;
                                 entry.ExtractToFile(Path.Combine(extractFolderPath, entry.FullName), overwrite: true);
                                 if (i > allFileExt) { break; }
                             }
@@ -61,7 +60,7 @@ namespace ToolBaoCao
                         {
                             if (entry.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
                             {
-                                dbFileFound = true; 
+                                dbFileFound = true;
                                 entry.ExtractToFile(Path.Combine(extractFolderPath, entry.FullName), overwrite: true);
                             }
                         }
@@ -372,6 +371,34 @@ namespace ToolBaoCao
             foreach (var file in files)
             {
                 if (File.Exists(file)) { try { File.Delete(file); } catch { } }
+            }
+        }
+
+        public static void DeleteAllFile(string pathFolder, string nameFileStart = "", bool deleteSubFolder = false)
+        {
+            if (string.IsNullOrEmpty(nameFileStart)) { nameFileStart = ""; }
+            if (nameFileStart == "*") { nameFileStart = ""; }
+            if (nameFileStart == "")
+            {
+                var files = Directory.GetFiles(pathFolder, $"{nameFileStart}*.*");
+                foreach (var file in files)
+                {
+                    if (File.Exists(file)) { try { File.Delete(file); } catch { } }
+                }
+            }
+            else
+            {
+                foreach (string file in Directory.GetFiles(pathFolder))
+                {
+                    try { File.Delete(file); } catch { }
+                }
+            }
+            if (deleteSubFolder)
+            {
+                foreach (string directory in Directory.GetDirectories(pathFolder))
+                {
+                    try { Directory.Delete(directory, true); } catch { }
+                }
             }
         }
 

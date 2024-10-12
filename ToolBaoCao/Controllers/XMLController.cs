@@ -42,8 +42,8 @@ namespace ToolBaoCao.Controllers
 
         private void CopyXML()
         {
-        }
 
+        }
         public ActionResult Buoc2()
         {
             var timeStart = DateTime.Now;

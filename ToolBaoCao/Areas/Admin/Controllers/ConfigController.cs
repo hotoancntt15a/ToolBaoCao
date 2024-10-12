@@ -29,6 +29,11 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     if (Regex.IsMatch(value, @"^\d+$") == false) { value = "0"; }
                     WebConfigHelper.UpdateMaxLength(maxAllowedContentLengthMB: int.Parse(value));
                 }
+                if(key == "maxSizeFileUpload")
+                {
+                    if (Regex.IsMatch(value, @"^\d+$") == false) { value = "0"; }
+                    WebConfigHelper.UpdateMaxLength(int.Parse(value), int.Parse(value));
+                }
                 AppHelper.appConfig.Set(key, value);
             }
             return Content("Lưu thành công".BootstrapAlter());
