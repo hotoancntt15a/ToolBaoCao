@@ -210,6 +210,7 @@ namespace ToolBaoCao
                 ,args text NOT NULL DEFAULT ''
                 ,args2 text NOT NULL DEFAULT ''
                 ,title text NOT NULL DEFAULT ''
+                ,matinh text NOT NULL DEFAULT ''
                 ,pageindex integer NOT NULL DEFAULT 0
                 ,time1 integer NOT NULL
                 ,time2 integer NOT NULL 0
