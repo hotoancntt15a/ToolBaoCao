@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ICSharpCode.SharpZipLib.GZip;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -59,41 +60,67 @@ namespace ToolBaoCao.Controllers
                     if (data.Columns[i].ColumnName.StartsWith("time")) { continue; }
                     item[data.Columns[i].ColumnName] = data.Rows[0][i].ToString();
                 }
+                var lfile = item["arg"].Split('|').ToList();
+                foreach(string f in lfile)
+                {
+                    var fileName = AppHelper.pathApp + f;
+                    if (System.IO.File.Exists(fileName) == false) { throw new Exception($"Thread '{id}' có tập tin '{f}' không tồn tại trong hệ thống"); }
+                    var ext = Path.GetExtension(fileName);
+                    if(ext == ".zip")
+                    {
+                        using (ZipArchive archive = ZipFile.OpenRead(fzip))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var fdb = Path.Combine(folderTemp, $"xml_{id}_{i}.db");
+                                    entry.ExtractToFile(fdb, overwrite: true);
+                                    var db = new dbSQLite(fdb);
+                                    try
+                                    {
+                                        /* Kiểm tra có đúng cấu trúc dữ liệu không? */
+                                        data = db.getDataTable("SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM xml123");
+                                        if (data.Rows.Count == 0) { continue; }
+                                        tmp = $"{data.Rows[0][0]}";
+                                        if (tmp == "" || tmp == "0") { continue; }
+                                        db.Close();
+                                        tmp = Path.Combine(folderSave, $"xml_{id}_{tmp}_{data.Rows[0][1]}");
+                                        /* Xoá đi nếu tồn tại rồi */
+                                        if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
+                                        /* Chuyển về thư mục chính */
+                                        System.IO.File.Move(fdb, tmp);
+                                    }
+                                    catch (Exception exDB) { tmp = exDB.Message; continue; }
+                                    db.Close();
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                    if(ext == ".db")
+                    {
+                        var db = new dbSQLite(fileName);
+                        try
+                        {
+                            /* Kiểm tra có đúng cấu trúc dữ liệu không? */
+                            data = db.getDataTable("SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM xml123");
+                            if (data.Rows.Count == 0) { throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu trong hệ thống"); }
+                        }
+                        catch (Exception exDB) { tmp = exDB.Message; }
+                        db.Close();
+                        continue;
+                    }
+                }
             }
             catch (Exception ex) { AppHelper.saveError(ex.getLineHTML()); }
+
             if (tmp == ".zip")
             {
                 var fzip = Path.Combine(folderTemp, "t" + Request.Files[i].FileName.GetMd5Hash() + ".zip");
                 Request.Files[i].SaveAs(fzip);
                 /* Giải nén tập tin */
-                using (ZipArchive archive = ZipFile.OpenRead(fzip))
-                {
-                    foreach (ZipArchiveEntry entry in archive.Entries)
-                    {
-                        if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
-                        {
-                            var fdb = Path.Combine(folderTemp, $"xml_{id}_{i}.db");
-                            entry.ExtractToFile(fdb, overwrite: true);
-                            var db = new dbSQLite(fdb);
-                            try
-                            {
-                                /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                                var data = db.getDataTable("SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM xml123");
-                                if (data.Rows.Count == 0) { continue; }
-                                tmp = $"{data.Rows[0][0]}";
-                                if (tmp == "" || tmp == "0") { continue; }
-                                db.Close();
-                                tmp = Path.Combine(folderSave, $"xml_{id}_{tmp}_{data.Rows[0][1]}");
-                                /* Xoá đi nếu tồn tại rồi */
-                                if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
-                                /* Chuyển về thư mục chính */
-                                System.IO.File.Move(fdb, tmp);
-                            }
-                            catch (Exception exDB) { tmp = exDB.Message; continue; }
-                            db.Close();
-                        }
-                    }
-                }
+                
             }
             if (tmp == ".db")
             {
@@ -148,7 +175,7 @@ namespace ToolBaoCao.Controllers
                     lFilesProcess.Add($"{Request.Files[i].FileName} ({Request.Files[i].ContentLength.getFileSize()})");
                     var fstmp = Path.Combine(folderTemp, $"xml{id}_{i}{tmp}");
                     Request.Files[i].SaveAs(fstmp);
-                    lWaitProcess.Add(fstmp);
+                    lWaitProcess.Add(fstmp.Replace(AppHelper.pathApp, ""));
                 }
                 if (lWaitProcess.Count == 0) { throw new Exception("Không có dữ liệu đẩy lên phù hợp"); }
                 var db = BuildDatabase.getDataXML(matinh);
