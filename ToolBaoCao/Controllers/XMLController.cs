@@ -36,13 +36,16 @@ namespace ToolBaoCao.Controllers
             if (d.Exists == false) { d.Create(); }
             return View();
         }
+        private void CopyData(dbSQLite dbTo, dbSQLite dbFrom, string tableName) { 
+        
+        }
         /// <summary>
         /// idThread = {MaTinh}|{ID table XML}
         /// </summary>
         /// <param name="idThread">{MaTinh}|{ID table XML}</param>
         private void threadCopyXML(string idThread)
         {
-            string tmp = "", folderTemp = "",folderSave = "", id = "", matinh = "";
+            string tmp = "", folderTemp = "", folderSave = "", id = "", matinh = "";
             try
             {
                 var objs = idThread.Split('|');
@@ -61,31 +64,38 @@ namespace ToolBaoCao.Controllers
                     item[data.Columns[i].ColumnName] = data.Rows[0][i].ToString();
                 }
                 var lfile = item["arg"].Split('|').ToList();
-                foreach(string f in lfile)
+                int ij = 0;
+                var xmldb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"xml_{id}.db"));
+                foreach (string f in lfile)
                 {
+                    ij++;
                     var fileName = AppHelper.pathApp + f;
                     if (System.IO.File.Exists(fileName) == false) { throw new Exception($"Thread '{id}' có tập tin '{f}' không tồn tại trong hệ thống"); }
                     var ext = Path.GetExtension(fileName);
-                    if(ext == ".zip")
+                    if (ext == ".zip")
                     {
-                        using (ZipArchive archive = ZipFile.OpenRead(fzip))
+                        using (ZipArchive archive = ZipFile.OpenRead(fileName))
                         {
                             foreach (ZipArchiveEntry entry in archive.Entries)
                             {
                                 if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    var fdb = Path.Combine(folderTemp, $"xml_{id}_{i}.db");
+                                    var fdb = Path.Combine(folderTemp, $"xml_{id}_{ij}.db");
                                     entry.ExtractToFile(fdb, overwrite: true);
                                     var db = new dbSQLite(fdb);
                                     try
                                     {
                                         /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                                        data = db.getDataTable("SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM xml123");
-                                        if (data.Rows.Count == 0) { continue; }
-                                        tmp = $"{data.Rows[0][0]}";
-                                        if (tmp == "" || tmp == "0") { continue; }
+                                        var tables = db.getAllTables();
+                                        var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
+                                        var tableName = "xml123";
+                                        if (tables.Contains("xml7980a")) { tableName = "xml7980a"; }
+                                        else { if (tables.Contains("bhyt7980a")) { tableName = "bhyt7980a"; } }
+                                        data = db.getDataTable($"{tsql}{tableName} LIMIT 1"); 
+                                        if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
+                                        /* Chuyển dữ liệu */
                                         db.Close();
-                                        tmp = Path.Combine(folderSave, $"xml_{id}_{tmp}_{data.Rows[0][1]}");
+                                        tmp = Path.Combine(folderSave, $"xml_{id}.db");
                                         /* Xoá đi nếu tồn tại rồi */
                                         if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
                                         /* Chuyển về thư mục chính */
@@ -98,14 +108,23 @@ namespace ToolBaoCao.Controllers
                         }
                         continue;
                     }
-                    if(ext == ".db")
+                    if (ext == ".db")
                     {
                         var db = new dbSQLite(fileName);
                         try
                         {
                             /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                            data = db.getDataTable("SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM xml123");
-                            if (data.Rows.Count == 0) { throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu trong hệ thống"); }
+                            var tables = db.getAllTables();
+                            var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
+                            if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }
+                            else
+                            {
+                                if (tables.Contains("bhyt7980a")) { tsql += "bhyt7980a"; }
+                                else { tsql += "xml123"; }
+                            }
+                            data = db.getDataTable(tsql + " LIMIT 1");
+                            db.Close();
+                            if (data.Rows.Count == 0) { throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
                         }
                         catch (Exception exDB) { tmp = exDB.Message; }
                         db.Close();
@@ -114,36 +133,6 @@ namespace ToolBaoCao.Controllers
                 }
             }
             catch (Exception ex) { AppHelper.saveError(ex.getLineHTML()); }
-
-            if (tmp == ".zip")
-            {
-                var fzip = Path.Combine(folderTemp, "t" + Request.Files[i].FileName.GetMd5Hash() + ".zip");
-                Request.Files[i].SaveAs(fzip);
-                /* Giải nén tập tin */
-                
-            }
-            if (tmp == ".db")
-            {
-                var fdb = Path.Combine(folderTemp, $"xml_{id}_{i}.db");
-                Request.Files[i].SaveAs(fdb);
-                var db = new dbSQLite(fdb);
-                try
-                {
-                    /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                    var data = db.getDataTable("SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM xml123");
-                    if (data.Rows.Count == 0) { continue; }
-                    tmp = $"{data.Rows[0][0]}";
-                    if (tmp == "" || tmp == "0") { continue; }
-                    db.Close();
-                    tmp = Path.Combine(folderSave, $"xml_{id}_{tmp}_{data.Rows[0][1]}");
-                    /* Xoá đi nếu tồn tại rồi */
-                    if (System.IO.File.Exists(tmp) == false) { System.IO.File.Delete(tmp); }
-                    /* Chuyển về thư mục chính */
-                    System.IO.File.Move(fdb, tmp);
-                }
-                catch (Exception exDB) { tmp = exDB.Message; }
-                db.Close();
-            }
         }
 
         public ActionResult Buoc2()
