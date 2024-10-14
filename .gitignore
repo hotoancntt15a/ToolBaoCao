@@ -363,8 +363,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/ToolBaoCao/cache/d_taikhoan_query_8bac18de08740c2f91f0402de676111f.xml
-/ToolBaoCao/cache/d_taikhoan_query_9a6465d3bdd9f0e073d4a7aba8e9bc1b.xml
+/ToolBaoCao/cache
 /ToolBaoCao/App_Data/bctuan
-/ToolBaoCao/temp/bctuan/92483f4726c492a875fdc3dfd850d051
-/ToolBaoCao/temp/bcThang/92483f4726c492a875fdc3dfd850d051
+/ToolBaoCao/App_Data/bcthang
+/ToolBaoCao/App_Data/xml
+/ToolBaoCao/temp
