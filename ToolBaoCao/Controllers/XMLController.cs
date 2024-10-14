@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.SharpZipLib.GZip;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -6,7 +7,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
+using static NPOI.HSSF.Util.HSSFColor;
 
 namespace ToolBaoCao.Controllers
 {
@@ -38,11 +41,96 @@ namespace ToolBaoCao.Controllers
             if (d.Exists == false) { d.Create(); }
             return View();
         }
-        static void CopyTable(SQLiteConnection source, SQLiteConnection destination, string tableName)
+        static void CopyTableXML(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML)
         {
-        }
-        private void CopyData(dbSQLite dbTo, dbSQLite dbFrom, string tableName) { 
-        
+            var tablesTo = dbTo.getAllTables();
+            var tablesFrom = dbFrom.getAllTables();
+            var tmp = "";
+            /* Tạo bảo nếu chưa có */
+            if (tablesTo.Contains("xml123") == false)
+            {
+                if (tablesFrom.Contains("xml123"))
+                {
+                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'xml123'")}";
+                    if (Regex.IsMatch(tmp, "primary key", RegexOptions.IgnoreCase) == false)
+                    {
+                        tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
+                    }
+                    dbTo.Execute(tmp);
+                }
+            }
+            if (tablesTo.Contains("xml7980a") == false)
+            {
+                if (tablesFrom.Contains("xml7980a"))
+                {
+                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'xml7980a'")}";
+                }
+                if (tablesFrom.Contains("bhyt7980a"))
+                {
+                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'bhyt7980a'")}";
+                    tmp = tmp.Replace("bhyt7980a", "xml7980a");
+                }
+                if (tmp != "")
+                {
+                    if (Regex.IsMatch(tmp, "primary key", RegexOptions.IgnoreCase) == false)
+                    {
+                        tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
+                    }
+                }
+            }
+            var batchSize = 1000;
+            var tsql = "";
+            if (tablesFrom.Contains("xml123"))
+            {
+                /* Chuyển dữ liệu */
+                var idStart = "0";
+                while(true)
+                {
+                    tsql = $"SELECT * FROM xml123 WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
+                    var data = dbFrom.getDataTable(tsql);
+                    if(data.Rows.Count > 0)
+                    {
+                        /* Copy AND ignore */
+                        dbTo.Insert("xml123", data, "IGNORE", batchSize);
+                    }
+                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
+                    if (data.Rows.Count < batchSize) { break; }
+                }               
+            }
+            if (tablesFrom.Contains("xml7980a"))
+            {
+                /* Chuyển dữ liệu */
+                var idStart = "0";
+                while (true)
+                {
+                    tsql = $"SELECT * FROM xml7980a WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
+                    var data = dbFrom.getDataTable(tsql);
+                    if (data.Rows.Count > 0)
+                    {
+                        /* Copy AND ignore */
+                        dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
+                    }
+                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
+                    if (data.Rows.Count < batchSize) { break; }
+                }
+            }
+            if (tablesFrom.Contains("bhyt7980a"))
+            {
+                /* Chuyển dữ liệu */
+                var idStart = "0";
+                while (true)
+                {
+                    tsql = $"SELECT * FROM bhyt7980a WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
+                    var data = dbFrom.getDataTable(tsql);
+                    if (data.Rows.Count > 0)
+                    {
+                        /* Copy AND ignore */
+                        dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
+                    }
+                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
+                    if (data.Rows.Count < batchSize) { break; }
+                }
+            }
         }
         /// <summary>
         /// idThread = {MaTinh}|{ID table XML}
@@ -99,6 +187,7 @@ namespace ToolBaoCao.Controllers
                                         data = db.getDataTable($"{tsql}{tableName} LIMIT 1"); 
                                         if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
                                         /* Chuyển dữ liệu */
+                                        CopyTableXML(dbXML, db, xmldb);
                                         db.Close();
                                         tmp = Path.Combine(folderSave, $"xml_{id}.db");
                                         /* Xoá đi nếu tồn tại rồi */
@@ -127,9 +216,10 @@ namespace ToolBaoCao.Controllers
                                 if (tables.Contains("bhyt7980a")) { tsql += "bhyt7980a"; }
                                 else { tsql += "xml123"; }
                             }
-                            data = db.getDataTable(tsql + " LIMIT 1");
+                            data = db.getDataTable(tsql + " LIMIT 1");                            
+                            if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
+                            CopyTableXML(dbXML, db, xmldb);
                             db.Close();
-                            if (data.Rows.Count == 0) { throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
                         }
                         catch (Exception exDB) { tmp = exDB.Message; }
                         db.Close();
