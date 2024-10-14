@@ -1,15 +1,13 @@
-﻿using ICSharpCode.SharpZipLib.GZip;
-using NPOI.SS.Formula.Functions;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web.Mvc;
-using static NPOI.HSSF.Util.HSSFColor;
+using System.Web.UI.WebControls;
 
 namespace ToolBaoCao.Controllers
 {
@@ -40,194 +38,6 @@ namespace ToolBaoCao.Controllers
             var d = new System.IO.DirectoryInfo(folderTemp);
             if (d.Exists == false) { d.Create(); }
             return View();
-        }
-        static void CopyTableXML(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML)
-        {
-            var tablesTo = dbTo.getAllTables();
-            var tablesFrom = dbFrom.getAllTables();
-            var tmp = "";
-            /* Tạo bảo nếu chưa có */
-            if (tablesTo.Contains("xml123") == false)
-            {
-                if (tablesFrom.Contains("xml123"))
-                {
-                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'xml123'")}";
-                    if (Regex.IsMatch(tmp, "primary key", RegexOptions.IgnoreCase) == false)
-                    {
-                        tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
-                    }
-                    dbTo.Execute(tmp);
-                }
-            }
-            if (tablesTo.Contains("xml7980a") == false)
-            {
-                if (tablesFrom.Contains("xml7980a"))
-                {
-                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'xml7980a'")}";
-                }
-                if (tablesFrom.Contains("bhyt7980a"))
-                {
-                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'bhyt7980a'")}";
-                    tmp = tmp.Replace("bhyt7980a", "xml7980a");
-                }
-                if (tmp != "")
-                {
-                    if (Regex.IsMatch(tmp, "primary key", RegexOptions.IgnoreCase) == false)
-                    {
-                        tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
-                    }
-                }
-            }
-            var batchSize = 1000;
-            var tsql = "";
-            if (tablesFrom.Contains("xml123"))
-            {
-                /* Chuyển dữ liệu */
-                var idStart = "0";
-                while(true)
-                {
-                    tsql = $"SELECT * FROM xml123 WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
-                    var data = dbFrom.getDataTable(tsql);
-                    if(data.Rows.Count > 0)
-                    {
-                        /* Copy AND ignore */
-                        dbTo.Insert("xml123", data, "IGNORE", batchSize);
-                    }
-                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
-                    if (data.Rows.Count < batchSize) { break; }
-                }               
-            }
-            if (tablesFrom.Contains("xml7980a"))
-            {
-                /* Chuyển dữ liệu */
-                var idStart = "0";
-                while (true)
-                {
-                    tsql = $"SELECT * FROM xml7980a WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
-                    var data = dbFrom.getDataTable(tsql);
-                    if (data.Rows.Count > 0)
-                    {
-                        /* Copy AND ignore */
-                        dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
-                    }
-                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
-                    if (data.Rows.Count < batchSize) { break; }
-                }
-            }
-            if (tablesFrom.Contains("bhyt7980a"))
-            {
-                /* Chuyển dữ liệu */
-                var idStart = "0";
-                while (true)
-                {
-                    tsql = $"SELECT * FROM bhyt7980a WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
-                    var data = dbFrom.getDataTable(tsql);
-                    if (data.Rows.Count > 0)
-                    {
-                        /* Copy AND ignore */
-                        dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
-                    }
-                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
-                    if (data.Rows.Count < batchSize) { break; }
-                }
-            }
-        }
-        /// <summary>
-        /// idThread = {MaTinh}|{ID table XML}
-        /// </summary>
-        /// <param name="idThread">{MaTinh}|{ID table XML}</param>
-        private void threadCopyXML(string idThread)
-        {
-            string tmp = "", folderTemp = "", folderSave = "", id = "", matinh = "";
-            try
-            {
-                var objs = idThread.Split('|');
-                if (idThread.Length != 2) { throw new Exception($"Tham số không đúng idThread XML '{idThread}'"); }
-                id = objs[1];
-                matinh = objs[0];
-                folderTemp = Path.Combine(AppHelper.pathTemp, "xml", $"t{matinh}");
-                folderSave = Path.Combine(AppHelper.pathAppData, "xml", $"t{matinh}");
-                var dbXML = BuildDatabase.getDataXML(matinh);
-                var data = dbXML.getDataTable($"SELECT * FROM xml WHERE id='{id}'");
-                if (data.Rows.Count == 0) { throw new Exception($"Thread XML có id '{id}' không tồn tại hoặc đã bị xoá khỏi hệ thống"); }
-                var item = new Dictionary<string, string>();
-                for (int i = 1; i < data.Columns.Count; i++)
-                {
-                    if (data.Columns[i].ColumnName.StartsWith("time")) { continue; }
-                    item[data.Columns[i].ColumnName] = data.Rows[0][i].ToString();
-                }
-                var lfile = item["arg"].Split('|').ToList();
-                int ij = 0;
-                var xmldb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"xml_{id}.db"));
-                foreach (string f in lfile)
-                {
-                    ij++;
-                    var fileName = AppHelper.pathApp + f;
-                    if (System.IO.File.Exists(fileName) == false) { throw new Exception($"Thread '{id}' có tập tin '{f}' không tồn tại trong hệ thống"); }
-                    var ext = Path.GetExtension(fileName);
-                    if (ext == ".zip")
-                    {
-                        using (ZipArchive archive = ZipFile.OpenRead(fileName))
-                        {
-                            foreach (ZipArchiveEntry entry in archive.Entries)
-                            {
-                                if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    var fdb = Path.Combine(folderTemp, $"xml_{id}_{ij}.db");
-                                    entry.ExtractToFile(fdb, overwrite: true);
-                                    var db = new dbSQLite(fdb);
-                                    try
-                                    {
-                                        /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                                        var tables = db.getAllTables();
-                                        var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
-                                        var tableName = "xml123";
-                                        if (tables.Contains("xml7980a")) { tableName = "xml7980a"; }
-                                        else { if (tables.Contains("bhyt7980a")) { tableName = "bhyt7980a"; } }
-                                        data = db.getDataTable($"{tsql}{tableName} LIMIT 1"); 
-                                        if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
-                                        /* Chuyển dữ liệu */
-                                        CopyTableXML(dbXML, db, xmldb);
-                                        db.Close();
-                                        tmp = Path.Combine(folderSave, $"xml_{id}.db");
-                                        /* Xoá đi nếu tồn tại rồi */
-                                        if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
-                                        /* Chuyển về thư mục chính */
-                                        System.IO.File.Move(fdb, tmp);
-                                    }
-                                    catch (Exception exDB) { tmp = exDB.Message; continue; }
-                                    db.Close();
-                                }
-                            }
-                        }
-                        continue;
-                    }
-                    if (ext == ".db")
-                    {
-                        var db = new dbSQLite(fileName);
-                        try
-                        {
-                            /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                            var tables = db.getAllTables();
-                            var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
-                            if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }
-                            else
-                            {
-                                if (tables.Contains("bhyt7980a")) { tsql += "bhyt7980a"; }
-                                else { tsql += "xml123"; }
-                            }
-                            data = db.getDataTable(tsql + " LIMIT 1");                            
-                            if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
-                            CopyTableXML(dbXML, db, xmldb);
-                            db.Close();
-                        }
-                        catch (Exception exDB) { tmp = exDB.Message; }
-                        db.Close();
-                        continue;
-                    }
-                }
-            }
-            catch (Exception ex) { AppHelper.saveError(ex.getLineHTML()); }
         }
 
         public ActionResult Buoc2()
@@ -273,7 +83,14 @@ namespace ToolBaoCao.Controllers
                     { "iduser", idUser}
                 };
                 db.Update("xml", item);
-
+                db.Close();
+                Thread thread = new Thread(() =>
+                {
+                    AppHelper.semaphore.Wait();
+                    try { SQLiteCopy.threadCopyXML($"{matinh}|{id}"); }
+                    finally { AppHelper.semaphore.Release(); }
+                });
+                thread.Start();
                 ViewBag.files = lFilesProcess;
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
@@ -284,19 +101,32 @@ namespace ToolBaoCao.Controllers
         {
             var matinh = $"{Session["idtinh"]}";
             if (matinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
-            /* Tài khoản system có thể xem được tất cả
-             * Tài khoản admin tỉnh xem được toàn bộ của tỉnh được phân
-             * Tải khoản người dùng chỉnh xem các báo cáo mình tạo ra
-             */
             try
             {
                 var mode = Request.getValue("mode");
                 if (mode == "truyvan")
                 {
-                    var folderSave = Path.Combine(AppHelper.pathApp, "temp", "xml", $"tinh{matinh}");
-                    var d = new DirectoryInfo(folderSave);
-                    ViewBag.data = d.GetFiles().ToList();
-                    return View();
+                    var dbXML = BuildDatabase.getDataXML(matinh);
+                    /* Call Thread IF Exists */
+                    var tsql = "SELECT * FROM xml WHERE time2 = 0";
+                    var data = dbXML.getDataTable(tsql);
+                    if (data.Rows.Count > 0)
+                    {
+                        foreach (DataRow r in data.Rows)
+                        {
+                            string idThread = $"{r["matinh"]}|{r["id"]}";
+                            Thread thread = new Thread(() =>
+                            {
+                                AppHelper.semaphore.Wait();
+                                try { SQLiteCopy.threadCopyXML(idThread); }
+                                finally { AppHelper.semaphore.Release(); }
+                            });
+                            thread.Start();
+                        }
+                    }
+                    tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xml ORDER BY time1 DESC LIMIT 50";
+                    data = dbXML.getDataTable(tsql);
+                    ViewBag.data = data;
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }

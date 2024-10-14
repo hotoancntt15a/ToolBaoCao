@@ -1,145 +1,228 @@
 ﻿using System;
-using System.Data.SQLite;
-using System.Security.Cryptography;
-using System.Text;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ToolBaoCao
 {
     public static class SQLiteCopy
     {
-        private static void Main(string[] args)
+        public static void CopyTableXML(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string id)
         {
-            string sourceConnectionString = "Data Source=source.db;";
-            string targetConnectionString = "Data Source=target.db;";
-
-            using (var sourceConnection = new SQLiteConnection(sourceConnectionString))
-            using (var targetConnection = new SQLiteConnection(targetConnectionString))
+            var tablesTo = dbTo.getAllTables();
+            var tablesFrom = dbFrom.getAllTables();
+            var fileName = Path.GetFileName(dbFrom.getPathDataFile());
+            var tmp = "";
+            /* Tạo bảo nếu chưa có */
+            if (tablesTo.Contains("xml123") == false)
             {
-                sourceConnection.Open();
-                targetConnection.Open();
-
-                var tables = GetTables(sourceConnection);
-
-                foreach (var table in tables)
+                if (tablesFrom.Contains("xml123"))
                 {
-                    CreateTargetTable(targetConnection, table);
-                    CopyData(sourceConnection, targetConnection, table);
-                }
-            }
-        }
-
-        private static string[] GetTables(SQLiteConnection connection)
-        {
-            using (var command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table';", connection))
-            using (var reader = command.ExecuteReader())
-            {
-                var tables = new System.Collections.Generic.List<string>();
-                while (reader.Read())
-                {
-                    tables.Add(reader.GetString(0));
-                }
-                return tables.ToArray();
-            }
-        }
-
-        private static void CreateTargetTable(SQLiteConnection targetConnection, string table)
-        {
-            using (var command = new SQLiteCommand($"CREATE TABLE {table} AS SELECT * FROM {table} WHERE 0;", targetConnection))
-            {
-                command.ExecuteNonQuery();
-            }
-
-            // Add primary key if needed
-            using (var command = new SQLiteCommand($"PRAGMA table_info({table});", targetConnection))
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    if (reader["name"].ToString() == "id" && reader["pk"].ToString() == "0")
+                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'xml123'")}";
+                    if (Regex.IsMatch(tmp, "primary key", RegexOptions.IgnoreCase) == false)
                     {
-                        using (var alterCommand = new SQLiteCommand($"ALTER TABLE {table} ADD PRIMARY KEY(id);", targetConnection))
+                        tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
+                    }
+                    dbTo.Execute(tmp);
+                }
+            }
+            if (tablesTo.Contains("xml7980a") == false)
+            {
+                if (tablesFrom.Contains("xml7980a"))
+                {
+                    tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'xml7980a'")}";
+                }
+                else
+                {
+                    if (tablesFrom.Contains("bhyt7980a"))
+                    {
+                        tmp = $"{dbFrom.getValue("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'bhyt7980a'")}";
+                        tmp = tmp.Replace("bhyt7980a", "xml7980a");
+                    }
+                }
+                if (tmp != "")
+                {
+                    if (Regex.IsMatch(tmp, "primary key", RegexOptions.IgnoreCase) == false)
+                    {
+                        tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
+                    }
+                    dbTo.Execute(tmp);
+                }
+            }
+            var batchSize = 1000;
+            var tsql = "";
+            if (tablesFrom.Contains("xml123"))
+            {
+                dbXML.Execute($"UPDATE xml SET title = 'Đang thao sao chép dữ liệu bảng xml123 tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                /* Chuyển dữ liệu */
+                var idStart = "0";
+                while (true)
+                {
+                    tsql = $"SELECT * FROM xml123 WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
+                    var data = dbFrom.getDataTable(tsql);
+                    if (data.Rows.Count > 0)
+                    {
+                        foreach (DataRow r in data.Rows)
                         {
-                            alterCommand.ExecuteNonQuery();
+                            r["HO_TEN"] = $"{r["HO_TEN"]}".MD5Encrypt();
+                            r["NGAY_SINH"] = $"{r["NGAY_SINH"]}".MD5Encrypt();
                         }
+                        /* Copy AND ignore */
+                        dbTo.Insert("xml123", data, "IGNORE", batchSize);
                     }
+                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
+                    if (data.Rows.Count < batchSize) { break; }
                 }
             }
-        }
-
-        private static void CopyData(SQLiteConnection sourceConnection, SQLiteConnection targetConnection, string table)
-        {
-            using (var command = new SQLiteCommand($"SELECT * FROM {table};", sourceConnection))
-            using (var reader = command.ExecuteReader())
+            if (tablesFrom.Contains("xml7980a"))
             {
-                var columns = new System.Collections.Generic.List<string>();
-                for (int i = 0; i < reader.FieldCount; i++)
+                dbXML.Execute($"UPDATE xml SET title = 'Đang thao sao chép dữ liệu bảng xml7980a tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                /* Chuyển dữ liệu */
+                var idStart = "0";
+                while (true)
                 {
-                    columns.Add(reader.GetName(i));
-                }
-
-                var batchSize = 1000;
-                var batch = new System.Collections.Generic.List<string[]>();
-                var insertCommand = BuildInsertCommand(table, columns);
-
-                while (reader.Read())
-                {
-                    var values = new string[reader.FieldCount];
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    tsql = $"SELECT * FROM xml7980a WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
+                    var data = dbFrom.getDataTable(tsql);
+                    if (data.Rows.Count > 0)
                     {
-                        values[i] = reader[i].ToString();
-                        if (columns[i] == "ho_ten" || columns[i] == "ngay_sinh")
+                        foreach (DataRow r in data.Rows)
                         {
-                            values[i] = ComputeMD5(values[i]);
+                            r["HO_TEN"] = $"{r["HO_TEN"]}".MD5Encrypt();
+                            r["NGAY_SINH"] = $"{r["NGAY_SINH"]}".MD5Encrypt();
                         }
+                        /* Copy AND ignore */
+                        dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                     }
-                    batch.Add(values);
-
-                    if (batch.Count >= batchSize)
-                    {
-                        ExecuteBatchInsert(targetConnection, insertCommand, batch);
-                        batch.Clear();
-                    }
+                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
+                    if (data.Rows.Count < batchSize) { break; }
                 }
-
-                if (batch.Count > 0)
+            }
+            if (tablesFrom.Contains("bhyt7980a"))
+            {
+                dbXML.Execute($"UPDATE xml SET title = 'Đang thao sao chép dữ liệu bảng bhyt7980a tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                /* Chuyển dữ liệu */
+                var idStart = "0";
+                while (true)
                 {
-                    ExecuteBatchInsert(targetConnection, insertCommand, batch);
+                    tsql = $"SELECT * FROM bhyt7980a WHERE ID > {idStart} ORDER BY ID LIMIT {batchSize}";
+                    var data = dbFrom.getDataTable(tsql);
+                    if (data.Rows.Count > 0)
+                    {
+                        foreach (DataRow r in data.Rows)
+                        {
+                            r["HO_TEN"] = $"{r["HO_TEN"]}".MD5Encrypt();
+                            r["NGAY_SINH"] = $"{r["NGAY_SINH"]}".MD5Encrypt();
+                        }
+                        /* Copy AND ignore */
+                        dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
+                    }
+                    idStart = data.Rows[data.Rows.Count - 1]["ID"].ToString();
+                    if (data.Rows.Count < batchSize) { break; }
                 }
             }
         }
 
-        private static string BuildInsertCommand(string table, System.Collections.Generic.List<string> columns)
+        /// <summary>
+        /// idThread = {MaTinh}|{ID table XML}
+        /// </summary>
+        /// <param name="idThread">{MaTinh}|{ID table XML}</param>
+        public static void threadCopyXML(string idThread)
         {
-            var columnList = string.Join(", ", columns);
-            var paramList = string.Join(", ", columns.ConvertAll(col => "@" + col));
-            return $"INSERT INTO {table} ({columnList}) VALUES ({paramList});";
-        }
-
-        private static void ExecuteBatchInsert(SQLiteConnection connection, string commandText, System.Collections.Generic.List<string[]> batch)
-        {
-            using (var transaction = connection.BeginTransaction())
-            using (var command = new SQLiteCommand(commandText, connection))
+            string tmp = "", folderTemp = "", folderSave = "", id = "", matinh = "";
+            var dbXML = BuildDatabase.getDataXML(matinh);
+            try
             {
-                foreach (var values in batch)
+                var objs = idThread.Split('|');
+                if (idThread.Length != 2) { throw new Exception($"Tham số không đúng idThread XML '{idThread}'"); }
+                id = objs[1];
+                matinh = objs[0];
+                folderTemp = Path.Combine(AppHelper.pathTemp, "xml", $"t{matinh}");
+                folderSave = Path.Combine(AppHelper.pathAppData, "xml", $"t{matinh}");
+                var data = dbXML.getDataTable($"SELECT * FROM xml WHERE id='{id}'");
+                if (data.Rows.Count == 0) { throw new Exception($"Thread XML có id '{id}' không tồn tại hoặc đã bị xoá khỏi hệ thống"); }
+                var item = new Dictionary<string, string>();
+                for (int i = 1; i < data.Columns.Count; i++)
                 {
-                    command.Parameters.Clear();
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        command.Parameters.AddWithValue("@" + command.Parameters[i].ParameterName, values[i]);
-                    }
-                    command.ExecuteNonQuery();
+                    item[data.Columns[i].ColumnName] = data.Rows[0][i].ToString();
                 }
-                transaction.Commit();
+                var lfile = item["arg"].Split('|').ToList();
+                int ij = 0;
+                var xmldb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"xml_{id}.db"));
+                foreach (string f in lfile)
+                {
+                    dbXML.Execute($"UPDATE xml SET title = 'Đang thao tác tại tập tin {f} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                    ij++;
+                    var fileName = AppHelper.pathApp + f;
+                    if (System.IO.File.Exists(fileName) == false) { throw new Exception($"Thread '{id}' có tập tin '{f}' không tồn tại trong hệ thống"); }
+                    var ext = Path.GetExtension(fileName);
+                    if (ext == ".zip")
+                    {
+                        using (ZipArchive archive = ZipFile.OpenRead(fileName))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var fdb = Path.Combine(folderTemp, $"xml_{id}_{ij}.db");
+                                    entry.ExtractToFile(fdb, overwrite: true);
+                                    var db = new dbSQLite(fdb);
+                                    try
+                                    {
+                                        /* Kiểm tra có đúng cấu trúc dữ liệu không? */
+                                        var tables = db.getAllTables();
+                                        var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
+                                        var tableName = "xml123";
+                                        if (tables.Contains("xml7980a")) { tableName = "xml7980a"; }
+                                        else { if (tables.Contains("bhyt7980a")) { tableName = "bhyt7980a"; } }
+                                        data = db.getDataTable($"{tsql}{tableName} LIMIT 1");
+                                        if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
+                                        /* Chuyển dữ liệu */
+                                        CopyTableXML(dbXML, db, xmldb, id);
+                                        db.Close();
+                                        /* Xoá đi sau khi sao chép song */
+                                        if (System.IO.File.Exists(fdb)) { System.IO.File.Delete(fdb); }
+                                    }
+                                    catch (Exception exDB) { tmp = exDB.Message; continue; }
+                                    db.Close();
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                    if (ext == ".db")
+                    {
+                        var db = new dbSQLite(fileName);
+                        try
+                        {
+                            /* Kiểm tra có đúng cấu trúc dữ liệu không? */
+                            var tables = db.getAllTables();
+                            var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
+                            if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }
+                            else
+                            {
+                                if (tables.Contains("bhyt7980a")) { tsql += "bhyt7980a"; }
+                                else { tsql += "xml123"; }
+                            }
+                            data = db.getDataTable(tsql + " LIMIT 1");
+                            if (data.Rows.Count == 0) { db.Close(); throw new Exception($"Thread '{id}' có tập tin '{f}' không có dữ liệu"); }
+                            CopyTableXML(dbXML, db, xmldb, id);
+                            db.Close();
+                            System.IO.File.Delete(fileName);
+                        }
+                        catch (Exception exDB) { tmp = exDB.Message; }
+                        db.Close();
+                        continue;
+                    }
+                }
+                dbXML.Execute($"UPDATE xml SET title = 'Hoàn thành', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
             }
-        }
-
-        private static string ComputeMD5(string input)
-        {
-            using (var md5 = MD5.Create())
+            catch (Exception ex)
             {
-                var inputBytes = Encoding.UTF8.GetBytes(input);
-                var hashBytes = md5.ComputeHash(inputBytes);
-                return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                dbXML.Execute($"UPDATE xml SET title = '{ex.Message.sqliteGetValueField()}', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
+                AppHelper.saveError(ex.getLineHTML());
             }
         }
     }

@@ -367,4 +367,5 @@ FodyWeavers.xsd
 /ToolBaoCao/App_Data/bctuan
 /ToolBaoCao/App_Data/bcthang
 /ToolBaoCao/App_Data/xml
+/ToolBaoCao/App_Data/*.db
 /ToolBaoCao/temp

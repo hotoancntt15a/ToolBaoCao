@@ -213,7 +213,7 @@ namespace ToolBaoCao
                 ,matinh text NOT NULL DEFAULT ''
                 ,pageindex integer NOT NULL DEFAULT 0
                 ,time1 integer NOT NULL
-                ,time2 integer NOT NULL 0
+                ,time2 integer NOT NULL DEFAULT 0
                 ,iduser text NOT NULL DEFAULT '');");
             return db;
         }

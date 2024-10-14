@@ -6,7 +6,7 @@
 <div class="alert alert-info">Dữ liệu truy vấn báo cáo được tạo từ @Request.getValue("ngay1") đến @Request.getValue("ngay2")</div>
 @{
     if (Request.getValue("layout") == "null") { Layout = null; }
-    var data = ViewBag.data == null ? new List<System.IO.FileInfo>() : ViewBag.data as List<System.IO.FileInfo>;
+    var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
     if (data.Rows.Count == 0)
     {
         <div class="alert alert-info">Không có dữ liệu phù hợp với truy vấn</div>
@@ -22,16 +22,24 @@
         <thead>
             <tr>
                 <th style="width: 65px;">Chọn</th>
-                <th>Mã báo cáo</th>
+                <th>IdThread</th>
+                <th>Danh sách tập tin</th>
+                <th>Trạng thái</th>
+                <th>Thời gian tạo</th>
+                <th>Thời gian hoàn thành</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (System.IO.FileInfo fi in data)
+            @foreach (DataRow row in data.Rows)
             {
-                linkEdit = $"<a href=\"{Url.Action("Update", "XML", new { area = "", objectid = fi.FullName, layout = "null" })}\">{fi.Name}</a>";
-                <tr data-id="@fi.Name">
-                    <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@fi.Name" /></td>
-                    <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "XML", new { idobject = fi.Name, layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
+                linkEdit = $"<a href=\"{Url.Action("Update", "XML", new { area = "", objectid = row["id"], layout = "null" })}\">{row["id"]}</a>";
+                <tr data-id="@row["id"]">
+                    <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@row["id"]" /></td>
+                    <td>@Html.Raw(linkEdit)</td>
+                    <td>@row["name"]</td>
+                    <td>@row["title"]</td>
+                    <td>@row["thoigian1"]</td>
+                    <td>@row["time2"]</td>
                 </tr>
             }
         </tbody>

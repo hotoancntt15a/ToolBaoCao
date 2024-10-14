@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 using ToolBaoCao.CaptchaImage;
 using UAParser;
@@ -31,7 +32,10 @@ namespace ToolBaoCao
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
-
+        public static SemaphoreSlim semaphore = new SemaphoreSlim(2);
+        public static void callThreadWait() { 
+            /* Kiểm tra Thread XML */
+        }
         public static bool ExtractFileZip(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;
