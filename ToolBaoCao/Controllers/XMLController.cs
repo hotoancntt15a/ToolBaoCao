@@ -1,9 +1,11 @@
 ﻿using ICSharpCode.SharpZipLib.GZip;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Controllers
@@ -35,6 +37,9 @@ namespace ToolBaoCao.Controllers
             var d = new System.IO.DirectoryInfo(folderTemp);
             if (d.Exists == false) { d.Create(); }
             return View();
+        }
+        static void CopyTable(SQLiteConnection source, SQLiteConnection destination, string tableName)
+        {
         }
         private void CopyData(dbSQLite dbTo, dbSQLite dbFrom, string tableName) { 
         
