@@ -131,6 +131,7 @@ namespace ToolBaoCao
         /// <param name="idThread">{MaTinh}|{ID table XML}</param>
         public static void threadCopyXML(string idThread)
         {
+            AppHelper.saveError($"RUNNING XMLThead({idThread})");
             string tmp = "", folderTemp = "", folderSave = "", id = "", matinh = "";
             var dbXML = BuildDatabase.getDataXML(matinh);
             try
@@ -224,6 +225,7 @@ namespace ToolBaoCao
                 dbXML.Execute($"UPDATE xml SET title = '{ex.Message.sqliteGetValueField()}', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
                 AppHelper.saveError(ex.getLineHTML());
             }
+            if(id != "") { AppHelper.threadManage.Delete(id); }
         }
     }
 }

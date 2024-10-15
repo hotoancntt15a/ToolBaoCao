@@ -1,13 +1,9 @@
-﻿using NPOI.HSSF.Record;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace ToolBaoCao
 {
@@ -57,6 +53,7 @@ namespace ToolBaoCao
 
         public void Add(ItemTask item, bool callRun = true)
         {
+            item.Running = 0;
             if (_threads.TryAdd(item.ID, item))
             {
                 var tsql = $"INSERT OR IGNORE INTO task(id, nametask, actionname, args, timestart) VALUES ('{item.ID}', '{item.NameTask.sqliteGetValueField()}', '{item.ActionName.sqliteGetValueField()}', '{item.Args.sqliteGetValueField()}', '{item.TimeStart.toTimestamp()}')";
@@ -66,7 +63,7 @@ namespace ToolBaoCao
                 }
                 catch (Exception ex)
                 {
-                    AppHelper.saveError(tsql + Environment.NewLine + ex.Message);
+                    AppHelper.saveError($"Task({item.ID} - {item.ActionName} - {item.Args}): {tsql}{Environment.NewLine}{ex.Message}");
                     throw new Exception(ex.getLineHTML());
                 }
                 if (callRun) { Call(); }
@@ -75,42 +72,40 @@ namespace ToolBaoCao
 
         public void Delete(string ID)
         {
-            if (_threads.TryGetValue(ID, out var item) && item.Running == 0)
+            if (_threads.TryGetValue(ID, out var item))
             {
                 _threads.TryRemove(ID, out _);
-                dbTask.Execute($"DELETE FROM task WHERE id='{ID}';");
+                dbTask.Execute($"DELETE FROM task WHERE id='{item.ID}';");
             }
+            Call();
         }
 
         public void Call()
         {
             lock (_lock)
             {
+                AppHelper.saveError($"Find ThreadWait: {_lock}");
                 // Find the first thread item that is not running
-                var item = _threads.Values.FirstOrDefault(t => t.Running == 0);
+                var item = _threads.Values.FirstOrDefault();
                 if (item != null)
                 {
+                    AppHelper.saveError($"Run Task({item.ID} - {item.ActionName} - {item.Args} - RUNNING: {item.Running})");
+                    if (item.Running == 1) { return; }
                     item.Running = 1;
-                    Task.Run(() =>
+                    try
                     {
-                        try
+                        AppHelper.saveError($"Task RUNNING({item.ID} - {item.ActionName} - {item.Args})");
+                        switch (item.ActionName)
                         {
-                            switch (item.ActionName)
-                            {
-                                case "Controller.XML":
-                                    SQLiteCopy.threadCopyXML(item.Args);
-                                    break;
+                            case "Controller.XML":
+                                Thread t = new Thread(new ThreadStart(() => SQLiteCopy.threadCopyXML(item.Args)));
+                                t.Start();
+                                break;
 
-                                default: break;
-                            }
-                            Thread.Sleep(2000);
+                            default: break;
                         }
-                        finally
-                        {
-                            Delete(item.ID);
-                            Call();
-                        }
-                    });
+                    }
+                    catch (Exception ex) { AppHelper.saveError($"Task({item.ID} - {item.ActionName} - {item.Args}): {ex.Message}"); }
                 }
             }
         }
