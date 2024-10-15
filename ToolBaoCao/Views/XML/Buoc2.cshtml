@@ -12,11 +12,10 @@
     return;
 }
 @{
-    var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id as string;
 }
 <br />
-<h4 class="font-weight-bold">BƯỚC 2: BỔ SUNG THÔNG TIN BÁO CÁO THÁNG CÓ ID '@id'</h4>
+<h4 class="font-weight-bold">ĐÃ ĐƯA DỮ LIỆU VÀO DANH SÁCH CHỜ XỬ LÝ CÓ ID '@id'</h4>
 <div class="table-responsive">
     @if (ViewBag.files != null)
     {
@@ -29,7 +28,7 @@
             }
         </ul>
     }
-    <div class="alert alert-info">Thông tin</div>
+    <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "XML", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</a>
 </div>
 <script>
 </script>

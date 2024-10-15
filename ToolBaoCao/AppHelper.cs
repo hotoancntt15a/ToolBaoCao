@@ -33,6 +33,7 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
         public static TaskManage threadManage = new TaskManage();
+
         public static bool ExtractFileZip(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;
@@ -701,7 +702,7 @@ namespace ToolBaoCao
         {
             try
             {
-                if (pathSave == "") { pathSave = HttpContext.Current.Server.MapPath("~/error.log"); }
+                if (pathSave == "") { pathSave = Path.Combine(pathApp, "error.log"); }
                 using (var sw = new StreamWriter(pathSave, true, Encoding.Unicode))
                 {
                     try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {message}"); sw.Flush(); } catch { }
