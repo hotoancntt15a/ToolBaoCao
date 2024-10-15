@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
@@ -34,7 +30,7 @@ namespace ToolBaoCao.Controllers
         {
             if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             /* Tạo thư mục tạm */
-            var folderTemp = Path.Combine(AppHelper.pathApp, "temp", "xml", $"{Session["idtinh"]}_{Session["iduser"]}".GetMd5Hash());
+            var folderTemp = Path.Combine(AppHelper.pathTemp, "xml", $"t{Session["idtinh"]}");
             var d = new System.IO.DirectoryInfo(folderTemp);
             if (d.Exists == false) { d.Create(); }
             return View();
@@ -49,8 +45,7 @@ namespace ToolBaoCao.Controllers
             if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin dữ liệu nào đẩy lên"; return View(); }
             var id = $"{timeStart:yyMMddHHmmss}_{matinh}_{timeStart.Millisecond:000}";
             var timeUp = timeStart.toTimestamp().ToString();
-            var folderTemp = Path.Combine(AppHelper.pathApp, "temp", "xml", $"t{matinh}");
-            var folderSave = Path.Combine(AppHelper.pathApp, "temp", "xml", $"tinh{matinh}");
+            var folderTemp = Path.Combine(AppHelper.pathTemp, "xml", $"t{matinh}");
             var lWaitProcess = new List<string>();
             var lFilesProcess = new List<string>();
             var tmp = "";
@@ -84,7 +79,7 @@ namespace ToolBaoCao.Controllers
                 };
                 db.Update("xml", item);
                 db.Close();
-                var itemTask = new ItemTask(id, "Controller.XML."+id, "Controller.XML", $"{matinh}|{id}", long.Parse(item["time1"]));
+                var itemTask = new ItemTask(id, $"Controller.XML.{id}", "Controller.XML", $"{matinh}|{id}", long.Parse(item["time1"]));
                 AppHelper.threadManage.Add(itemTask);
                 ViewBag.files = lFilesProcess;
             }
@@ -127,6 +122,7 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
         }
+
         public ActionResult Delete()
         {
             var timeStart = DateTime.Now;
@@ -148,6 +144,7 @@ namespace ToolBaoCao.Controllers
             catch (Exception ex) { return Content(ex.getErrorSave().BootstrapAlter("warning")); }
             return View();
         }
+
         private void DeleteXML(string id, bool throwEx = false)
         {
             /* ID: {yyyyMMddHHmmss}_{idtinh}_{Milisecon}*/
