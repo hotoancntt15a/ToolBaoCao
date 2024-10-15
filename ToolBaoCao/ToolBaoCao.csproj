@@ -383,7 +383,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="SQLiteCopy.cs" />
-    <Compile Include="ThreadManage.cs" />
+    <Compile Include="TaskThreadManage.cs" />
     <Compile Include="WebConfigHelper.cs" />
   </ItemGroup>
   <ItemGroup>

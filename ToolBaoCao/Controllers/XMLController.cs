@@ -84,13 +84,8 @@ namespace ToolBaoCao.Controllers
                 };
                 db.Update("xml", item);
                 db.Close();
-                Thread thread = new Thread(() =>
-                {
-                    AppHelper.semaphore.Wait();
-                    try { SQLiteCopy.threadCopyXML($"{matinh}|{id}"); }
-                    finally { AppHelper.semaphore.Release(); }
-                });
-                thread.Start();
+                var itemTask = new ItemTask(id, "Controller.XML."+id, "Controller.XML", $"{matinh}|{id}", long.Parse(item["time1"]));
+                AppHelper.threadManage.Add(itemTask);
                 ViewBag.files = lFilesProcess;
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
@@ -108,25 +103,10 @@ namespace ToolBaoCao.Controllers
                 {
                     var dbXML = BuildDatabase.getDataXML(matinh);
                     /* Call Thread IF Exists */
-                    var tsql = "SELECT * FROM xml WHERE time2 = 0";
+                    var tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xml ORDER BY time1 DESC LIMIT 50";
                     var data = dbXML.getDataTable(tsql);
-                    if (data.Rows.Count > 0)
-                    {
-                        foreach (DataRow r in data.Rows)
-                        {
-                            string idThread = $"{r["matinh"]}|{r["id"]}";
-                            Thread thread = new Thread(() =>
-                            {
-                                AppHelper.semaphore.Wait();
-                                try { SQLiteCopy.threadCopyXML(idThread); }
-                                finally { AppHelper.semaphore.Release(); }
-                            });
-                            thread.Start();
-                        }
-                    }
-                    tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xml ORDER BY time1 DESC LIMIT 50";
-                    data = dbXML.getDataTable(tsql);
                     ViewBag.data = data;
+                    dbXML.Close();
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
@@ -146,6 +126,63 @@ namespace ToolBaoCao.Controllers
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
+        }
+        public ActionResult Delete()
+        {
+            var timeStart = DateTime.Now;
+            string ids = Request.getValue("id");
+            var lid = new List<string>();
+            string mode = Request.getValue("mode");
+            try
+            {
+                if (string.IsNullOrEmpty(ids)) { return Content("Không có tham số".BootstrapAlter("warning")); }
+                /* Kiểm tra danh sách nếu có */
+                lid = ids.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                ViewBag.data = string.Join(",", lid);
+                if (mode == "force")
+                {
+                    foreach (string id in lid) { DeleteXML(id, true); }
+                    return Content($"Xoá thành công dữ liệu có ID '{string.Join(", ", lid)}' ({timeStart.getTimeRun()})".BootstrapAlter());
+                }
+            }
+            catch (Exception ex) { return Content(ex.getErrorSave().BootstrapAlter("warning")); }
+            return View();
+        }
+        private void DeleteXML(string id, bool throwEx = false)
+        {
+            /* ID: {yyyyMMddHHmmss}_{idtinh}_{Milisecon}*/
+            var tmpl = id.Split('_');
+            if (tmpl.Length != 3)
+            {
+                if (throwEx == false) { return; }
+                throw new Exception("ID Báo cáo không đúng định dạng {yyyyMMddHHmmss}_{idtinh}_{Milisecon}: " + id);
+            }
+            string idtinh = tmpl[1];
+            /* Xoá hết các file trong mục lưu trữ App_Data/bcThang */
+            var folder = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}"));
+            if (folder.Exists)
+            {
+                foreach (var f in folder.GetFiles($"xml_{id}.*")) { try { f.Delete(); } catch { } }
+            }
+            folder = new DirectoryInfo(Path.Combine(AppHelper.pathTemp, "xml", $"t{idtinh}"));
+            if (folder.Exists)
+            {
+                foreach (var f in folder.GetFiles($"xml_{id}.*")) { try { f.Delete(); } catch { } }
+            }
+            /* Xoá trong cơ sở dữ liệu */
+            var db = BuildDatabase.getDataXML(idtinh);
+            try
+            {
+                var idBaoCao = id.sqliteGetValueField();
+                db.Execute($@"DELETE FROM xml WHERE id='{idBaoCao}';");
+                db.Close();
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.getErrorSave();
+                if (throwEx) { throw new Exception(msg); }
+            }
+            finally { db.Close(); }
         }
     }
 }

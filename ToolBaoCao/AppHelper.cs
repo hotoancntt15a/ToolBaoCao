@@ -32,10 +32,7 @@ namespace ToolBaoCao
         public static readonly string projectName = typeof(AppHelper).Namespace;
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
-        public static SemaphoreSlim semaphore = new SemaphoreSlim(2);
-        public static void callThreadWait() { 
-            /* Kiểm tra Thread XML */
-        }
+        public static TaskManage threadManage = new TaskManage();
         public static bool ExtractFileZip(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;

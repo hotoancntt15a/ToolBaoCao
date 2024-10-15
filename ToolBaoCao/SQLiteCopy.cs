@@ -150,7 +150,7 @@ namespace ToolBaoCao
                 }
                 var lfile = item["arg"].Split('|').ToList();
                 int ij = 0;
-                var xmldb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"xml_{id}.db"));
+                var xmldb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"t{matinh}", $"xml_{id}.db"));
                 foreach (string f in lfile)
                 {
                     dbXML.Execute($"UPDATE xml SET title = 'Đang thao tác tại tập tin {f} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
