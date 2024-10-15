@@ -235,13 +235,13 @@ namespace ToolBaoCao.Controllers
                     dbTo.Execute(tmp);
                 }
             }
-            int batchSize = 2000, rowCopyed = 0;
+            int batchSize = 1500; double rowCopyed = 0;
             string totalRow = "", tableName = "xml123";
             if (tablesFrom.Contains(tableName))
             {
-                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}";
+                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0") { throw new Exception($"{fileName}: Không có dữ liệu xml123"); }
-                dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}(0/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 /* Chuyển dữ liệu */
                 rowCopyed = 0;
                 var data = dbFrom.getDataTable($"SELECT * FROM {tableName} LIMIT 1");
@@ -254,7 +254,7 @@ namespace ToolBaoCao.Controllers
                         /* Copy AND ignore */
                         dbTo.Insert(tableName, data, "IGNORE", batchSize);
                         rowCopyed += data.Rows.Count;
-                        dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                         data.Rows.Clear();
                     }
                     DataRow dr = data.NewRow();
@@ -268,7 +268,7 @@ namespace ToolBaoCao.Controllers
                     /* Copy AND ignore */
                     dbTo.Insert(tableName, data, "IGNORE", batchSize);
                     rowCopyed += data.Rows.Count;
-                    dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 }
                 reader.Close();
             }
@@ -277,7 +277,7 @@ namespace ToolBaoCao.Controllers
             {
                 totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0") { throw new Exception($"{fileName}: Không có dữ liệu xml123"); }
-                dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}(0/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 /* Chuyển dữ liệu */
                 rowCopyed = 0;
                 var data = dbFrom.getDataTable($"SELECT * FROM {tableName} LIMIT 1");
@@ -290,7 +290,7 @@ namespace ToolBaoCao.Controllers
                         /* Copy AND ignore */
                         dbTo.Insert(tableName, data, "IGNORE", batchSize);
                         rowCopyed += data.Rows.Count;
-                        dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                         data.Rows.Clear();
                     }
                     DataRow dr = data.NewRow();
@@ -304,16 +304,16 @@ namespace ToolBaoCao.Controllers
                     /* Copy AND ignore */
                     dbTo.Insert(tableName, data, "IGNORE", batchSize);
                     rowCopyed += data.Rows.Count;
-                    dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 }
                 reader.Close();
             }
             tableName = "bhyt7980a";
             if (tablesFrom.Contains(tableName))
             {
-                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}";
+                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0") { throw new Exception($"{fileName}: Không có dữ liệu xml123"); }
-                dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}(0/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 /* Chuyển dữ liệu */
                 rowCopyed = 0;
                 var data = dbFrom.getDataTable($"SELECT * FROM {tableName} LIMIT 1");
@@ -326,7 +326,7 @@ namespace ToolBaoCao.Controllers
                         /* Copy AND ignore */
                         dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                         rowCopyed += data.Rows.Count;
-                        dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                         data.Rows.Clear();
                     }
                     DataRow dr = data.NewRow();
@@ -340,7 +340,7 @@ namespace ToolBaoCao.Controllers
                     /* Copy AND ignore */
                     dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                     rowCopyed += data.Rows.Count;
-                    dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) tại tập tin {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xml SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 }
                 reader.Close();
             }
