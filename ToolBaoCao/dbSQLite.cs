@@ -108,6 +108,18 @@ namespace ToolBaoCao
             return data;
         }
 
+        public SQLiteDataReader getDataReader(string query, object parameters = null)
+        {
+            if (connection.State == ConnectionState.Closed) { connection.Open(); }
+            SQLiteCommand command = new SQLiteCommand(query, connection);
+            if (parameters != null)
+            {
+                SQLiteParameter[] par = ConvertObjectToParameter(parameters);
+                command.Parameters.AddRange(par);
+            }
+            return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+        }
+
         public int Execute(string query, object parameters = null)
         {
             var rs = 0;

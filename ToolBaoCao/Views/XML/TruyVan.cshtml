@@ -15,6 +15,7 @@
     var idform = "frmdel" + DateTime.Now.toTimestamp().ToString();
     var linkEdit = "";
     var userid = $"{Session["iduser"]}";
+    var tmp = "";
 }
 @using (Html.BeginForm("Delete", "XML", new { area = "", layout = "null" }, FormMethod.Post, new { id = idform }))
 {
@@ -33,13 +34,14 @@
             @foreach (DataRow row in data.Rows)
             {
                 linkEdit = $"<a href=\"{Url.Action("Update", "XML", new { area = "", objectid = row["id"], layout = "null" })}\">{row["id"]}</a>";
+                tmp = $"{row["time2"]}"; if(tmp != "0") { tmp = tmp.toDateTime().ToString("yyyy-MM-dd HH:mm:ss"); }
                 <tr data-id="@row["id"]">
                     <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@row["id"]" /></td>
                     <td>@Html.Raw(linkEdit)</td>
                     <td>@row["name"]</td>
                     <td>@row["title"]</td>
                     <td>@row["thoigian1"]</td>
-                    <td>@row["time2"]</td>
+                    <td>@tmp</td>
                 </tr>
             }
         </tbody>

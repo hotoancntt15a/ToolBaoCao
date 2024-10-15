@@ -11,6 +11,10 @@
     {
       "Key": "App.PacketSize",
       "Value": "1000"
+    },
+    {
+      "Key": "maxSizeFileUploadMB",
+      "Value": "1024"
     }
   ]
 }

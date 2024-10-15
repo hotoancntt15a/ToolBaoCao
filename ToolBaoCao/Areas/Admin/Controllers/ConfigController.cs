@@ -29,7 +29,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     if (Regex.IsMatch(value, @"^\d+$") == false) { value = "0"; }
                     WebConfigHelper.UpdateMaxLength(maxAllowedContentLengthMB: int.Parse(value));
                 }
-                if(key == "maxSizeFileUpload")
+                if(key == "maxSizeFileUploadMB")
                 {
                     if (Regex.IsMatch(value, @"^\d+$") == false) { value = "0"; }
                     WebConfigHelper.UpdateMaxLength(int.Parse(value), int.Parse(value));

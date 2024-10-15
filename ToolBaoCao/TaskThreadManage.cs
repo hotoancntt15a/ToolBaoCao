@@ -116,7 +116,6 @@ namespace ToolBaoCao
                 }
                 catch (Exception ex) { AppHelper.saveError($"Task({item.ID} - {item.ActionName} - {item.Args}): {ex.Message}"); }
             }
-            else { AppHelper.saveError($"Not Found IN ListThread"); }
         }
     }
 }
