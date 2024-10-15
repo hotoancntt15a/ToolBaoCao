@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
-using ToolBaoCao.Controllers;
 
 namespace ToolBaoCao
 {
@@ -116,6 +112,30 @@ namespace ToolBaoCao
                 }
                 catch (Exception ex) { AppHelper.saveError($"Task({item.ID} - {item.ActionName} - {item.Args}): {ex.Message}"); }
             }
+        }
+
+        public void setFinshThreadInAppStart()
+        {
+            Thread t = new Thread(new ThreadStart(() =>
+            {
+                var d = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml"));
+                if ((d.Exists == false)) { d.Create(); return; }
+                foreach (var f in d.GetFiles("*.db"))
+                {
+                    var db = new dbSQLite(f.FullName);
+                    try
+                    {
+                        var tables = db.getAllTables();
+                        if (tables.Contains("xml"))
+                        {
+                            db.Execute($"UPDATE xml SET title='Lỗi do do hệ thống bị ngắt đột ngột', time2={DateTime.Now.toTimestamp()} WHERE time2=0;");
+                        }
+                    }
+                    catch { }
+                    db.Close();
+                }
+            }));
+            t.Start();
         }
     }
 }

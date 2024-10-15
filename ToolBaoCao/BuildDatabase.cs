@@ -8,6 +8,7 @@ namespace ToolBaoCao
     public static class BuildDatabase
     {
         public static string sqliteGetValueField(this string value) => value.Replace("'", "''");
+
         public static string SQLiteLike(this string value, string fieldName)
         {
             if (string.IsNullOrEmpty(value)) { return ""; }
@@ -34,6 +35,7 @@ namespace ToolBaoCao
             foreach (var v in fieldNames) ls.Add($"{v} LIKE '{value}'");
             return string.Join(" OR ", ls);
         }
+
         public static void buildDataMain(this dbSQLite connect)
         {
             var tsqlInsert = new List<string>();
@@ -61,7 +63,7 @@ namespace ToolBaoCao
                     time_create double NOT NULL DEFAULT 0,
                     time_last_login double NOT NULL DEFAULT 0);");
             }
-            if(tables.Contains("logintime"))
+            if (tables.Contains("logintime"))
             {
                 tsqlCreate.Add("CREATE TABLE IF NOT EXISTS logintime (iduser text NOT NULL PRIMARY KEY, timelogin integer NOT NULL);");
             }
@@ -83,10 +85,10 @@ namespace ToolBaoCao
                     paths text NOT NULL DEFAULT '',
                     postion integer NOT NULL DEFAULT 0,
                     note text NOT NULL DEFAULT '',
-                  css text NOT NULL DEFAULT '' 
+                  css text NOT NULL DEFAULT ''
                   );");
             }
-            if(tables.Contains("dmcskcb") == false)
+            if (tables.Contains("dmcskcb") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS dmcskcb(
                   id text NOT NULL PRIMARY KEY,
@@ -142,7 +144,9 @@ namespace ToolBaoCao
             }
             catch (Exception er) { er.saveError(); }
         }
+
         /* Cơ sở dữ liệu quản lý theo dõi user đang online */
+
         public static dbSQLite getDBUserOnline()
         {
             string pathData = AppHelper.pathApp + "App_Data\\useronline.db";
@@ -165,8 +169,9 @@ namespace ToolBaoCao
         }
 
         /**
-         * Dữ liệu làm việc chính 
+         * Dữ liệu làm việc chính
          */
+
         public static void buildDataWork(this dbSQLite dbConnect)
         {
             var tables = dbConnect.getAllTables();
@@ -198,13 +203,14 @@ namespace ToolBaoCao
                 CREATE INDEX IF NOT EXISTS index_wprocess_iduser ON wproccess (iduser);
             ");
         }
+
         /**
          Dữ liệu lần import XML
          */
+
         public static dbSQLite getDataXML(string matinh)
         {
-            string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"xml{matinh}.db");
-            var db = new dbSQLite(pathDB);
+            var db = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"xml{matinh}.db"));
             db.Execute(@"CREATE TABLE IF NOT EXISTS xml (id text NOT NULL PRIMARY KEY
                 ,name text NOT NULL DEFAULT ''
                 ,args text NOT NULL DEFAULT ''
@@ -217,9 +223,11 @@ namespace ToolBaoCao
                 ,iduser text NOT NULL DEFAULT '');");
             return db;
         }
+
         /**
          * Dữ liệu báo cáo tuần
          * */
+
         public static dbSQLite getDataBaoCaoTuan(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoTuan{matinh}.db");
@@ -552,6 +560,7 @@ namespace ToolBaoCao
         /**
          * Dữ liệu báo cáo tháng
          * */
+
         public static dbSQLite getDataBCThang(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoThang{matinh}.db");
@@ -653,7 +662,7 @@ namespace ToolBaoCao
                 ,m13cc34 real not null default 0 /* Chi nội trú = (mc13cc33/x29)*100 */
                 ,m13cc44 real not null default 0 /* Tổng lượt = 5+6 ((mc13cc43/x30)*100) */
                 ,m13cc54 real not null default 0 /* Chi ngoại trú = (mc13cc53/x31)*100 */
-                ,m13cc64 real not null default 0 /* Chi nội trú = (mc13cc63/x32)*100 */       
+                ,m13cc64 real not null default 0 /* Chi nội trú = (mc13cc63/x32)*100 */
 
                 ,userid text not null default '' /* Lưu ID của người dùng */
                 ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
@@ -993,43 +1002,43 @@ namespace ToolBaoCao
 
                 ,slkcb_trongky real not null default 0
                 ,slkcb_tlkytruoc real not null default 0
-                ,slkcb_kytruoc real not null default 0 
+                ,slkcb_kytruoc real not null default 0
                 ,slkcb_tlnamtruoc real not null default 0
                 ,slkcb_namtruoc real not null default 0
 
                 ,tongchi_trongky real not null default 0
                 ,tongchi_tlkytruoc real not null default 0
-                ,tongchi_kytruoc real not null default 0 
+                ,tongchi_kytruoc real not null default 0
                 ,tongchi_tlnamtruoc real not null default 0
                 ,tongchi_namtruoc real not null default 0
 
                 ,tienbhtt_trongky real not null default 0
                 ,tienbhtt_tlkytruoc real not null default 0
-                ,tienbhtt_kytruoc real not null default 0 
+                ,tienbhtt_kytruoc real not null default 0
                 ,tienbhtt_tlnamtruoc real not null default 0
                 ,tienbhtt_namtruoc real not null default 0
 
                 ,chibq_trongky real not null default 0
                 ,chibq_tlkytruoc real not null default 0
-                ,chibq_kytruoc real not null default 0 
+                ,chibq_kytruoc real not null default 0
                 ,chibq_tlnamtruoc real not null default 0
                 ,chibq_namtruoc real not null default 0
 
                 ,tlvvnoitru_trongky real not null default 0
                 ,tlvvnoitru_tlkytruoc real not null default 0
-                ,tlvvnoitru_kytruoc real not null default 0 
+                ,tlvvnoitru_kytruoc real not null default 0
                 ,tlvvnoitru_tlnamtruoc real not null default 0
                 ,tlvvnoitru_namtruoc real not null default 0
 
                 ,ngaydtbq_trongky real not null default 0
                 ,ngaydtbq_tlkytruoc real not null default 0
-                ,ngaydtbq_kytruoc real not null default 0 
+                ,ngaydtbq_kytruoc real not null default 0
                 ,ngaydtbq_tlnamtruoc real not null default 0
                 ,ngaydtbq_namtruoc real not null default 0
 
                 ,ngaygiuong_trongky real not null default 0
                 ,ngaygiuong_tlkytruoc real not null default 0
-                ,ngaygiuong_kytruoc real not null default 0 
+                ,ngaygiuong_kytruoc real not null default 0
                 ,ngaygiuong_tlnamtruoc real not null default 0
                 ,ngaygiuong_namtruoc real not null default 0
 

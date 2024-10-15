@@ -438,19 +438,18 @@ namespace ToolBaoCao
             appConfig = new AppConfig(Path.Combine(pathApp, "config.json"));
             if (appConfig.Config.Settings.Count == 0)
             {
-                appConfig.Set("App.Title", "Công cụ phân tích bảo hiểm y tế");
+                appConfig.Set("App.Title", "HIA-Tools");
                 appConfig.Set("App.PageSize", "50");
                 appConfig.Set("App.PacketSize", "1000");
             }
-            dbSqliteMain = new dbSQLite(Path.Combine(pathApp, @"App_Data\main.db"));
+            dbSqliteMain = new dbSQLite(Path.Combine(pathAppData, "main.db"));
             dbSqliteMain.buildDataMain();
-            dbSqliteWork = new dbSQLite(Path.Combine(pathApp, @"App_Data\data.db"));
+            dbSqliteWork = new dbSQLite(Path.Combine(pathAppData, "data.db"));
             dbSqliteWork.buildDataWork();
             /* Check Folder Exists */
-            var folders = new List<string>() {
-                Path.Combine(pathApp, "cache")
-                , Path.Combine(pathApp, "temp") };
+            var folders = new List<string>() { pathCache, pathTemp };
             foreach (var pathFolder in folders) { if (Directory.Exists(pathFolder) == false) { Directory.CreateDirectory(pathFolder); } }
+            threadManage.setFinshThreadInAppStart();
         }
 
         public static void SapXepNgauNhien(this List<string> arr)
