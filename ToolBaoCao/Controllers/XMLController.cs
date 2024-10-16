@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
@@ -81,9 +77,9 @@ namespace ToolBaoCao.Controllers
                     { "iduser", idUser}
                 };
                 db.Update("xmlthread", item);
-                db.Close(); 
+                db.Close();
                 var itemTask = new ItemTask(id, $"Controller.XML.{id}", "Controller.XML", $"{matinh}|{id}", long.Parse(item["time1"]));
-                AppHelper.threadManage.Add(itemTask); 
+                AppHelper.threadManage.Add(itemTask);
                 ViewBag.files = lFilesProcess;
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
@@ -101,7 +97,7 @@ namespace ToolBaoCao.Controllers
                 {
                     var dbXML = BuildDatabase.getDataXML(matinh);
                     /* Call Thread IF Exists */
-                    var tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xml ORDER BY time1 DESC LIMIT 50";
+                    var tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xmlthread ORDER BY time1 DESC LIMIT 50";
                     var data = dbXML.getDataTable(tsql);
                     ViewBag.data = data;
                     dbXML.Close();
@@ -174,7 +170,7 @@ namespace ToolBaoCao.Controllers
             try
             {
                 var idBaoCao = id.sqliteGetValueField();
-                db.Execute($@"DELETE FROM xml WHERE id='{idBaoCao}' AND time2 <> 0;");
+                db.Execute($@"DELETE FROM xmlthread WHERE id='{idBaoCao}' AND time2 <> 0;");
                 db.Close();
             }
             catch (Exception ex)
