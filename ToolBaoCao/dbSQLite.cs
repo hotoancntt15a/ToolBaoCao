@@ -8,15 +8,16 @@ using System.Text.RegularExpressions;
 
 namespace ToolBaoCao
 {
-    public class dbSQLite
+    public class dbSQLite : IDisposable
     {
         public SQLiteConnectionStringBuilder connectString = new SQLiteConnectionStringBuilder();
         private SQLiteConnection connection = new SQLiteConnection();
+        public int CommandTimeout = 0;
         private string fileDataName = "";
 
         public long getTimestamp(DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
 
-        public dbSQLite(string pathOrConnectionString = "main.data", string password = "")
+        public dbSQLite(string pathOrConnectionString = "main.data", string password = "", int commandTimeout = 0)
         {
             var cs = new SQLiteConnectionStringBuilder();
             try { cs = new SQLiteConnectionStringBuilder(pathOrConnectionString); } catch { }
@@ -29,6 +30,7 @@ namespace ToolBaoCao
             connectString = cs;
             connection.ConnectionString = cs.ConnectionString;
             fileDataName = Path.GetFileName(cs.DataSource);
+            if (commandTimeout > 0) { CommandTimeout = commandTimeout; }
         }
 
         public string getConnectionString(string databasePath = "main.data", string password = "")
@@ -45,11 +47,21 @@ namespace ToolBaoCao
 
         public string getPathDataFile() => connectString.DataSource;
 
-        public void checkTableViewExists()
-        { }
-
         public void Close()
-        { if (connection.State != ConnectionState.Closed) { connection.Close(); } }
+        {
+            if (connection.State != ConnectionState.Closed)
+            {
+                try
+                {
+                    if (connection.State != ConnectionState.Open) { connection.Cancel(); }
+                    connection.Close();
+                }
+                catch { }
+            }
+        }
+
+        public void Dispose()
+        { Close(); connection.Dispose(); }
 
         private SQLiteParameter[] ConvertObjectToParameter(object parameters)
         {
@@ -75,34 +87,26 @@ namespace ToolBaoCao
 
         public DataTable getDataTable(string query, object parameters = null)
         {
-            SQLiteParameter[] par = ConvertObjectToParameter(parameters);
-            DataTable data = new DataTable("DataTable");
+            var data = new DataTable("DataTable");
             if (string.IsNullOrEmpty(query)) { return data; }
+            var par = ConvertObjectToParameter(parameters);
             var parstring = new List<string>();
             if (par != null) { foreach (var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
-            var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}", this.fileDataName);
+            var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}", fileDataName);
             if (fileCache != "")
             {
                 try
                 {
-                    if (File.Exists(fileCache))
-                    {
-                        data.ReadXml(fileCache);
-                        return data;
-                    }
+                    if (File.Exists(fileCache)) { data.ReadXml(fileCache); return data; }
                 }
                 catch { try { File.Delete(fileCache); } catch { } }
             }
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
             {
+                if (CommandTimeout > 0) { command.CommandTimeout = CommandTimeout; }
                 if (par != null) { command.Parameters.AddRange(par); }
-                using (var adapter = new SQLiteDataAdapter(command))
-                {
-                    var dataset = new System.Data.DataSet();
-                    adapter.Fill(dataset);
-                    data = dataset.Tables[0];
-                }
+                using (var adapter = new SQLiteDataAdapter(command)) { adapter.Fill(data); }
             }
             if (fileCache != "") { data.WriteXml(fileCache); }
             return data;
@@ -111,10 +115,10 @@ namespace ToolBaoCao
         public SQLiteDataReader getDataReader(string query, object parameters = null)
         {
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
-            SQLiteCommand command = new SQLiteCommand(query, connection);
+            var command = new SQLiteCommand(query, connection);
             if (parameters != null)
             {
-                SQLiteParameter[] par = ConvertObjectToParameter(parameters);
+                var par = ConvertObjectToParameter(parameters);
                 command.Parameters.AddRange(par);
             }
             return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
@@ -123,10 +127,11 @@ namespace ToolBaoCao
         public int Execute(string query, object parameters = null)
         {
             var rs = 0;
-            SQLiteParameter[] par = ConvertObjectToParameter(parameters);
+            var par = ConvertObjectToParameter(parameters);
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
             {
+                if (CommandTimeout > 0) { command.CommandTimeout = CommandTimeout; }
                 if (par != null) { command.Parameters.AddRange(par); }
                 rs = command.ExecuteNonQuery();
             }
@@ -140,6 +145,7 @@ namespace ToolBaoCao
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
             {
+                if (this.CommandTimeout > 0) { command.CommandTimeout = this.CommandTimeout; }
                 if (par != null) { command.Parameters.AddRange(par); }
                 return command.ExecuteScalar();
             }
@@ -297,7 +303,7 @@ namespace ToolBaoCao
             return Execute(tsql, par.ToArray());
         }
 
-        public int Insert(string tableName, DataTable data, string orRepalceIgnore = "", int packetSize = 1000)
+        public int Insert(string tableName, DataTable data, string orReplaceIgnore = "", int packetSize = 1000)
         {
             if (string.IsNullOrEmpty(tableName)) { return 0; }
             if (data.Rows.Count == 0) { return 0; }
@@ -306,7 +312,7 @@ namespace ToolBaoCao
             var fields = new List<string>();
             foreach (DataColumn c in data.Columns) { fields.Add($"[{c.ColumnName}]"); }
             var tsqlInert = "";
-            switch (orRepalceIgnore.ToLower())
+            switch (orReplaceIgnore.ToLower())
             {
                 case "replace":
                     tsqlInert = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", fields)}) VALUES ";

@@ -211,16 +211,7 @@ namespace ToolBaoCao
         public static dbSQLite getDataXML(string matinh)
         {
             var db = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"xml{matinh}.db"));
-            db.Execute(@"CREATE TABLE IF NOT EXISTS xml (id text NOT NULL PRIMARY KEY
-                ,name text NOT NULL DEFAULT ''
-                ,args text NOT NULL DEFAULT ''
-                ,args2 text NOT NULL DEFAULT ''
-                ,title text NOT NULL DEFAULT ''
-                ,matinh text NOT NULL DEFAULT ''
-                ,pageindex integer NOT NULL DEFAULT 0
-                ,time1 integer NOT NULL
-                ,time2 integer NOT NULL DEFAULT 0
-                ,iduser text NOT NULL DEFAULT '');");
+            db.createTableXMLThread();
             return db;
         }
 
@@ -236,6 +227,18 @@ namespace ToolBaoCao
             db.CreatePhucLucBcTuan(tables);
             db.CreateBcTuan(tables);
             return db;
+        }
+        public static void createTableXMLThread(this dbSQLite db) {
+            db.Execute(@"CREATE TABLE IF NOT EXISTS xmlthread (id text NOT NULL PRIMARY KEY
+                ,name text NOT NULL DEFAULT ''
+                ,args text NOT NULL DEFAULT ''
+                ,args2 text NOT NULL DEFAULT ''
+                ,title text NOT NULL DEFAULT ''
+                ,matinh text NOT NULL DEFAULT ''
+                ,pageindex integer NOT NULL DEFAULT 0
+                ,time1 integer NOT NULL
+                ,time2 integer NOT NULL DEFAULT 0
+                ,iduser text NOT NULL DEFAULT '');");
         }
 
         public static dbSQLite getDataImportBaoCaoTuan(string matinh = "")
