@@ -210,6 +210,7 @@ namespace ToolBaoCao.Controllers
                         tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
                     }
                     dbTo.Execute(tmp);
+                    /* CREATE INDEX MA_TINH,KY_QT,MA_CHA,MA_CSKCB*/
                 }
             }
             if (tablesTo.Contains("xml7980a") == false)
@@ -233,6 +234,7 @@ namespace ToolBaoCao.Controllers
                         tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
                     }
                     dbTo.Execute(tmp);
+                    /* CREATE INDEX MA_TINH,KY_QT,MA_CHA,MA_CSKCB*/
                 }
             }
             int batchSize = 1500; double rowCopyed = 0;
