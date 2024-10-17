@@ -209,24 +209,25 @@ namespace ToolBaoCao.Controllers
                 throw new Exception("ID Báo cáo không đúng định dạng {yyyyMMddHHmmss}_{idtinh}_{Milisecon}: " + id);
             }
             string idtinh = tmpl[1];
-            /* Xoá hết các file trong mục lưu trữ App_Data/bcThang */
-            var folder = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}"));
-            if (folder.Exists)
-            {
-                foreach (var f in folder.GetFiles($"xml{id}*.*")) { try { f.Delete(); } catch { } }
-            }
-            folder = new DirectoryInfo(Path.Combine(AppHelper.pathTemp, "xml", $"t{idtinh}"));
-            if (folder.Exists)
-            {
-                foreach (var f in folder.GetFiles($"xml{id}*.*")) { try { f.Delete(); } catch { } }
-            }
+            if (AppHelper.threadManage.IDRunning == id) { /* Thread đang chạy không thể xoá */ return; }
+            var idBaoCao = id.sqliteGetValueField();
             /* Xoá trong cơ sở dữ liệu */
             var db = BuildDatabase.getDataXML(idtinh);
             try
             {
-                var idBaoCao = id.sqliteGetValueField();
-                db.Execute($@"DELETE FROM xmlthread WHERE id='{idBaoCao}' AND time2 <> 0;");
+                db.Execute($@"DELETE FROM xmlthread WHERE id='{idBaoCao}' AND time2 > 0;");
                 db.Close();
+                /* Xoá hết các file trong mục lưu trữ App_Data/bcThang */
+                var folder = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}"));
+                if (folder.Exists)
+                {
+                    foreach (var f in folder.GetFiles($"xml{id}*.*")) { try { f.Delete(); } catch { } }
+                }
+                folder = new DirectoryInfo(Path.Combine(AppHelper.pathTemp, "xml", $"t{idtinh}"));
+                if (folder.Exists)
+                {
+                    foreach (var f in folder.GetFiles($"xml{id}*.*")) { try { f.Delete(); } catch { } }
+                }
             }
             catch (Exception ex)
             {
