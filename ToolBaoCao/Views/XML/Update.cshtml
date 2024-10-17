@@ -43,6 +43,7 @@
     var idform = "frmad" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id;
     var f = new FileInfo(Path.Combine(AppHelper.pathAppData, "xml", $"t{Session["idtinh"]}", $"xml{id}.db"));
+    var tables = ViewBag.tables as List<string>;
 }
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
@@ -62,6 +63,13 @@
                             </select>
                         </td>
                     </tr>
+                    @foreach (var v in tables)
+                    {
+                        <tr>
+                            <td> @v
+                            </td>
+                        </tr>
+                    }
                     <tr>
                         <td>
                             TSQL <br />

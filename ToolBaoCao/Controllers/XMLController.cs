@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -121,10 +122,10 @@ namespace ToolBaoCao.Controllers
             var db = new dbSQLite();
             try
             {
+                pathDB = Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}", $"xml{id}.db");
                 if (mode == "tsql")
                 {
                     string dataName = Request.getValue("data");
-                    pathDB = Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}", $"xml{id}.db");
                     string tsql = Request.getValue("tsql").Trim();
                     if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
                     if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
@@ -136,10 +137,26 @@ namespace ToolBaoCao.Controllers
                         return Content($"<div class=\"alert alert-info\">Data {dataName}; TSQL: {tsql}<br />Thao tác thành công {rs} ({timeStart.getTimeRun()})</div>");
                     }
                     */
-                    if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT {limit}"; }
-                    var data = db.getDataTable(tsql); 
+                    if(Regex.IsMatch(tsql, "^pragma ", RegexOptions.IgnoreCase) == false)
+                    {
+                        if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT {limit}"; }
+                    }                    
+                    var data = db.getDataTable(tsql);
                     ViewBag.content = $"Data {dataName}; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
                     ViewBag.data = data;
+                }
+                else
+                {
+                    db = new dbSQLite(pathDB);
+                    var tables = db.getAllTables();
+                    var tablesInfo = new List<string>();
+                    foreach (var table in tables) {
+                        var data = db.getDataTable($"SELECT name, type FROM pragma_table_info('{table}');");
+                        var cols = new List<string>();
+                        foreach (DataRow row in data.Rows) { cols.Add($"{row["name"]}({row["type"]})"); }
+                        tablesInfo.Add($"{table} ({cols.Count} cột): {string.Join("; ", cols)}");
+                    }
+                    ViewBag.tables = tablesInfo;
                 }
             }
             catch (Exception ex)
