@@ -35,7 +35,7 @@
                 time2 = $"{row["time2"]}";
                 if (pageindex == "1")
                 {
-                    linkEdit = $"<a href=\"/XML/Update?layout=null&objectid={row["id"]}\">{row["id"]}</a>";
+                    linkEdit = $"<a href=\"/XML/Update?objectid={row["id"]}\">{row["id"]}</a>";
                 }
                 else { linkEdit = $"{row["id"]}"; }
                 if (time2 != "0") { time2 = time2.toDateTime().ToString("yyyy-MM-dd HH:mm:ss"); }

@@ -117,31 +117,34 @@ namespace ToolBaoCao.Controllers
             if (id == "") { ViewBag.Error = "Tham số bỏ trống"; return View(); }
             if (Regex.IsMatch(id, "^[a-z0-9_]+$") == false) { ViewBag.Error = $"Tham số không đúng {id}"; return View(); }
             var timeStart = DateTime.Now;
-            var mode = Request.getValue("mode");
+            var mode = Request.getValue("mode"); var pathDB = ""; var limit = 1000;
             var db = new dbSQLite();
             try
             {
                 if (mode == "tsql")
                 {
                     string dataName = Request.getValue("data");
-                    string pathDB = Path.Combine(AppHelper.pathApp, "xml", $"t{idtinh}", $"xml{id}.db");
+                    pathDB = Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}", $"xml{id}.db");
                     string tsql = Request.getValue("tsql").Trim();
                     if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
                     if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
                     db = new dbSQLite(pathDB);
+                    /*
                     if (Regex.IsMatch(tsql, "^select ", RegexOptions.IgnoreCase) == false)
                     {
                         var rs = db.Execute(tsql);
                         return Content($"<div class=\"alert alert-info\">Data {dataName}; TSQL: {tsql}<br />Thao tác thành công {rs} ({timeStart.getTimeRun()})</div>");
                     }
-                    var data = db.getDataTable(tsql);
-                    ViewBag.content = $"Data {dataName}; TSQL: {tsql}";
+                    */
+                    if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT {limit}"; }
+                    var data = db.getDataTable(tsql); 
+                    ViewBag.content = $"Data {dataName}; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
                     ViewBag.data = data;
                 }
             }
             catch (Exception ex)
             {
-                if (Request.getValue("layout") == "null") { return Content($"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>"); }
+                if (Request.getValue("layout") == "null") { return Content($"<div class=\"alert alert-warning\">Lỗi {pathDB}: {ex.getLineHTML()}</div>"); }
                 ViewBag.Error = $"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>";
             }
             db.Close();
