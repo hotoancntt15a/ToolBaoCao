@@ -21,10 +21,9 @@
         <thead>
             <tr>
                 <th style="width: 65px;">Chọn</th>
-                <th>IdThread</th>
+                <th>Khởi tạo lúc</th>
                 <th>Tập tin</th>
                 <th>Trạng thái</th>
-                <th>Khởi tạo lúc</th>
                 <th>Hoàn thành lúc</th>
             </tr>
         </thead>
@@ -35,16 +34,15 @@
                 time2 = $"{row["time2"]}";
                 if (pageindex == "1")
                 {
-                    linkEdit = $"<a href=\"/XML/Update?objectid={row["id"]}\">{row["id"]}</a>";
+                    linkEdit = $"<a href=\"/XML/Update?objectid={row["id"]}\">{row["thoigian1"]}</a>";
                 }
-                else { linkEdit = $"{row["id"]}"; }
+                else { linkEdit = $"{row["thoigian1"]}"; }
                 if (time2 != "0") { time2 = time2.toDateTime().ToString("yyyy-MM-dd HH:mm:ss"); }
                 <tr data-id="@row["id"]">
                     <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@row["id"]" /></td>
                     <td>@Html.Raw(linkEdit)</td>
                     <td>@row["name"]</td>
                     <td>@row["title"]</td>
-                    <td>@row["thoigian1"]</td>
                     <td>@time2</td>
                 </tr>
             }
