@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 
@@ -113,12 +114,37 @@ namespace ToolBaoCao.Controllers
             if (idtinh == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
             var id = Request.getValue("objectid");
             ViewBag.id = id;
+            if (id == "") { ViewBag.Error = "Tham số bỏ trống"; return View(); }
+            if (Regex.IsMatch(id, "^[a-z0-9_]+$") == false) { ViewBag.Error = $"Tham số không đúng {id}"; return View(); }
+            var timeStart = DateTime.Now;
+            var mode = Request.getValue("mode");
+            var db = new dbSQLite();
             try
             {
-                var item = new Dictionary<string, string>();
-                ViewBag.data = item;
+                if (mode == "tsql")
+                {
+                    string dataName = Request.getValue("data");
+                    string pathDB = Path.Combine(AppHelper.pathApp, "xml", $"t{idtinh}", $"xml{id}.db");
+                    string tsql = Request.getValue("tsql").Trim();
+                    if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
+                    if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
+                    db = new dbSQLite(pathDB);
+                    if (Regex.IsMatch(tsql, "^select ", RegexOptions.IgnoreCase) == false)
+                    {
+                        var rs = db.Execute(tsql);
+                        return Content($"<div class=\"alert alert-info\">Data {dataName}; TSQL: {tsql}<br />Thao tác thành công {rs} ({timeStart.getTimeRun()})</div>");
+                    }
+                    var data = db.getDataTable(tsql);
+                    ViewBag.content = $"Data {dataName}; TSQL: {tsql}";
+                    ViewBag.data = data;
+                }
             }
-            catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
+            catch (Exception ex)
+            {
+                if (Request.getValue("layout") == "null") { return Content($"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>"); }
+                ViewBag.Error = $"<div class=\"alert alert-warning\">Lỗi: {ex.getLineHTML()}</div>";
+            }
+            db.Close();
             return View();
         }
 

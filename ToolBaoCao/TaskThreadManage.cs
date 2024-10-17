@@ -259,7 +259,7 @@ namespace ToolBaoCao
                         continue;
                     }
                 }
-                dbXML.Execute($"UPDATE xmlthread SET title = 'Hoàn thành', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
+                dbXML.Execute($"UPDATE xmlthread SET title = 'Hoàn thành', pageindex = 1, time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
                 data = dbXML.getDataTable($"SELECT * FROM xmlthread WHERE id='{id}'");
                 XMLdb.Insert("xmlthread", data, "replace");
                 XMLdb.Close();
@@ -344,6 +344,7 @@ namespace ToolBaoCao
                     foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
                     dr["HO_TEN"] = $"{dr["HO_TEN"]}".MD5Encrypt();
                     dr["NGAY_SINH"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
+                    dr["MA_THE"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
                     data.Rows.Add(dr);
                 }
                 if (data.Rows.Count > 0)
@@ -380,6 +381,7 @@ namespace ToolBaoCao
                     foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
                     dr["HO_TEN"] = $"{dr["HO_TEN"]}".MD5Encrypt();
                     dr["NGAY_SINH"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
+                    dr["MA_THE"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
                     data.Rows.Add(dr);
                 }
                 if (data.Rows.Count > 0)
@@ -416,6 +418,7 @@ namespace ToolBaoCao
                     foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
                     dr["HO_TEN"] = $"{dr["HO_TEN"]}".MD5Encrypt();
                     dr["NGAY_SINH"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
+                    dr["MA_THE"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
                     data.Rows.Add(dr);
                 }
                 if (data.Rows.Count > 0)

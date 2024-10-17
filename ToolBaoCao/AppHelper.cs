@@ -333,13 +333,25 @@ namespace ToolBaoCao
 
         public static List<string> GetTableNameFromTsql(string tsql)
         {
-            var matches = Regex.Matches(tsql, @"\b(FROM|JOIN|UPDATE)\s+([a-zA-Z0-9_.\[\]]+)", RegexOptions.IgnoreCase);
+            /* Xóa các chuỗi trong nháy đơn (để tránh bắt từ khóa bên trong văn bản) */
+            string sanitizedSql = Regex.Replace(tsql, @"'[^']*'", string.Empty, RegexOptions.IgnoreCase);
+            var matches = Regex.Matches(sanitizedSql, @"\b(FROM|JOIN|UPDATE|DELETE|INSERT INTO|INTO|DROP TABLE(?: IF EXISTS)?)\s+([a-z0-9_.\[\]]+)", RegexOptions.IgnoreCase);
             var tableNames = new List<string>();
-            foreach (System.Text.RegularExpressions.Match match in matches) { tableNames.Add(match.Groups[2].Value); }
+            foreach (Match match in matches)
+            {
+                /* Xử lý nếu bảng có bí danh (chỉ lấy phần trước dấu cách hoặc dấu chấm) */
+                var tableName = match.Groups[2].Value.Split(new[] { ' ', '.' })[0];
+                tableNames.Add(tableName);
+            }
             return tableNames;
         }
 
-        public static bool IsUpdateOrDelete(string sql) => Regex.IsMatch(sql, @"^\s*(UPDATE|DELETE|INSERT)\s+", RegexOptions.IgnoreCase);
+        public static bool IsUpdateData(string tsql)
+        {
+            /* Xóa các chuỗi trong nháy đơn (để tránh bắt từ khóa bên trong văn bản) */
+            string sanitizedSql = Regex.Replace(tsql, @"'[^']*'", string.Empty, RegexOptions.IgnoreCase);
+            return Regex.IsMatch(sanitizedSql, @"\b(UPDATE|DELETE|INSERT|MERGE)\b(?!.*')", RegexOptions.IgnoreCase);
+        }
 
         public static string GetPathFileCacheQuery(string tsql, string dataName)
         {
@@ -360,7 +372,7 @@ namespace ToolBaoCao
 
         public static void DeleteFileCacheQuery(string tsql, string dataName)
         {
-            if (!IsUpdateOrDelete(tsql)) return;
+            if (!IsUpdateData(tsql)) return;
             var tables = GetTableNameFromTsql(tsql);
             if (tables.Count == 0) return;
             DeleteCache(tables[0] + "_");

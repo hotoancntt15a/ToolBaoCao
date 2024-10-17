@@ -1,52 +1,83 @@
 ﻿@{
-    ViewBag.Title = "Cập nhật báo cáo tuần";
+    ViewBag.Title = "Dữ liệu XML Thread " + Request.getValue("objectid");
     if (Request.getValue("layout") == "null") { Layout = null; }
-    if (ViewBag.Error != null)
+    if (ViewBag.data != null)
     {
-        <h2>@ViewBag.Title</h2>
-        <div class="alert alert-warning">@ViewBag.Error</div>
+        <div class="alert alert-info">@ViewBag.content</div>
+        var data = ViewBag.data as DataTable;
+        if (data.Rows.Count == 0)
+        {
+            <div class="alert alert-danger">Không có dữ liệu truy vấn phù hợp</div>
+            return;
+        }
+        <table class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    @foreach (DataColumn c in data.Columns)
+                    {
+                        <th>@c.ColumnName</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DataRow r in data.Rows)
+                {
+                    <tr>
+                        @foreach (DataColumn c in data.Columns)
+                        {
+                            <td>@r[c.ColumnName]</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
         return;
     }
-    var idFormBCT = "idbct" + DateTime.Now.toTimestamp().ToString();
-    var item = ViewBag.data as Dictionary<string, string>;
+    var idform = "frmad" + DateTime.Now.toTimestamp().ToString();
+    var d = new System.IO.DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data"));
 }
-<h2>@ViewBag.Title @ViewBag.id</h2>@using (Html.BeginForm("Update", "XML", new { area = "" }, FormMethod.Post, new { id = idFormBCT, target = "_blank" }))
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+@if (ViewBag.Error != null)
 {
-    <input type="hidden" name="mode" value="update" />
-    <input type="hidden" name="layout" value="null" />
-    <input type="hidden" name="id" value="@ViewBag.id" />
-    <input type="hidden" name="objectid" value="@ViewBag.id" />
-    <div class="form-group">
-        <div class="input-group input-group-sm">
-            <div class="input-group-append">@Html.Label("thoigian", "Ngày lập báo x74", new { @class = "input-group-text" })</div>
-            <input type="text" name="thoigian" id="thoigian" value="@item.getValue("x74")" class="form-control" readonly />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append">@Html.Label("x2", "Số của QĐ giao dự toán x2", new { @class = "input-group-text" })</div>
-            <input type="text" name="x2" id="x2" value="@item.getValue("x2")" class="form-control" placeholder="TW chưa giao dự toán, tạm lấy theo dự toán năm trước" />
-        </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-append">@Html.Label("x3", "Tổng số tiền các dòng QĐ năm nay x3", new { @class = "input-group-text" })</div>
-            <input type="text" name="x3" id="x3" value="@item.getValue("x3")" class="clsnumber form-control" />
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            @Html.Label("x67", "Công tác kiểm soát chi x67:")
-            <textarea name="x67" id="x67" class="form-control">@item.getValue("x67")</textarea>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            @Html.Label("x68", "Công tác thanh, quyết toán năm x68:")
-            <textarea name="x68" id="x68" class="form-control">@item.getValue("x68")</textarea>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            @Html.Label("x69", "Phương hướng kỳ tiếp theo x69:")
-            <textarea name="x69" id="x69" class="form-control">@item.getValue("x69")</textarea>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            @Html.Label("x70", "Khó khăn, vướng mắc, đề xuất (nếu có) x70:")
-            <textarea name="x70" id="x70" class="form-control">@item.getValue("x70")</textarea>
-        </div>
-    </div>
-    <div class="form-group">
-        <a href="#" onclick="postform('@idFormBCT');" class="btn btn-primary btn-sm"><i class="fa fa-save"></i> Lưu lại</a>
-    </div>
+    <div class="alert alert-danger">@ViewBag.Error</div>
+    return;
 }
+<!-- DataTales Admins -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách menu <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+    </div>
+    <div class="card-body">
+        <form id="@idform" , method="post">
+            <input name="layout" value="null" type="hidden" />
+            <input name="mode" value="tsql" type="hidden" />
+            <table class="table table-hover table-sm">
+                <tbody>
+                    <tr>
+                        <td>
+                            Chọn dữ liệu thao tác <select name="data" class="custom-select-sm">
+                                @foreach (System.IO.FileInfo f in d.GetFiles("*.db"))
+                                {
+                                    <option value="@f.Name">@f.Name (@f.Length.getFileSize())</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            TSQL <br />
+                            <textarea name="tsql" class="form-control"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform', '', 'view_@idform');"> <i class="fa fa-play"></i> Thực hiện</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <div id="view_@idform"></div>
+    </div>
+</div>
