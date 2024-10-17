@@ -97,10 +97,18 @@ namespace ToolBaoCao.Controllers
                 var mode = Request.getValue("mode");
                 if (mode == "truyvan")
                 {
+                    var ngay = Request.getValue("ngay1");
+                    var t = DateTime.Now;
+                    var w = new List<string>();
+                    if (ngay.isDateVN(out t) == false) { throw new Exception($"Từ ngày không đúng định dạng (Ngày/Tháng/Năm): {ngay}"); }
+                    w.Add($"time1 >= {t.toTimestamp()}");
+                    ngay = Request.getValue("ngay2");
+                    if (ngay.isDateVN(out t) == false) { throw new Exception($"Đến ngày không đúng định dạng (Ngày/Tháng/Năm): {ngay}"); }
+                    w.Add($"time1 < {t.AddDays(1).toTimestamp()}");
+                    var tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xmlthread";
+                    if (w.Count > 0) { tsql += " WHERE " + string.Join(" AND ", w); }
                     var dbXML = BuildDatabase.getDataXML(matinh);
-                    /* Call Thread IF Exists */
-                    var tsql = "SELECT *, datetime(time1, 'auto', '+7 hour') AS thoigian1 FROM xmlthread ORDER BY time1 DESC LIMIT 50";
-                    var data = dbXML.getDataTable(tsql);
+                    var data = dbXML.getDataTable(tsql + " ORDER BY time1 DESC LIMIT 50");
                     ViewBag.data = data;
                     dbXML.Close();
                 }
@@ -137,10 +145,10 @@ namespace ToolBaoCao.Controllers
                         return Content($"<div class=\"alert alert-info\">Data {dataName}; TSQL: {tsql}<br />Thao tác thành công {rs} ({timeStart.getTimeRun()})</div>");
                     }
                     */
-                    if(Regex.IsMatch(tsql, "^pragma ", RegexOptions.IgnoreCase) == false)
+                    if (Regex.IsMatch(tsql, "^pragma ", RegexOptions.IgnoreCase) == false)
                     {
                         if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT {limit}"; }
-                    }                    
+                    }
                     var data = db.getDataTable(tsql);
                     ViewBag.content = $"Data {dataName}; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
                     ViewBag.data = data;
@@ -150,7 +158,8 @@ namespace ToolBaoCao.Controllers
                     db = new dbSQLite(pathDB);
                     var tables = db.getAllTables();
                     var tablesInfo = new List<string>();
-                    foreach (var table in tables) {
+                    foreach (var table in tables)
+                    {
                         var data = db.getDataTable($"SELECT name, type FROM pragma_table_info('{table}');");
                         var cols = new List<string>();
                         foreach (DataRow row in data.Rows) { cols.Add($"{row["name"]}({row["type"]})"); }
