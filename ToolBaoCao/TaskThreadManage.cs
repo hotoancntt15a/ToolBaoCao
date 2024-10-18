@@ -139,6 +139,7 @@ namespace ToolBaoCao
                         var tables = db.getAllTables();
                         if (tables.Contains("xmlthread"))
                         {
+                            /* AND title <> 'Thread was being aborted.' */
                             db.Execute($"UPDATE xmlthread SET title='Lỗi do do hệ thống bị ngắt đột ngột', time2={DateTime.Now.toTimestamp()} WHERE time2=0;");
                         }
                     }
@@ -200,7 +201,7 @@ namespace ToolBaoCao
                                     entry.ExtractToFile(fdbForm, overwrite: true);
                                     var dbFrom = new dbSQLite(fdbForm);
                                     /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:dd/MM/yyyy HH:mm})', time2 = 0 WHERE id='{id}'");
                                     var tables = dbFrom.getAllTables();
                                     var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
                                     var tableName = "xml123";
@@ -226,7 +227,7 @@ namespace ToolBaoCao
                     {
                         var dbFrom = new dbSQLite(fileName);
                         /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                        dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {f} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {f} ({DateTime.Now:dd/MM/yyyy HH:mm})', time2 = 0 WHERE id='{id}'");
                         var tables = dbFrom.getAllTables();
                         var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
                         if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }

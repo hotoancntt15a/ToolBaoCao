@@ -11,7 +11,8 @@ namespace ToolBaoCao.Controllers
 {
     public class XMLController : ControllerCheckLogin
     {
-        // GET: XML
+        /* GET: XML */
+
         public ActionResult Index()
         {
             try
@@ -138,13 +139,6 @@ namespace ToolBaoCao.Controllers
                     if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
                     if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
                     db = new dbSQLite(pathDB);
-                    /*
-                    if (Regex.IsMatch(tsql, "^select ", RegexOptions.IgnoreCase) == false)
-                    {
-                        var rs = db.Execute(tsql);
-                        return Content($"<div class=\"alert alert-info\">Data {dataName}; TSQL: {tsql}<br />Thao tác thành công {rs} ({timeStart.getTimeRun()})</div>");
-                    }
-                    */
                     if (Regex.IsMatch(tsql, "^pragma ", RegexOptions.IgnoreCase) == false)
                     {
                         if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT {limit}"; }
