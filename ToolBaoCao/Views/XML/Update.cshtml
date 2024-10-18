@@ -58,17 +58,13 @@
                 <tbody>
                     <tr>
                         <td>
-                            Chọn dữ liệu thao tác <select name="data" class="custom-select-sm">
-                                <option value="@id">@f.Name (@f.Length.getFileSize())</option>
-                            </select>
+                            Chọn dữ liệu thao tác <select name="data" class="custom-select-sm"> <option value="@id">@f.Name (@f.Length.getFileSize())</option> </select>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="ShowHidenClass(this, 'showcols');"><i class="fa fa-eye-slash"></i> Hiển thị thông tin bảng</button>
                         </td>
                     </tr>
                     @foreach (var v in tables)
                     {
-                        <tr>
-                            <td> @v
-                            </td>
-                        </tr>
+                        <tr class="showcols" style="display: none;"> <td> @v </td> </tr>
                     }
                     <tr>
                         <td>
@@ -87,3 +83,14 @@
         <div id="view_@idform"></div>
     </div>
 </div>
+<script>
+    function ShowHidenClass(e, className) {
+        if ($(e).find('i.fa-eye').length > 0) {
+            $(e).html('<i class="fa fa-eye-slash"></i> Hiển thị thông tin bảng');
+            $("." + className).css('display', 'none');
+        } else {
+            $(e).html('<i class="fa fa-eye"></i> Ẩn thông tin bảng');
+            $("." + className).css('display', '');
+        }
+    }
+</script>

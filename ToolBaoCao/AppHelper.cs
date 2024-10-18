@@ -232,10 +232,10 @@ namespace ToolBaoCao
         /// <param name="numberUS"></param>
         /// <returns></returns>
         public static string getFileSize(this long size)
-        {
-            if (size > 1073741824) { return $"{(size / 1073741824):0.##}Gb"; }
-            if (size > 1048576) { return $"{(size / 1048576):0.##}Mb"; }
-            if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
+        { 
+            if (size > 1073741824) { return $"{(size / (double)1073741824):0.##}Gb"; }
+            if (size > 1048576) { return $"{(size / (double)1048576):0.##}Mb"; }
+            if (size > 1024) { return $"{(size / (double)1024):0.##}Kb"; }
             return $"{size}b";
         }
 
@@ -246,9 +246,9 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static string getFileSize(this int size)
         {
-            if (size > 1073741824) { return $"{(size / 1073741824):0.##}Gb"; }
-            if (size > 1048576) { return $"{(size / 1048576):0.##}Mb"; }
-            if (size > 1024) { return $"{(size / 1024):0.##}Kb"; }
+            if (size > 1073741824) { return $"{(size / (double)1073741824):0.##}Gb"; }
+            if (size > 1048576) { return $"{(size / (double)1048576):0.##}Mb"; }
+            if (size > 1024) { return $"{(size / (double)1024):0.##}Kb"; }
             return $"{size}b";
         }
 

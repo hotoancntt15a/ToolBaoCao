@@ -28,7 +28,7 @@
 <!-- Tab panes -->
 <div class="tab-content">
     <div id="tabHome" class="tab-pane active">
-        @using (Html.BeginForm("TruyVan", "XML", new { area = "", layout = "null", mode="truyvan" }, FormMethod.Post, new { id = idFormTruyVan }))
+        @using (Html.BeginForm("TruyVan", "XML", new { area = "", layout = "null", mode = "truyvan" }, FormMethod.Post, new { id = idFormTruyVan }))
         {
             <table class="table table-hover table-sm">
                 <tbody>
@@ -48,6 +48,12 @@
             </table>
         }
         <div id="@idViewTruyVan"></div>
+        <div class="alert alert-info">
+            <ul>
+                <li>Nhấn vào thời gian tạo để thực hiện TSQL</li>
+                <li>Chỉ xoá được các XMLThread đã hoàn thành</li>
+            </ul>
+        </div>
     </div>
     <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
     <div id="tabImport" class="tab-pane fade"></div>
