@@ -19,19 +19,19 @@
 <h4 class="font-weight-bold">BƯỚC 3: TẢI KẾT QUẢ BÁO CÁO CÓ ID: @id</h4>
 <div class="alert alert-info">Danh sách tập tin đã xử lý</div>
 <ul>
-    <!-- File báo cáo tuần -->
+    <!-- File báo cáo Tháng -->
     @foreach (var f in dirSave.GetFiles($"bcThang_{id}*.*"))
     {
         link = f.FullName.Replace(AppHelper.pathApp, "");
         <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
     }
-    <!-- File phụ lục báo cáo tuần -->
+    <!-- File phụ lục báo cáo Tháng -->
     @foreach (var f in dirSave.GetFiles($"bcThang_pl_{id}*.*"))
     {
         link = f.FullName.Replace(AppHelper.pathApp, "");
         <li><a href="/Tai?object=@link.MD5Encrypt()"> <i class="fa fa-download"></i> @f (@f.Length.getFileSize()) </a> </li>
     }
-    <!-- File tải lên phụ vục báo cáo tuần -->
+    <!-- File tải lên phụ vục báo cáo Tháng -->
     @foreach (var f in dirSave.GetFiles($"id{id}_b26_00.*"))
     {
         link = f.FullName.Replace(AppHelper.pathApp, "");
