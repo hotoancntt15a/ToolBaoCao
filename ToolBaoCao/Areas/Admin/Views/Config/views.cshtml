@@ -6,7 +6,7 @@
     <tbody>
         @foreach (var v in AppHelper.appConfig.Config.Settings)
         {
-            <tr> <td><a href="#" onclick="editconfig(this);">@v.Key</a></td><td>@v.Value</td> </tr>
+            <tr> <td><button type="button" class="btn btn-primary btn-sm" onclick="editconfig(this);">@v.Key</button></td><td>@v.Value</td> </tr>
         }
     </tbody>
 </table>

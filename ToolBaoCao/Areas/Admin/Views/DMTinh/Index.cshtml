@@ -13,7 +13,7 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <a href="javascript:showgeturl('@Url.Action("Update", "DMTinh", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</a>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <button type="button" onclick="showgeturl('@Url.Action("Update", "DMTinh", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</button>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
     </div>
     <div class="card-body">
         @if (items.Rows.Count == 0)

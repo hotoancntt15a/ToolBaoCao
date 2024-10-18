@@ -20,7 +20,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 ViewBag.dsmenu = dsMenu;
                 /* Danh sách nhóm */
                 data = AppHelper.dbSqliteMain.getDataTable("SELECT * FROM dmnhom");
-                ViewBag.Data = data; 
+                ViewBag.Data = data;
             }
             catch (Exception ex) { ViewBag.Error = $"Lỗi: {ex.getErrorSave()}"; }
             return View();
@@ -36,7 +36,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 var mode = Request.getValue("mode");
                 if (mode == "delete")
                 {
-                    return Content($"<div class=\"alert alert-info\">Bạn có thực sự có muốn xoá Nhóm có ID '{id}' không? <br /><a href=\"javascript:postform('', '/Admin/Nhom/Update?id={id}&layout=null&mode=forcedel');\" class=\"btn btn-primary btn-sm\"> Có </a></div>");
+                    return Content($"<div class=\"alert alert-info\">Bạn có thực sự có muốn xoá Nhóm có ID '{id}' không? <br /><button type=\"button\" onclick=\"postform('', '/Admin/Nhom/Update?id={id}&layout=null&mode=forcedel');\" class=\"btn btn-primary btn-sm\"> Có </a></div>");
                 }
                 if (mode == "forcedel")
                 {

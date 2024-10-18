@@ -11,7 +11,7 @@
     <div class="form-group">
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Mã</div></div>
-            <input type="text" name="id" id="id" class="form-control" maxlength="10" value="@id" @((id == "" ? "" : "readonly"))/>
+            <input type="text" name="id" id="id" class="form-control" maxlength="10" value="@id" @((id == "" ? "" : "readonly")) />
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-append"><div class="input-group-text">Tên</div></div>
@@ -27,6 +27,6 @@
         </div>
     </div>
     <div class="col-12">
-        <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform');"> <i class="fa fa-fw fa-save"></i> Lưu lại </a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idform');"> <i class="fa fa-fw fa-save"></i> Lưu lại </button>
     </div>
 </form>

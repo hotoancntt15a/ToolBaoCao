@@ -6,9 +6,9 @@
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <p>
-                    <a href="javascript:AddNew();" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới </a>
+                    <button type="button" onclick="AddNew();" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới </button>
                     <a href="@Url.Action("variables")" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem Biến cố định</a>
-                    <a href="#" onclick="window.location.reload()" class="btn btn-primary btn-sm"><i class="fa fa-refresh"></i> Làm mới</a>
+                    <button type="button" onclick="window.location.reload()" class="btn btn-primary btn-sm"><i class="fa fa-refresh"></i> Làm mới</button>
                 </p>
             </div>
             <div class="panel-body" id="viewconfig">
@@ -17,7 +17,7 @@
                     <tbody>
                         @foreach (var v in AppHelper.appConfig.Config.Settings)
                         {
-                            <tr> <td><a href="#" onclick="editconfig(this);">@v.Key</a></td><td>@v.Value</td> </tr>
+                            <tr> <td><button type="button" class="btn btn-primary btn-sm" onclick="editconfig(this);">@v.Key</button></td><td>@v.Value</td> </tr>
                         }
                     </tbody>
                 </table>
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a class="btn btn-primary btn-sm" href="#" onclick="saveConfig();"> <i class="fa fa-save"></i> Lưu lại </a>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveConfig();"> <i class="fa fa-save"></i> Lưu lại </button>
                     <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal"> <i class="fa fa-remove"></i> Hủy </button>
                 </div>
             </div>

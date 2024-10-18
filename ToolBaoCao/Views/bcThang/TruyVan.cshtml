@@ -35,7 +35,7 @@
                 if (userid == $"{r["userid"]}") { linkEdit = $"<a href=\"#\" onclick=\"showgeturl('{Url.Action("Update", "bcThang", new { area = "", objectid = r["id"], layout = "null" })}');\">{r[1]}</a>"; } else { linkEdit = $"{r[1]}"; }
                 <tr data-id="@r["id"]">
                     <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@r["id"]" /></td>
-                    <td>@Html.Raw(linkEdit) [<a href="#" onclick="showgeturl('@Url.Action("Tai", "bcThang", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </a>]</td>
+                    <td>@Html.Raw(linkEdit) [<button type="button" onclick="showgeturl('@Url.Action("Tai", "bcThang", new { idobject = r["id"], layout = "null" })')"> <i class="fa fa-file-download"></i> </button>]</td>
                     <td>@r["ma_tinh"]</td>
                     <td>@r["x74"]</td>
                     <td class="text-right">@(((double)r["x72"]).FormatCultureVN())</td>
@@ -49,7 +49,7 @@
     <tbody>
         <tr>
             <td>
-                <a href="#" onclick="postform('@idform')" class="btn btn-primary btn-sm"> <i class="fa fa-recycle"></i> Xoá báo cáo </a>
+                <button type="button" onclick="postform('@idform')" class="btn btn-primary btn-sm"> <i class="fa fa-recycle"></i> Xoá báo cáo </button>
             </td>
         </tr>
     </tbody>

@@ -28,7 +28,7 @@
 <!-- Tab panes -->
 <div class="tab-content">
     <div id="tabHome" class="tab-pane active">
-        @using (Html.BeginForm("TruyVan", "bcTuan", new { area = "", layout = "null", mode="truyvan" }, FormMethod.Post, new { id = idFormTruyVan }))
+        @using (Html.BeginForm("TruyVan", "bcTuan", new { area = "", layout = "null", mode = "truyvan" }, FormMethod.Post, new { id = idFormTruyVan }))
         {
             <table class="table table-hover table-sm">
                 <tbody>
@@ -41,7 +41,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <a href="#" onclick="postform('@idFormTruyVan', '', '@idViewTruyVan');" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</a>
+                            <button type="button" onclick="postform('@idFormTruyVan', '', '@idViewTruyVan');" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</button>
                         </td>
                     </tr>
                 </tbody>

@@ -3178,7 +3178,6 @@
     <Content Include="Views\XML\Buoc2.cshtml" />
     <Content Include="Views\XML\Delete.cshtml" />
     <Content Include="Views\XML\Index.cshtml" />
-    <Content Include="Views\XML\Tai.cshtml" />
     <Content Include="Views\XML\TruyVan.cshtml" />
   </ItemGroup>
   <ItemGroup>

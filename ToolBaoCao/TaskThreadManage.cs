@@ -288,8 +288,12 @@ namespace ToolBaoCao
                     {
                         tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
                     }
-                    dbTo.Execute(tmp);
-                    dbTo.Execute("CREATE INDEX xml123_index1 ON xml123(MA_TINH,KY_QT,MA_CHA,MA_CSKCB);");
+                    try
+                    {
+                        dbTo.Execute(tmp);
+                        dbTo.Execute("CREATE INDEX xml123_index1 ON xml123(MA_TINH,KY_QT,MA_CHA,MA_CSKCB);");
+                    }
+                    catch (Exception ex) { ex.saveError(); }
                     /* CREATE INDEX MA_TINH,KY_QT,MA_CHA,MA_CSKCB*/
                 }
             }
@@ -313,9 +317,12 @@ namespace ToolBaoCao
                     {
                         tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
                     }
-                    dbTo.Execute(tmp);
-                    dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
-                    /* CREATE INDEX MA_TINH,KY_QT,MA_CHA,MA_CSKCB*/
+                    try
+                    {
+                        dbTo.Execute(tmp);
+                        dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
+                    }
+                    catch (Exception ex) { ex.saveError(); }
                 }
             }
             int batchSize = 1500; double rowCopyed = 0;

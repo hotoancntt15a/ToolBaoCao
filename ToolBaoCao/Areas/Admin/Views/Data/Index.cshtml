@@ -46,10 +46,10 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Danh sách menu <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách menu <button type="button" onclick="window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</button></h6>
     </div>
     <div class="card-body">
-        <form id="@idform", method="post">
+        <form id="@idform" , method="post">
             <input name="layout" value="null" type="hidden" />
             <input name="mode" value="tsql" type="hidden" />
             <table class="table table-hover table-sm">
@@ -72,7 +72,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform', '', 'view_@idform');"> <i class="fa fa-play"></i> Thực hiện</a>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idform', '', 'view_@idform');"> <i class="fa fa-play"></i> Thực hiện</button>
                         </td>
                     </tr>
                 </tbody>

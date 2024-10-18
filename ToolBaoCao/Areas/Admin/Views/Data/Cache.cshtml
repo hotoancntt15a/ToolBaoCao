@@ -16,7 +16,7 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Danh sách File Cache <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách File Cache <button type="button" onclick="window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</button></h6>
     </div>
     <div class="card-body">
         <div>- Đường dẫn: @pathCache</div>
@@ -37,8 +37,8 @@
                     </tr>
                     <tr>
                         <td>
-                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idFrom');"> <i class="fa fa-play"></i> Xoá các file đã chọn</a>
-                            <a class="btn btn-primary btn-sm" href="#" onclick="postform('@idFrom', '@Url.Action("Cache", "Data", new { area = "Admin", layout="null", mode="clear" })');"> <i class="fa fa-play"></i> Xoá tất cả</a>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idFrom');"> <i class="fa fa-play"></i> Xoá các file đã chọn</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idFrom', '@Url.Action("Cache", "Data", new { area = "Admin", layout="null", mode="clear" })');"> <i class="fa fa-play"></i> Xoá tất cả</button>
                         </td>
                     </tr>
                 </tbody>

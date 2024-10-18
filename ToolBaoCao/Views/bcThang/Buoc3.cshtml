@@ -7,7 +7,7 @@
 {
     <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
     <br />
-    <a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</a>
+    <button type="button" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo lại</button>
     return;
 }
 @{
@@ -38,4 +38,4 @@
         <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
 </ul>
-<a href="#" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo mới</a>
+<button type="button" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "bcThang", new { area = "", layout="null", idtarget=idtarget })', '@idtarget')"><i class="fa fa-refresh"></i> Tạo mới</button>
