@@ -22,7 +22,7 @@
         <!-- DataTales Admins -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <button type="button" onclick="showgeturl('@Url.Action("Update", "DMCSKCB", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</button>  <a href="javascript:window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</a></h6>
+                <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <button type="button" onclick="showgeturl('@Url.Action("Update", "DMCSKCB", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</button>  <button type="button" onclick="window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</button></h6>
             </div>
             <div class="card-body">
                 <form id="@idFromTruyVan" name="@idFromTruyVan" method="post" action="/Admin/DMCSKCB/TruyVan?layout=null" target="_blank">

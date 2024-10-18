@@ -700,7 +700,7 @@ namespace ToolBaoCao
         {
             try
             {
-                using (var sw = new StreamWriter(HttpContext.Current.Server.MapPath("~/error.log"), true, Encoding.Unicode))
+                using (var sw = new StreamWriter(Path.Combine(pathApp,"error.log"), true, Encoding.Unicode))
                 {
                     try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {ex.Message} {message} {ex.StackTrace}"); sw.Flush(); } catch { }
                 }

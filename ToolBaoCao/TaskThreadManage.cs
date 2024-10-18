@@ -155,7 +155,7 @@ namespace ToolBaoCao
         /// <param name="idThread">{MaTinh}|{ID table XML}</param>
         public void XMLThread(string idThread)
         {
-            string tmp = "", folderTemp = "", folderSave = "", id = "", matinh = "";
+            string folderTemp = "", folderSave = "", id = "", matinh = "";
             var dbXML = BuildDatabase.getDataXML(matinh);
             try
             {
@@ -199,31 +199,22 @@ namespace ToolBaoCao
                                     var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip{ij}.db");
                                     entry.ExtractToFile(fdbForm, overwrite: true);
                                     var dbFrom = new dbSQLite(fdbForm);
-                                    try
-                                    {
-                                        /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                                        dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
-                                        var tables = dbFrom.getAllTables();
-                                        var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
-                                        var tableName = "xml123";
-                                        if (tables.Contains("xml7980a")) { tableName = "xml7980a"; }
-                                        else { if (tables.Contains("bhyt7980a")) { tableName = "bhyt7980a"; } }
-                                        data = dbFrom.getDataTable($"{tsql}{tableName} LIMIT 1");
-                                        if (data.Rows.Count == 0)
-                                        {
-                                            dbFrom.Close();
-                                            throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
-                                        }
-                                        /* Chuyển dữ liệu */
-                                        XMLCopyTable(XMLdb, dbFrom, dbXML, id);
-                                        dbFrom.Close();
-                                    }
-                                    catch (Exception exDB)
+                                    /* Kiểm tra có đúng cấu trúc dữ liệu không? */
+                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                                    var tables = dbFrom.getAllTables();
+                                    var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
+                                    var tableName = "xml123";
+                                    if (tables.Contains("xml7980a")) { tableName = "xml7980a"; }
+                                    else { if (tables.Contains("bhyt7980a")) { tableName = "bhyt7980a"; } }
+                                    data = dbFrom.getDataTable($"{tsql}{tableName} LIMIT 1");
+                                    if (data.Rows.Count == 0)
                                     {
                                         dbFrom.Close();
-                                        AppHelper.saveError($"XMLThread({id}): {entry.FullName} IN {f} - {exDB.Message}");
-                                        continue;
+                                        throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                                     }
+                                    /* Chuyển dữ liệu */
+                                    XMLCopyTable(XMLdb, dbFrom, dbXML, id);
+                                    dbFrom.Close();
                                     /* Xoá đi sau khi sao chép song */
                                     try { System.IO.File.Delete(fdbForm); } catch { }
                                 }
@@ -234,27 +225,23 @@ namespace ToolBaoCao
                     if (ext == ".db")
                     {
                         var dbFrom = new dbSQLite(fileName);
-                        try
+                        /* Kiểm tra có đúng cấu trúc dữ liệu không? */
+                        dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {f} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                        var tables = dbFrom.getAllTables();
+                        var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
+                        if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }
+                        else
                         {
-                            /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                            dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {f} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
-                            var tables = dbFrom.getAllTables();
-                            var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
-                            if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }
-                            else
-                            {
-                                if (tables.Contains("bhyt7980a")) { tsql += "bhyt7980a"; }
-                                else { tsql += "xml123"; }
-                            }
-                            data = dbFrom.getDataTable(tsql + " LIMIT 1");
-                            if (data.Rows.Count == 0)
-                            {
-                                dbFrom.Close();
-                                throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
-                            }
-                            XMLCopyTable(XMLdb, dbFrom, dbXML, id);
+                            if (tables.Contains("bhyt7980a")) { tsql += "bhyt7980a"; }
+                            else { tsql += "xml123"; }
                         }
-                        catch (Exception exDB) { tmp = exDB.Message; }
+                        data = dbFrom.getDataTable(tsql + " LIMIT 1");
+                        if (data.Rows.Count == 0)
+                        {
+                            dbFrom.Close();
+                            throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
+                        }
+                        XMLCopyTable(XMLdb, dbFrom, dbXML, id);
                         dbFrom.Close();
                         continue;
                     }
@@ -266,8 +253,8 @@ namespace ToolBaoCao
             }
             catch (Exception ex)
             {
+                ex.saveError();
                 dbXML.Execute($"UPDATE xmlthread SET title = '{ex.Message.sqliteGetValueField()}', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
-                AppHelper.saveError(ex.getLineHTML());
             }
             dbXML.Close();
         }
@@ -288,15 +275,15 @@ namespace ToolBaoCao
                     {
                         tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
                     }
-                    try
+                    if (Regex.IsMatch(tmp, "IF NOT EXISTS", RegexOptions.IgnoreCase) == false)
                     {
-                        dbTo.Execute(tmp);
-                        dbTo.Execute("CREATE INDEX xml123_index1 ON xml123(MA_TINH,KY_QT,MA_CHA,MA_CSKCB);");
+                        tmp = Regex.Replace(tmp, "CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", RegexOptions.IgnoreCase);
                     }
-                    catch (Exception ex) { ex.saveError(); }
-                    /* CREATE INDEX MA_TINH,KY_QT,MA_CHA,MA_CSKCB*/
+                    dbTo.Execute(tmp);
+                    dbTo.Execute("CREATE INDEX xml123_index1 ON xml123(MA_TINH,KY_QT,MA_CHA,MA_CSKCB);");
                 }
             }
+            tmp = "";
             if (tablesTo.Contains("xml7980a") == false)
             {
                 if (tablesFrom.Contains("xml7980a"))
@@ -317,12 +304,12 @@ namespace ToolBaoCao
                     {
                         tmp = tmp.Replace(")", ", PRIMARY KEY(ID))");
                     }
-                    try
+                    if (Regex.IsMatch(tmp, "IF NOT EXISTS", RegexOptions.IgnoreCase) == false)
                     {
-                        dbTo.Execute(tmp);
-                        dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
+                        tmp = Regex.Replace(tmp, "CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", RegexOptions.IgnoreCase);
                     }
-                    catch (Exception ex) { ex.saveError(); }
+                    dbTo.Execute(tmp);
+                    dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
                 }
             }
             int batchSize = 1500; double rowCopyed = 0;

@@ -85,21 +85,25 @@ namespace ToolBaoCao
             throw new Exception($"Not support SQLiteParameter ${parameters}");
         }
 
-        public DataTable getDataTable(string query, object parameters = null)
+        public DataTable getDataTable(string query, object parameters = null, bool getCache = true)
         {
             var data = new DataTable("DataTable");
             if (string.IsNullOrEmpty(query)) { return data; }
+            var fileCache = "";
             var par = ConvertObjectToParameter(parameters);
-            var parstring = new List<string>();
-            if (par != null) { foreach (var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
-            var fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}", fileDataName);
-            if (fileCache != "")
+            if (getCache)
             {
-                try
+                var parstring = new List<string>();
+                if (par != null) { foreach (var p in par) { parstring.Add($"{p.ParameterName}:{p.Value}"); } }
+                fileCache = AppHelper.GetPathFileCacheQuery($"{query} {string.Join(",", parstring)}", fileDataName);
+                if (fileCache != "")
                 {
-                    if (File.Exists(fileCache)) { data.ReadXml(fileCache); return data; }
+                    try
+                    {
+                        if (File.Exists(fileCache)) { data.ReadXml(fileCache); return data; }
+                    }
+                    catch { try { File.Delete(fileCache); } catch { } }
                 }
-                catch { try { File.Delete(fileCache); } catch { } }
             }
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))
@@ -164,7 +168,7 @@ namespace ToolBaoCao
             var l = new List<string>();
             string type = "'table'";
             if (views) { type = "'table', 'view'"; }
-            var dt = getDataTable($"SELECT [name] FROM [sqlite_master] WHERE type IN ({type}) AND name not like 'sqlite_%'");
+            var dt = getDataTable($"SELECT [name] FROM [sqlite_master] WHERE type IN ({type}) AND name not like 'sqlite_%'", getCache: false);
             foreach (DataRow r in dt.Rows) l.Add($"{r[0]}");
             return l;
         }
