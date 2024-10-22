@@ -45,6 +45,14 @@
     var f = new FileInfo(Path.Combine(AppHelper.pathAppData, "xml", $"t{Session["idtinh"]}", $"xml{id}.db"));
     var tables = ViewBag.tables as List<string>;
 }
+<style>
+    .scroll-div {
+        width: 100%; /* Đặt chiều rộng cho div */
+        height: 548px; /* Đặt chiều cao cho div */
+        overflow-y: scroll; /* Thêm cuộn dọc */
+        overflow-x: scroll; /* Ẩn cuộn ngang nếu không cần thiết */
+    }
+</style>
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -80,7 +88,7 @@
                 </tbody>
             </table>
         </form>
-        <div id="view_@idform"></div>
+        <div id="view_@idform" class="scroll-div"></div>
     </div>
 </div>
 <script>

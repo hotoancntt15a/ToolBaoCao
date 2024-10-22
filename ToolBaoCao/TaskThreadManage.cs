@@ -260,12 +260,26 @@ namespace ToolBaoCao
             dbXML.Close();
         }
 
+        private string RemoveColumns(string tsql, HashSet<string> columnsToRemove)
+        {
+            tsql = tsql.Replace(Environment.NewLine, "");
+            foreach (var column in columnsToRemove)
+            {
+                var p = $"[\"']?{column}[\"']?";
+                tsql = Regex.Replace(tsql, $@"{p}\s+\w+\s*(,)?", "", RegexOptions.IgnoreCase);
+            }
+            return Regex.Replace(tsql, @"\s+", " ");
+        }
+
         private void XMLCopyTable(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string id)
         {
             var tablesTo = dbTo.getAllTables();
             var tablesFrom = dbFrom.getAllTables();
             var fileName = Path.GetFileName(dbFrom.getPathDataFile());
             var tmp = "";
+            int batchSize = 1000; double rowCopyed = 0;
+            var colsRemove = new HashSet<string> { "TEN_TINH", "TEN_CSKCB", "COSOKCB_ID", "MA_TINH_THE", "T_VUOTTRAN" };
+            var colsMD5 = new List<string>() { "MA_THE", "NGAY_SINH", "HO_TEN", "DIA_CHI" };
             /* Tạo bảo nếu chưa có */
             if (tablesTo.Contains("xml123") == false)
             {
@@ -280,6 +294,8 @@ namespace ToolBaoCao
                     {
                         tmp = Regex.Replace(tmp, "CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", RegexOptions.IgnoreCase);
                     }
+                    tmp = RemoveColumns(tmp, colsRemove);
+                    AppHelper.saveError(tmp);
                     dbTo.Execute(tmp);
                     dbTo.Execute("CREATE INDEX xml123_index1 ON xml123(MA_TINH,KY_QT,MA_CHA,MA_CSKCB);");
                 }
@@ -309,11 +325,12 @@ namespace ToolBaoCao
                     {
                         tmp = Regex.Replace(tmp, "CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", RegexOptions.IgnoreCase);
                     }
+                    tmp = RemoveColumns(tmp, colsRemove);
+                    AppHelper.saveError(tmp);
                     dbTo.Execute(tmp);
                     dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
                 }
             }
-            int batchSize = 1500; double rowCopyed = 0;
             string totalRow = "", tableName = "xml123";
             if (tablesFrom.Contains(tableName))
             {
@@ -322,9 +339,12 @@ namespace ToolBaoCao
                 dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 /* Chuyển dữ liệu */
                 rowCopyed = 0;
-                var data = dbFrom.getDataTable($"SELECT * FROM {tableName} LIMIT 1");
+                var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
+                var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                 data.Rows.RemoveAt(0);
-                var reader = dbFrom.getDataReader($"SELECT * FROM {tableName}");
+                var md5EncyptCols = colsMD5;
+                foreach(var v in md5EncyptCols) { if (lfield.Contains(v) == false) { md5EncyptCols.Remove(v); } }
+                var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
                 while (reader.Read())
                 {
                     if (data.Rows.Count >= batchSize)
@@ -337,9 +357,7 @@ namespace ToolBaoCao
                     }
                     DataRow dr = data.NewRow();
                     foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
-                    dr["HO_TEN"] = $"{dr["HO_TEN"]}".MD5Encrypt();
-                    dr["NGAY_SINH"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
-                    dr["MA_THE"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
+                    foreach(var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
                     data.Rows.Add(dr);
                 }
                 if (data.Rows.Count > 0)
@@ -354,14 +372,17 @@ namespace ToolBaoCao
             tableName = "xml7980a";
             if (tablesFrom.Contains(tableName))
             {
+                var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
                 totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0") { throw new Exception($"{fileName}: Không có dữ liệu xml123"); }
                 dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 /* Chuyển dữ liệu */
                 rowCopyed = 0;
-                var data = dbFrom.getDataTable($"SELECT * FROM {tableName} LIMIT 1");
+                var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                 data.Rows.RemoveAt(0);
-                var reader = dbFrom.getDataReader($"SELECT * FROM {tableName}");
+                var md5EncyptCols = colsMD5;
+                foreach (var v in md5EncyptCols) { if (lfield.Contains(v) == false) { md5EncyptCols.Remove(v); } }
+                var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
                 while (reader.Read())
                 {
                     if (data.Rows.Count >= batchSize)
@@ -374,9 +395,7 @@ namespace ToolBaoCao
                     }
                     DataRow dr = data.NewRow();
                     foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
-                    dr["HO_TEN"] = $"{dr["HO_TEN"]}".MD5Encrypt();
-                    dr["NGAY_SINH"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
-                    dr["MA_THE"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
+                    foreach(var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
                     data.Rows.Add(dr);
                 }
                 if (data.Rows.Count > 0)
@@ -391,14 +410,17 @@ namespace ToolBaoCao
             tableName = "bhyt7980a";
             if (tablesFrom.Contains(tableName))
             {
+                var lfield = dbTo.getColumns("xml7980a").Select(p => p.ColumnName).ToList();
                 totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0") { throw new Exception($"{fileName}: Không có dữ liệu xml123"); }
                 dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                 /* Chuyển dữ liệu */
                 rowCopyed = 0;
-                var data = dbFrom.getDataTable($"SELECT * FROM {tableName} LIMIT 1");
+                var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                 data.Rows.RemoveAt(0);
-                var reader = dbFrom.getDataReader($"SELECT * FROM {tableName}");
+                var md5EncyptCols = colsMD5;
+                foreach (var v in md5EncyptCols) { if (lfield.Contains(v) == false) { md5EncyptCols.Remove(v); } }
+                var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
                 while (reader.Read())
                 {
                     if (data.Rows.Count >= batchSize)
@@ -411,9 +433,7 @@ namespace ToolBaoCao
                     }
                     DataRow dr = data.NewRow();
                     foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
-                    dr["HO_TEN"] = $"{dr["HO_TEN"]}".MD5Encrypt();
-                    dr["NGAY_SINH"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
-                    dr["MA_THE"] = $"{dr["NGAY_SINH"]}".MD5Encrypt();
+                    foreach(var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
                     data.Rows.Add(dr);
                 }
                 if (data.Rows.Count > 0)
