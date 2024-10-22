@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
+using zModules.NPOIExcel;
 
 namespace ToolBaoCao.Controllers
 {
     public class XMLController : ControllerCheckLogin
     {
         /* GET: XML */
-
         public ActionResult Index()
         {
             try
@@ -146,6 +146,28 @@ namespace ToolBaoCao.Controllers
                     var data = db.getDataTable(tsql);
                     ViewBag.content = $"Data {dataName}; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
                     ViewBag.data = data;
+                    db.Close();
+                    return View();
+                }
+                if(mode == "xlsx")
+                {
+                    string dataName = Request.getValue("data");
+                    string tsql = Request.getValue("tsql").Trim();
+                    if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
+                    if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
+                    db = new dbSQLite(pathDB);
+                    if (Regex.IsMatch(tsql, "^pragma ", RegexOptions.IgnoreCase) == false)
+                    {
+                        if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT 63999"; }
+                    }
+                    var data = db.getDataTable(tsql);
+                    db.Close();
+                    var wb = XLSX.exportExcel(data);
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        wb.Write(stream);
+                        return File(stream.ToArray(), "application/octet-stream", $"id{DateTime.Now.toTimestamp()}.xlsx");
+                    }
                 }
                 else
                 {

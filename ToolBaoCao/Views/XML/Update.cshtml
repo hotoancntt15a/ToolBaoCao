@@ -36,7 +36,7 @@
     if (ViewBag.Error != null)
     {
         <!-- Page Heading -->
-        <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title @ViewBag.id</h1>
+        <h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
         <div class="alert alert-danger">@ViewBag.Error</div>
         return;
     }
@@ -56,10 +56,10 @@
 <!-- DataTales Admins -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">@ViewBag.Title @ViewBag.id</h6>
+        <h6 class="m-0 font-weight-bold text-primary">@ViewBag.Title</h6>
     </div>
     <div class="card-body">
-        <form id="@idform" , method="post">
+        <form id="@idform" method="post">
             <input name="layout" value="null" type="hidden" />
             <input name="mode" value="tsql" type="hidden" />
             <table class="table table-hover table-sm">
@@ -82,7 +82,8 @@
                     </tr>
                     <tr>
                         <td>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idform', '', 'view_@idform');"> <i class="fa fa-play"></i> Thực hiện</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="thucThiTSQL('');"> <i class="fa fa-play"></i> Thực hiện</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="thucThiTSQL('xlsx');"> <i class="fa fa-file-excel"></i> Xuất Excel</button>
                         </td>
                     </tr>
                 </tbody>
@@ -100,5 +101,15 @@
             $(e).html('<i class="fa fa-eye"></i> Ẩn thông tin bảng');
             $("." + className).css('display', '');
         }
+    }
+    function thucThiTSQL(sender = "") {
+        var mode = 'tsql';
+        if (typeof (sender) == 'string') { if (sender == "xlsx") { mode = 'xlsx'; } }
+        var frm = $('#@idform');
+        frm.find('input[name="mode"]').val(mode);
+        if (mode == 'xlsx') { mode = "_blank"; } else { mode = ""; }
+        frm.attr('target', mode);
+        if (mode != "") { $('#@idform').submit(); return; }
+        postform('@idform', '', 'view_@idform');
     }
 </script>
