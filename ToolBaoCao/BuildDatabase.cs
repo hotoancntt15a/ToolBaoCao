@@ -673,7 +673,7 @@ namespace ToolBaoCao
                 ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */);
             CREATE INDEX IF NOT EXISTS bcthangdocx_ma_tinh ON bcthangdocx(ma_tinh);
             CREATE INDEX IF NOT EXISTS index_bcthangdocx_timecreate ON bcthangdocx(timecreate);
-            CREATE INDEX IF NOT EXISTS index_bcthangdocx_ngay ON bcthangdocx(ngay);");
+            CREATE INDEX IF NOT EXISTS index_bcthangdocx_ngay ON bcthangdocx(ngay1);");
             var tsql = string.Join(Environment.NewLine, tsqlCreate);
             if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
         }
