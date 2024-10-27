@@ -428,7 +428,7 @@ namespace ToolBaoCao.Controllers
                     /* Cột đầu tiên không phải là matinh dạng số */
                     string ma = row.GetCell(indexColumn).GetValueAsString().Trim();
 
-                    if (Regex.IsMatch(ma, "^[0-9]+$|^V[0-9]+$") == false) { continue; }
+                    if (Regex.IsMatch(ma, @"^([A-Z]+)?\d+([A-Z]+)?$") == false) { continue; }
                     /* Xây dựng tsql VALUES */
                     listValue = new List<string>() { "0", ma.sqliteGetValueField() };
                     for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
