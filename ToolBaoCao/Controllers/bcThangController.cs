@@ -258,8 +258,8 @@ namespace ToolBaoCao.Controllers
             var PL02a = createPL02a(pl, matinh);
 
             pl = dbBCThang.getDataTable($"SELECT * FROM thangpl02b WHERE id_bc='{idBaoCaoVauleField}';");
-            var PL02b = createPL02b(pl, matinh); 
-            
+            var PL02b = createPL02b(pl, matinh);
+
             pl = dbBCThang.getDataTable($"SELECT * FROM thangpl04a WHERE id_bc='{idBaoCaoVauleField}';");
             var PL04a = createPL04a(pl, matinh);
 
@@ -918,6 +918,7 @@ namespace ToolBaoCao.Controllers
                 "", $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{rowVung[10]}"))}");
             return phuLuc;
         }
+
         private DataTable createPL04a(DataTable pl, string idtinh)
         {
             /* Bỏ [ma tỉnh] - ở cột tên tỉnh */
