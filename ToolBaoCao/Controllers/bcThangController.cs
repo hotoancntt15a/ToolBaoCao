@@ -816,7 +816,7 @@ namespace ToolBaoCao.Controllers
 
         private DataTable createPL03(dbSQLite db, string idBaoCao, string idtinh, string nameSheet)
         {
-            var data = db.getDataTable($"SELECT * FROM thangpl03a WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
+            var data = db.getDataTable($"SELECT * FROM thangp{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
             var phuLuc = new DataTable(nameSheet);
             phuLuc.Columns.Add("Mã"); /* 0 */
