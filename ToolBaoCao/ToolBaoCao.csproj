@@ -802,6 +802,7 @@
     <Content Include="App_Data\plthang.xlsx" />
     <Content Include="App_Data\plthang-MoTa.xlsx" />
     <Content Include="App_Data\bcThang-MoTa.docx" />
+    <Content Include="App_Data\DM_COSOKCB_TQ.xlsx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
