@@ -1,14 +1,18 @@
 ﻿@{
     ViewBag.Title = "Home Page";
+    string tmp = "";
 }
 <div class="row">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body text-center">
                 <p>
-                    Chào mừng đến với “Công cụ phân tích bảo hiểm y tế”
-                    <br />Health insurance analysis tools
-                    <br />(HIA-Tools)
+                    @{ tmp = AppHelper.getConfig("App.Welcome"); if (tmp == "") { tmp = "Chào mừng đến với “Công cụ phân tích bảo hiểm y tế”"; } }
+                    @tmp
+                    @{ tmp = AppHelper.getConfig("App.TitleEN"); if (tmp == "") { tmp = "Health insurance analysis tools"; } }
+                    <br />@tmp
+                    @{ tmp = AppHelper.getConfig("App.Title"); if (tmp == "") { tmp = "HIA-Tools"; } }
+                    <br />(@tmp)
                 </p>
                 <img src="~/images/graph-clipart-data-statistics.png" />
             </div>
