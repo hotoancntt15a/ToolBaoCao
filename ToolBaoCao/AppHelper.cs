@@ -232,7 +232,7 @@ namespace ToolBaoCao
         /// <param name="numberUS"></param>
         /// <returns></returns>
         public static string getFileSize(this long size)
-        { 
+        {
             if (size > 1073741824) { return $"{(size / (double)1073741824):0.##}Gb"; }
             if (size > 1048576) { return $"{(size / (double)1048576):0.##}Mb"; }
             if (size > 1024) { return $"{(size / (double)1024):0.##}Kb"; }
@@ -297,22 +297,19 @@ namespace ToolBaoCao
         public static string FormatCultureVN(this long numberUS)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
-            return numberUS.ToString($"N", formatInfo);
+            return numberUS.ToString($"N", vietnamCulture.NumberFormat);
         }
 
         public static string FormatCultureVN(this int numberUS)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
-            return numberUS.ToString($"N", formatInfo);
+            return numberUS.ToString($"N", vietnamCulture.NumberFormat);
         }
 
         public static string FormatCultureVN(this double numberUS, int decimalDigits = 2)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
-            string formattedNumber = numberUS.ToString($"N{decimalDigits}", formatInfo);
+            string formattedNumber = numberUS.ToString($"N{decimalDigits}", vietnamCulture.NumberFormat);
             if (formattedNumber.Contains(","))
             {
                 string[] parts = formattedNumber.Split(',');
@@ -326,8 +323,7 @@ namespace ToolBaoCao
         public static string FormatCultureVN(this decimal numberUS, int decimalDigits = 2)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            NumberFormatInfo formatInfo = vietnamCulture.NumberFormat;
-            return numberUS.ToString($"N{decimalDigits}", formatInfo);
+            return numberUS.ToString($"N{decimalDigits}", vietnamCulture.NumberFormat);
         }
 
         public static List<string> GetTableNameFromTsql(string tsql)
@@ -700,7 +696,7 @@ namespace ToolBaoCao
         {
             try
             {
-                using (var sw = new StreamWriter(Path.Combine(pathApp,"error.log"), true, Encoding.Unicode))
+                using (var sw = new StreamWriter(Path.Combine(pathApp, "error.log"), true, Encoding.Unicode))
                 {
                     try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {ex.Message} {message} {ex.StackTrace}"); sw.Flush(); } catch { }
                 }
