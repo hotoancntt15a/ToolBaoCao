@@ -168,7 +168,7 @@ namespace ToolBaoCao.Controllers
 
         private void createFilePhuLucBCTuan(string idBaoCao, string matinh, dbSQLite dbBaoCaoTuan = null, Dictionary<string, string> bcTuan = null)
         {
-            if (dbBaoCaoTuan == null) { dbBaoCaoTuan = BuildDatabase.getDataBaoCaoTuan(matinh); }
+            if (dbBaoCaoTuan == null) { dbBaoCaoTuan = BuildDatabase.getDataBCTuan(matinh); }
             var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
             if (bcTuan == null)
             {
@@ -477,7 +477,7 @@ namespace ToolBaoCao.Controllers
                 if (System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_{id}.docx")) == false || System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_pl_{id}.docx")) == false)
                 {
                     /* Tạo lại báo cáo */
-                    var dbBaoCao = BuildDatabase.getDataBaoCaoTuan(matinh);
+                    var dbBaoCao = BuildDatabase.getDataBCTuan(matinh);
                     tsql = $"SELECT * FROM bctuandocx WHERE id='{id.sqliteGetValueField()}'";
                     var data = dbBaoCao.getDataTable(tsql);
                     dbBaoCao.Close();
@@ -496,7 +496,7 @@ namespace ToolBaoCao.Controllers
                 if (System.IO.File.Exists(tmp) == false)
                 {
                     /* Tạo lại biểu 26 Toàn quốc */
-                    var dbImport = BuildDatabase.getDataImportBaoCaoTuan(matinh);
+                    var dbImport = BuildDatabase.getDataImportBCTuan(matinh);
                     var data = dbImport.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{id.sqliteGetValueField()}' AND ma_tinh <> ''");
                     dbImport.Close();
                     data.saveXLSX(PathSave: Path.Combine(d.FullName, $"id{id}_b26_00.xlsx"), addColumnAutoNumber: false);
@@ -535,8 +535,8 @@ namespace ToolBaoCao.Controllers
                 createFileBCTuanDocx(idBaoCao, idtinh, bctuan);
                 /* Tạo dữ liệu để xuất phụ lục */
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
-                var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(idtinh);
-                var dbImport = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
+                var dbBCTuan = BuildDatabase.getDataBCTuan(idtinh);
+                var dbImport = BuildDatabase.getDataImportBCTuan(idtinh);
                 /* Tạo phụ lục báo cáo */
                 var pl = dbTemp.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}'");
                 if (pl.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{idBaoCao}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
@@ -1375,7 +1375,7 @@ namespace ToolBaoCao.Controllers
             try
             {
                 var item = new Dictionary<string, string>();
-                var dbBaoCao = BuildDatabase.getDataBaoCaoTuan(idtinh);
+                var dbBaoCao = BuildDatabase.getDataBCTuan(idtinh);
                 if (Request.getValue("mode") == "update")
                 {
                     var timeStart = DateTime.Now;
@@ -1450,7 +1450,7 @@ namespace ToolBaoCao.Controllers
                     if (ngay2.isDateVN(out time2) == false) { throw new Exception($"từ ngày không đúng định dạng ngày/tháng/năm '{ngay2}'"); }
                     ViewBag.ngay1 = ngay1;
                     ViewBag.ngay2 = ngay2;
-                    var dbBCTuan = BuildDatabase.getDataBaoCaoTuan(matinh);
+                    var dbBCTuan = BuildDatabase.getDataBCTuan(matinh);
                     var where = $"WHERE timecreate >= {time1.toTimestamp()} AND timecreate < {time2.AddDays(1).toTimestamp()}";
                     var tmp = $"{Session["nhom"]}";
                     if (tmp != "0" && tmp != "1") { where += $" AND userid='{Session["iduser"]}'"; }
@@ -1506,7 +1506,7 @@ namespace ToolBaoCao.Controllers
                 foreach (var f in folder.GetFiles($"id{id}*.*")) { try { f.Delete(); } catch { } }
             }
             /* Xoá trong cơ sở dữ liệu */
-            var db = BuildDatabase.getDataBaoCaoTuan(idtinh);
+            var db = BuildDatabase.getDataBCTuan(idtinh);
             try
             {
                 var idBaoCao = id.sqliteGetValueField();
@@ -1515,7 +1515,7 @@ namespace ToolBaoCao.Controllers
                         DELETE FROM pl02 WHERE id_bc='{idBaoCao}';
                         DELETE FROM pl03 WHERE id_bc='{idBaoCao}';");
                 db.Close();
-                db = BuildDatabase.getDataImportBaoCaoTuan(idtinh);
+                db = BuildDatabase.getDataImportBCTuan(idtinh);
                 db.Execute($@"DELETE FROM b02 WHERE id_bc='{idBaoCao}';
                         DELETE FROM b04 WHERE id_bc='{idBaoCao}';
                         DELETE FROM b26 WHERE id_bc='{idBaoCao}';

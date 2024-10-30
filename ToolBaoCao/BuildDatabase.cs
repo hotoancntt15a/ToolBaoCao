@@ -219,7 +219,7 @@ namespace ToolBaoCao
          * Dữ liệu báo cáo tuần
          * */
 
-        public static dbSQLite getDataBaoCaoTuan(string matinh = "")
+        public static dbSQLite getDataBCTuan(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"BaoCaoTuan{matinh}.db");
             var db = new dbSQLite(pathDB);
@@ -241,7 +241,7 @@ namespace ToolBaoCao
                 ,iduser text NOT NULL DEFAULT '');");
         }
 
-        public static dbSQLite getDataImportBaoCaoTuan(string matinh = "")
+        public static dbSQLite getDataImportBCTuan(string matinh = "")
         {
             string pathDB = Path.Combine(AppHelper.pathApp, "App_Data", $"ImportBaoCaoTuan{matinh}.db");
             var db = new dbSQLite(pathDB);
