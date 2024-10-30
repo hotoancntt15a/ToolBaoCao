@@ -236,10 +236,11 @@ namespace ToolBaoCao.Controllers
             var pathPLBCThang = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
             System.IO.File.Copy(Path.Combine(AppHelper.pathAppData, "plthang.xlsx"), pathPLBCThang, true);
             var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
+            var data = new DataTable();
             if (bcThang == null)
             {
                 bcThang = new Dictionary<string, string>();
-                var data = dbBCThang.getDataTable($"SELECT * FROM bcThangdocx WHERE id='{idBaoCaoVauleField}';");
+                data = dbBCThang.getDataTable($"SELECT * FROM bcThangdocx WHERE id='{idBaoCaoVauleField}';");
                 if (data.Rows.Count > 0)
                 {
                     foreach (DataColumn c in data.Columns)
@@ -248,17 +249,22 @@ namespace ToolBaoCao.Controllers
                     }
                 }
             }
+            var dmVung = new Dictionary<string, string>();
+            data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBaoCaoVauleField}' AND ma_tinh LIKE 'V%'");
+            foreach (DataRow r in data.Rows)
+            {
+                dmVung.Add($"{r[0]}", $"{r[1]}");
+            }
             /* Tạo phụ lục báo cáo */
             dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = 0 WHERE id_bc='{idBaoCaoVauleField}' AND dtgiao = 0;");
             dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = ROUND(tien_bhtt/dtgiao, 2) WHERE id_bc='{idBaoCaoVauleField}' AND dtgiao > 0;");
             var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBaoCaoVauleField}' ORDER BY ma_cskcb;");
             PL01.TableName = "PL01";
-
-            var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a");
-            var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b");
-            var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a");
-            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b");
-            var PL04a = createPL04a(dbBCThang, idBaoCao, matinh);
+            var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
+            var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
+            var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a", PL02a);
+            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
+            var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
             var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL03a, PL03b, PL04a, PL04b);
             var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
@@ -563,7 +569,6 @@ namespace ToolBaoCao.Controllers
                     tsqlVaues = new List<string>();
                 }
                 tmp = string.Join(Environment.NewLine, tsql);
-                AppHelper.saveError($"{inputFile.FileName}: {recordCount}");
                 /* System.IO.File.WriteAllText(Path.Combine(folderTemp, $"id{idBaoCao}_{listBieu[0]}_{matinhImport}.sql"), tmp); */
                 dbConnect.Execute(tmp);
                 if (tsql.Count < 2) { throw new Exception("Không có dữ liệu chi tiết"); }
@@ -701,7 +706,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private DataTable createPL02(dbSQLite db, string idBaoCao, string idTinh, string nameSheet)
+        private DataTable createPL02(dbSQLite db, string idBaoCao, string idTinh, string nameSheet, Dictionary<string, string> dmVung)
         {
             DataTable pl = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}';");
             /* Bỏ [ma tỉnh] - ở cột tên tỉnh */
@@ -756,8 +761,11 @@ namespace ToolBaoCao.Controllers
                     , "Toàn quốc", $"{view[0]["chi_bq_ngoai"]}");
             }
             DataRow row00 = phuLuc.Rows[phuLuc.Rows.Count - 1];
+
             /* Vùng */
             var mavung = plview.Where(x => x.Field<string>("ma_tinh") == idTinh).Select(x => x.Field<string>("ma_vung")).First();
+            var itemVung = new KeyValuePair<string, string>("V" + (mavung.Length < 2 ? "0" + mavung : mavung), $"Vùng {mavung}");
+            if (dmVung.Any(x => x.Key.EndsWith(mavung))) { itemVung = dmVung.FirstOrDefault(x => x.Key.EndsWith(mavung)); }
             indexRow = plview.Count(x => x.Field<string>("ma_vung") == mavung);
             var vung = plview.Where(x => x.Field<string>("ma_vung") == mavung)
                 .GroupBy(x => x.Field<string>("ma_vung"))
@@ -770,15 +778,14 @@ namespace ToolBaoCao.Controllers
                     chi_bq_ngoai = g.Sum(x => x.Field<double>("chi_bq_ngoai")) / indexRow
                 })
                 .FirstOrDefault();
-            if (mavung.Length == 1) { mavung = $"0{mavung}"; }
-            if (vung == null) { phuLuc.Rows.Add($"V{mavung}", $"Vùng {mavung}", "0", $"Vùng {mavung}", "0", $"Vùng {mavung}", "0", $"Vùng {mavung}", "0", $"Vùng {mavung}", "0"); }
+            if (vung == null) { phuLuc.Rows.Add(itemVung.Key, itemVung.Value, "0", itemVung.Value, "0", itemVung.Value, "0", itemVung.Value, "0", itemVung.Value, "0"); }
             else
             {
-                phuLuc.Rows.Add($"V{mavung}", $"Vùng {mavung}", $"{vung.tyle_noitru:0.00}",
-                    $"Vùng {mavung}", $"{vung.ngay_dtri_bq}",
-                    $"Vùng {mavung}", $"{vung.chi_bq_chung}",
-                    $"Vùng {mavung}", $"{vung.chi_bq_noi}",
-                    $"Vùng {mavung}", $"{vung.chi_bq_ngoai}");
+                phuLuc.Rows.Add(itemVung.Key, itemVung.Value, $"{vung.tyle_noitru.ToString("0.##")}",
+                    itemVung.Value, $"{vung.ngay_dtri_bq.ToString("0.##")}",
+                    itemVung.Value, $"{vung.chi_bq_chung.ToString("0.##")}",
+                    itemVung.Value, $"{vung.chi_bq_noi.ToString("0.##")}",
+                    itemVung.Value, $"{vung.chi_bq_ngoai.ToString("0.##")}");
             }
             DataRow rowVung = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Tỉnh */
@@ -809,7 +816,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03(dbSQLite db, string idBaoCao, string nameSheet)
+        private DataTable createPL03(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02)
         {
             var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
@@ -822,6 +829,20 @@ namespace ToolBaoCao.Controllers
             phuLuc.Columns.Add("Chi BQ nội trú (Đồng)"); /* 5 */
             phuLuc.Columns.Add("Chi BQ ngoại trú"); /* 6 */
             /* 4 Dòng đầu copy của PL02a, PL02b phần chênh lệnh */
+            if (PL02.Rows.Count > 5)
+            {
+                int pl02Count = PL02.Rows.Count; int IndexPL02 = 0;
+                for (int i = 5; i > 2; i--)
+                {
+                    IndexPL02 = pl02Count - i;
+                    phuLuc.Rows.Add(PL02.Rows[IndexPL02][0], PL02.Rows[IndexPL02][1]
+                        , PL02.Rows[IndexPL02][2] /* tyle_noitru */
+                        , PL02.Rows[IndexPL02][4] /* ngay_dtri_bq */
+                        , PL02.Rows[IndexPL02][6] /* chi_bq_chung */
+                        , PL02.Rows[IndexPL02][8] /* chi_bq_noi */
+                        , PL02.Rows[IndexPL02][10] /* chi_bq_ngoai */);
+                }
+            }
 
             phuLuc.Rows.Add("", "", "", "", "", "", "");
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
@@ -850,7 +871,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL04a(dbSQLite db, string idBaoCao, string idTinh)
+        private DataTable createPL04a(dbSQLite db, string idBaoCao, string idTinh, Dictionary<string, string> dmVung)
         {
             /* Chỉ lấy danh sách trong vùng thống kế */
             string maVung = $"{db.getValue($"SELECT ma_vung FROM thangpl04a WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' LIMIT 1;")}";
@@ -901,8 +922,8 @@ namespace ToolBaoCao.Controllers
             }
             DataRow row00 = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Vùng */
-            view = plview.Where(x=>x.Field<string>("ma_tinh").StartsWith("V")).ToList();
-            if(view.Count > 0)
+            view = plview.Where(x => x.Field<string>("ma_tinh").StartsWith("V")).ToList();
+            if (view.Count > 0)
             {
                 phuLuc.Rows.Add(view[0]["ma_tinh"], view[0]["ten_tinh"], $"{view[0]["chi_bq_xn"]}"
                     , $"{view[0]["chi_bq_cdha"]}"
@@ -911,9 +932,12 @@ namespace ToolBaoCao.Controllers
                     , $"{view[0]["chi_bq_vtyt"]}"
                     , $"{view[0]["chi_bq_giuong"]}"
                     , $"{view[0]["ngay_ttbq"]}");
-            } 
+            }
             else
             {
+                var itemVung = new KeyValuePair<string, string>("V" + (maVung.Length < 2 ? "0" + maVung : maVung), $"Vùng {maVung}");
+                if (dmVung.Any(x => x.Key.EndsWith(maVung))) { itemVung = dmVung.FirstOrDefault(x => x.Key.EndsWith(maVung)); }
+
                 int indexRow = plview.Count(x => !x.Field<string>("ma_tinh").StartsWith("V"));
                 var vung = plview.Where(x => !x.Field<string>("ma_tinh").StartsWith("V"))
                     .GroupBy(x => x.Field<string>("ma_vung"))
@@ -928,11 +952,10 @@ namespace ToolBaoCao.Controllers
                         ngay_ttbq = g.Sum(x => x.Field<double>("ngay_ttbq")) / indexRow
                     })
                     .FirstOrDefault();
-                if (maVung.Length == 1) { maVung = $"0{maVung}"; }
-                if (vung == null) { phuLuc.Rows.Add($"V{maVung}", $"Vùng {maVung}", "0", "0", "0", "0", "0", "0", "0"); }
+                if (vung == null) { phuLuc.Rows.Add(itemVung.Key, itemVung.Value, "0", "0", "0", "0", "0", "0", "0"); }
                 else
                 {
-                    phuLuc.Rows.Add($"V{maVung}", $"Vùng {maVung}"
+                    phuLuc.Rows.Add(itemVung.Key, itemVung.Value
                         , $"{vung.chi_bq_xn.ToString("0.##")}"
                         , $"{vung.chi_bq_cdha.ToString("0.##")}"
                         , $"{vung.chi_bq_thuoc.ToString("0.##")}"
@@ -941,8 +964,8 @@ namespace ToolBaoCao.Controllers
                         , $"{vung.chi_bq_giuong.ToString("0.##")}"
                         , $"{vung.ngay_ttbq.ToString("0.##")}");
                 }
-            }            
-            
+            }
+
             DataRow rowVung = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Tỉnh */
             view = plview.Where(x => x.Field<string>("ma_tinh") == idTinh).ToList().GetRange(0, 1);
@@ -1330,8 +1353,9 @@ namespace ToolBaoCao.Controllers
         {
             string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcThang.docx");
             if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
-
             var tmp = "";
+            var bcThangExport = new Dictionary<string, string>();
+            foreach (var v in bcThang) { bcThangExport.Add("{" + v.Key + "}", v.Value); }
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
                 var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
@@ -1342,7 +1366,10 @@ namespace ToolBaoCao.Controllers
                         tmp = run.ToString();
                         /* Sử dụng Regex để tìm tất cả các match */
                         MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9]+}", RegexOptions.IgnoreCase);
-                        foreach (System.Text.RegularExpressions.Match match in matches) { tmp = tmp.Replace(match.Value, bcThang.getValue(match.Value, "", true)); }
+                        foreach (System.Text.RegularExpressions.Match match in matches)
+                        {
+                            tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, "", true));
+                        }
                         run.SetText(tmp, 0);
                     }
                 }
@@ -1351,12 +1378,6 @@ namespace ToolBaoCao.Controllers
                 tmp = Path.Combine(tmp, $"bcThang_{idBaoCao}.docx");
                 if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
                 using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
-                /*
-                 * MemoryStream memoryStream = new MemoryStream();
-                        document.Write(memoryStream);
-                        memoryStream.Position = 0;
-                        return File(memoryStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", $"{data.Rows[0]["ma_tinh"]}_{thoigian}.docx");
-                */
             }
         }
 
@@ -1375,18 +1396,16 @@ namespace ToolBaoCao.Controllers
                 {
                     var timeStart = DateTime.Now;
                     item = new Dictionary<string, string>() {
-                        { "x2", Request.getValue("x2").sqliteGetValueField() },
-                        { "x3", Request.getValue("x3").Trim() },
-                        { "x67", Request.getValue("x67").sqliteGetValueField() },
-                        { "x68", Request.getValue("x68").sqliteGetValueField() },
-                        { "x69", Request.getValue("x69").sqliteGetValueField() },
-                        { "x70", Request.getValue("x70").sqliteGetValueField() }
+                        { "x1", Request.getValue("x1").sqliteGetValueField() },
+                        { "x33", Request.getValue("x33").sqliteGetValueField() },
+                        { "x34", Request.getValue("x34").sqliteGetValueField() },
+                        { "x35", Request.getValue("x35").sqliteGetValueField() },
+                        { "x36", Request.getValue("x36").sqliteGetValueField() },
+                        { "x37", Request.getValue("x37").sqliteGetValueField() },
+                        { "x38", Request.getValue("x38").sqliteGetValueField() }
                     };
-                    if (item["x3"].isNumberUSInt() == false) { return Content($"Tổng số tiền các dòng QĐ năm nay không đúng định dạng '{item["x3"]}'".BootstrapAlter("warning")); }
-                    if (item["x3"] == "0") { return Content("Chưa điền Tổng số tiền các dòng QĐ năm nay".BootstrapAlter("warning")); }
-                    tsql = $"UPDATE bcThangdocx SET x2='{item["x2"]}', x3='{item["x3"]}', x67='{item["x67"]}', x68='{item["x68"]}', x69='{item["x69"]}', x70='{item["x70"]}', x4=ROUND((x1/{item["x3"]})*100,2) WHERE id='{id.sqliteGetValueField()}'";
                     dbBaoCao.Execute(tsql);
-                    tsql = $"SELECT * FROM bcThangdocx WHERE id='{id.sqliteGetValueField()}'";
+                    tsql = $"SELECT * FROM bcThangdocx WHERE id='{id.sqliteGetValueField()}' LIMIT 1";
                     var data = dbBaoCao.getDataTable(tsql);
                     dbBaoCao.Close();
                     if (data.Rows.Count == 0)
@@ -1397,18 +1416,6 @@ namespace ToolBaoCao.Controllers
                     var bcThang = new Dictionary<string, string>();
                     foreach (DataColumn c in data.Columns) { bcThang.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
                     createFileBcThangDocx(id, idtinh, bcThang);
-                    if (item["x3"] != bcThang["{X3}"])
-                    {
-                        var duToanGiao = new Dictionary<string, string>() {
-                            { "namqd", bcThang["{X74}"].Substring(7) },
-                            { "idtinh", idtinh },
-                            { "idhuyen", "" },
-                            { "so_kyhieu_qd", item["x2"]},
-                            { "tong_dutoan", item["x3"] },
-                            { "iduser", $"{Session["iduser"]}" }
-                        };
-                        AppHelper.dbSqliteWork.Update("dutoangiao", item, "replace");
-                    }
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
                 tsql = $"SELECT * FROM bcThangdocx WHERE id='{id.sqliteGetValueField()}'";
@@ -1449,7 +1456,7 @@ namespace ToolBaoCao.Controllers
                     var where = $"WHERE timecreate >= {time1.toTimestamp()} AND timecreate < {time2.AddDays(1).toTimestamp()}";
                     var tmp = $"{Session["nhom"]}";
                     if (tmp != "0" && tmp != "1") { where += $" AND userid='{Session["iduser"]}'"; }
-                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7, thang, nam1,id,ma_tinh,userid FROM bcThangdocx {where} ORDER BY timecreate DESC";
+                    var tsql = $"SELECT datetime(timecreate, 'auto', '+7 hour') AS ngayGM7, thang, nam1,id,ma_tinh,userid FROM bcthangdocx {where} ORDER BY timecreate DESC";
                     ViewBag.data = dbBcThang.getDataTable(tsql);
                     dbBcThang.Close();
                     ViewBag.tsql = tsql;
