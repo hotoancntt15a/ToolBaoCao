@@ -1352,8 +1352,7 @@ namespace ToolBaoCao.Controllers
         private void createFileBcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
         {
             string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcThang.docx");
-            if (System.IO.File.Exists(pathFileTemplate) == false) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
-            var tmp = "";
+            if (!System.IO.File.Exists(pathFileTemplate)) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
             var bcThangExport = new Dictionary<string, string>();
             foreach (var v in bcThang) { bcThangExport.Add("{" + v.Key + "}", v.Value); }
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
@@ -1363,23 +1362,48 @@ namespace ToolBaoCao.Controllers
                 {
                     foreach (var run in paragraph.Runs)
                     {
-                        tmp = run.ToString();
-                        /* Sử dụng Regex để tìm tất cả các match */
+                        var tmp = run.ToString();
                         MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9]+}", RegexOptions.IgnoreCase);
-                        foreach (System.Text.RegularExpressions.Match match in matches)
+                        foreach (Match match in matches)
                         {
-                            tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, "", true));
+                            tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, ""));
                         }
                         run.SetText(tmp, 0);
                     }
                 }
-                tmp = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
-                if (Directory.Exists(tmp) == false) { Directory.CreateDirectory(tmp); }
-                tmp = Path.Combine(tmp, $"bcThang_{idBaoCao}.docx");
-                if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
-                using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
+
+                // Thay thế trong các bảng
+                foreach (var table in document.Tables)
+                {
+                    foreach (var row in table.Rows)
+                    {
+                        foreach (var cell in row.GetTableCells())
+                        {
+                            foreach (var paragraph in cell.Paragraphs)
+                            {
+                                foreach (var run in paragraph.Runs)
+                                {
+                                    var tmp = run.ToString();
+                                    MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9]+}", RegexOptions.IgnoreCase);
+                                    foreach (Match match in matches)
+                                    {
+                                        tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, ""));
+                                    }
+                                    run.SetText(tmp, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
+                if (!Directory.Exists(outputPath)) { Directory.CreateDirectory(outputPath); }
+                var outputFile = Path.Combine(outputPath, $"bcThang_{idBaoCao}.docx");
+                if (System.IO.File.Exists(outputFile)) { System.IO.File.Delete(outputFile); }
+                using (var stream = new FileStream(outputFile, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
             }
         }
+
 
         public ActionResult Update()
         {
