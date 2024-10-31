@@ -337,7 +337,7 @@ namespace ToolBaoCao
                 totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0")
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET args2 = CONCAT(args2, '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}') WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{id}'");
                 }
                 else
                 {
@@ -377,7 +377,7 @@ namespace ToolBaoCao
                     }
                     catch (Exception ex2)
                     {
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = CONCAT(args2, '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}') WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{id}'");
                         ex2.saveError();
                     }
                     reader.Close();
@@ -390,7 +390,7 @@ namespace ToolBaoCao
                 totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0")
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET args2 = CONCAT(args2, '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}') WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{id}'");
                 }
                 else
                 {
@@ -429,7 +429,7 @@ namespace ToolBaoCao
                     }
                     catch (Exception ex2)
                     {
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = CONCAT(args2, '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}') WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{id}'");
                         ex2.saveError();
                     }
                     reader.Close();
@@ -442,7 +442,7 @@ namespace ToolBaoCao
                 totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
                 if (totalRow == "0")
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET args2 = CONCAT(args2, '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}') WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{id}'");
                 }
                 else
                 {
@@ -481,7 +481,7 @@ namespace ToolBaoCao
                     }
                     catch (Exception ex2)
                     {
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = CONCAT(args2, '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}') WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{id}'");
                         ex2.saveError();
                     }
                     reader.Close();
