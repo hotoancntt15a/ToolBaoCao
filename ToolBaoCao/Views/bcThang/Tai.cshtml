@@ -21,20 +21,6 @@
         link = f.FullName.Replace(AppHelper.pathApp, "");
         <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
     }
-    <!-- File phụ lục báo cáo tháng -->
-    @foreach (var f in dirSave.GetFiles($"bcThang_pl_{id}*.*"))
-    {
-        i++;
-        link = f.FullName.Replace(AppHelper.pathApp, "");
-        <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
-    }
-    <!-- File tải lên phụ vục báo cáo tháng -->
-    @foreach (var f in dirSave.GetFiles($"id{id}_b26_00.*"))
-    {
-        i++;
-        link = f.FullName.Replace(AppHelper.pathApp, "");
-        <li><a href="@Url.Action("Index", "Tai", new { area = "", @object = link.MD5Encrypt() })" link="@link"> <i class="fa fa-download"></i> @f.Name (@f.Length.getFileSize()) </a> </li>
-    }
 </ul>
 @if (i == 0)
 {

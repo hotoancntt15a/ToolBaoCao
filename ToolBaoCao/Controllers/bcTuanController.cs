@@ -18,7 +18,6 @@ namespace ToolBaoCao.Controllers
      * Nếu User bị thay đổi mã tỉnh làm việc sẽ huỷ toàn bộ tiến trình các bước nếu có
      * Dữ liệu bắt buộc B02 00, b02 cs, b04 00, b26 00, b26 cs
      */
-
     public class bcTuanController : ControllerCheckLogin
     {
         public ActionResult Index()

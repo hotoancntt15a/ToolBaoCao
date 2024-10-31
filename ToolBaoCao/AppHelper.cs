@@ -33,7 +33,21 @@ namespace ToolBaoCao
         public static dbSQLite dbSqliteWork = new dbSQLite();
         public static TaskManage threadManage = new TaskManage();
 
-        public static bool ExtractFileZip(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
+        public static void zipAchive(string zipFilePath, List<string> listFile)
+        {
+            using (FileStream zipToOpen = new FileStream(zipFilePath, FileMode.Create))
+            {
+                using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Create))
+                {
+                    foreach (var fileToZip in listFile)
+                    {
+                        archive.CreateEntryFromFile(fileToZip, Path.GetFileName(fileToZip));
+                    }
+                }
+            }
+        }
+
+        public static bool zipExtract(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;
             using (ZipArchive archive = ZipFile.OpenRead(zipFilePath))

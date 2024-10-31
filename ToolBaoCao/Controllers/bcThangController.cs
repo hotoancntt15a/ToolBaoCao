@@ -3,6 +3,7 @@ using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -229,7 +230,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private void createFilePhuLucbcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, Dictionary<string, string> bcThang = null)
+        private string createFilePhuLucBcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, Dictionary<string, string> bcThang = null)
         {
             if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
             var fileName = $"bcThang_pl_{idBaoCao}.xlsx";
@@ -267,10 +268,11 @@ namespace ToolBaoCao.Controllers
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
             var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL03a, PL03b, PL04a, PL04b);
-            var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
-            if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
-            using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
+            var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
+            if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
+            using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
+            return outFile;
         }
 
         private XSSFWorkbook exportPhuLucbcThang(params DataTable[] par)
@@ -602,7 +604,7 @@ namespace ToolBaoCao.Controllers
                 /* Trường hợp không tìm thấy tập tin nào thì tạo lại nếu còn dữ liệu */
                 var tsql = "";
                 var matinh = tmp;
-                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}.docx")) == false || System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_pl_{id}.docx")) == false)
+                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}.zip")) == false)
                 {
                     /* Tạo lại báo cáo */
                     var dbBaoCao = BuildDatabase.getDataBCThang(matinh);
@@ -616,18 +618,13 @@ namespace ToolBaoCao.Controllers
                     }
                     var bcThang = new Dictionary<string, string>();
                     foreach (DataColumn c in data.Columns) { bcThang.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
-                    createFileBcThangDocx(id, matinh, bcThang);
-                    createFilePhuLucbcThang(id, matinh, dbBaoCao, bcThang);
-                    dbBaoCao.Close();
-                }
-                tmp = Path.Combine(d.FullName, $"id{id}_b26_00.xlsx");
-                if (System.IO.File.Exists(tmp) == false)
-                {
-                    /* Tạo lại biểu 26 Toàn quốc */
-                    var dbImport = BuildDatabase.getDataImportBCThang(matinh);
-                    var data = dbImport.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{id.sqliteGetValueField()}' AND ma_tinh <> ''");
-                    dbImport.Close();
-                    data.saveXLSX(PathSave: Path.Combine(d.FullName, $"id{id}_b26_00.xlsx"), addColumnAutoNumber: false);
+                    var listFile = new List<string>
+                    {
+                        createFileBcThangDocx(id, matinh, bcThang),
+                        createFilePhuLucBcThang(id, matinh, dbBaoCao, bcThang)
+                    };
+                    AppHelper.zipAchive(Path.Combine(d.FullName, $"bcThang_{id}.zip"), listFile);
+                    foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }
@@ -659,10 +656,10 @@ namespace ToolBaoCao.Controllers
                 /* Tạo bcThang */
                 var bcThang = createbcThang(dbTemp, idBaoCao, idtinh, iduser, Request.getValue("x1"), Request.getValue("x33"), Request.getValue("x34"), Request.getValue("x35"), Request.getValue("x36"), Request.getValue("x37"), Request.getValue("x38"));
                 /* Tạo docx */
-                createFileBcThangDocx(idBaoCao, idtinh, bcThang);
+                var listFile = new List<string>() { createFileBcThangDocx(idBaoCao, idtinh, bcThang) };
                 /* Tạo dữ liệu để xuất phụ lục */
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
-                var dbbcThang = BuildDatabase.getDataBCThang(idtinh);
+                var dbBcThang = BuildDatabase.getDataBCThang(idtinh);
                 var dbImport = BuildDatabase.getDataImportBCThang(idtinh);
                 /* Tạo phụ lục báo cáo */
                 /* dmCSKCB */
@@ -671,8 +668,8 @@ namespace ToolBaoCao.Controllers
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 
                 /* Báo cáo tháng chuyển */
-                dbbcThang.Update("bcThangdocx", bcThang);
-                dbbcThang.Close();
+                dbBcThang.Update("bcthangdocx", bcThang);
+                dbBcThang.Close();
 
                 var data = new DataTable();
                 list = new List<string>() { "thangpl01", "thangpl02a", "thangpl02b", "thangpl03a", "thangpl03b", "thangpl04a", "thangpl04b" };
@@ -680,7 +677,7 @@ namespace ToolBaoCao.Controllers
                 {
                     data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
                     data.Columns.RemoveAt(0);
-                    dbbcThang.Insert(v, data);
+                    dbBcThang.Insert(v, data);
                 }
                 list = new List<string>() { "thangb01", "thangb02", "thangb04" };
                 foreach (var v in list)
@@ -695,13 +692,15 @@ namespace ToolBaoCao.Controllers
                     data.Columns.RemoveAt(0);
                     dbImport.Insert(v, data);
                 }
-                createFilePhuLucbcThang(idBaoCao, idtinh, dbbcThang, bcThang);
                 dbTemp.Close();
+                listFile.Add(createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang, bcThang));
+                AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
+                foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
             }
             catch (Exception ex)
             {
                 ViewBag.Error = ex.getErrorSave();
-                DeletebcThang(idtinh);
+                DeleteBcThang(idtinh);
             }
             return View();
         }
@@ -1346,15 +1345,22 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("m13cc44", $"{Math.Round((double.Parse(bcThang["m13cc43"]) / double.Parse(bcThang["x30"])) * 100, 2)}");
             bcThang.Add("m13cc54", $"{Math.Round((double.Parse(bcThang["m13cc53"]) / double.Parse(bcThang["x31"])) * 100, 2)}");
             bcThang.Add("m13cc64", $"{Math.Round((double.Parse(bcThang["m13cc63"]) / double.Parse(bcThang["x32"])) * 100, 2)}");
+
+            bcThang["timecreate"] = DateTime.Now.toTimestamp().ToString();
+            bcThang["userid"] = idUser;
+            bcThang["ma_tinh"] = maTinh;
             return bcThang;
         }
 
-        private void createFileBcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
+        private string createFileBcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
         {
             string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcThang.docx");
             if (!System.IO.File.Exists(pathFileTemplate)) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
             var bcThangExport = new Dictionary<string, string>();
             foreach (var v in bcThang) { bcThangExport.Add("{" + v.Key + "}", v.Value); }
+            var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
+            if (!Directory.Exists(outputPath)) { Directory.CreateDirectory(outputPath); }
+            var outputFile = Path.Combine(outputPath, $"bcThang_{idBaoCao}.docx");
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
                 var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
@@ -1371,8 +1377,7 @@ namespace ToolBaoCao.Controllers
                         run.SetText(tmp, 0);
                     }
                 }
-
-                // Thay thế trong các bảng
+                /* Thay thế trong các bảng */
                 foreach (var table in document.Tables)
                 {
                     foreach (var row in table.Rows)
@@ -1395,15 +1400,11 @@ namespace ToolBaoCao.Controllers
                         }
                     }
                 }
-
-                var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
-                if (!Directory.Exists(outputPath)) { Directory.CreateDirectory(outputPath); }
-                var outputFile = Path.Combine(outputPath, $"bcThang_{idBaoCao}.docx");
                 if (System.IO.File.Exists(outputFile)) { System.IO.File.Delete(outputFile); }
                 using (var stream = new FileStream(outputFile, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
             }
+            return outputFile;
         }
-
 
         public ActionResult Update()
         {
@@ -1439,7 +1440,13 @@ namespace ToolBaoCao.Controllers
                     }
                     var bcThang = new Dictionary<string, string>();
                     foreach (DataColumn c in data.Columns) { bcThang.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
-                    createFileBcThangDocx(id, idtinh, bcThang);
+                    var listFile = new List<string>
+                    {
+                        createFileBcThangDocx(id, idtinh, bcThang),
+                        createFilePhuLucBcThang(id, idtinh, dbBaoCao, bcThang)
+                    };
+                    AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip"), listFile);
+                    foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
                 tsql = $"SELECT * FROM bcThangdocx WHERE id='{id.sqliteGetValueField()}'";
@@ -1505,7 +1512,7 @@ namespace ToolBaoCao.Controllers
                 ViewBag.data = string.Join(",", lid);
                 if (mode == "force")
                 {
-                    foreach (string id in lid) { DeletebcThang(id, true); }
+                    foreach (string id in lid) { DeleteBcThang(id, true); }
                     return Content($"Xoá thành công báo cáo có ID '{string.Join(", ", lid)}' ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
             }
@@ -1513,7 +1520,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private void DeletebcThang(string id, bool throwEx = false)
+        private void DeleteBcThang(string id, bool throwEx = false)
         {
             /* ID: {yyyyMMddHHmmss}_{idtinh}_{Milisecon}*/
             var tmpl = id.Split('_');
@@ -1536,18 +1543,17 @@ namespace ToolBaoCao.Controllers
             try
             {
                 var idBaoCao = id.sqliteGetValueField();
-                db.Execute($@"DELETE FROM bcThangdocx WHERE id='{idBaoCao}';
-                        DELETE FROM pl01 WHERE id_bc='{idBaoCao}';
-                        DELETE FROM pl02 WHERE id_bc='{idBaoCao}';
-                        DELETE FROM pl03 WHERE id_bc='{idBaoCao}';");
+                var listTablePL = new List<string>() { "thangpl01", "thangpl02a", "thangpl02b", "thangpl03a", "thangpl03b", "thangpl04a", "thangpl04b" };
+                var tsql = new List<string>() { $"DELETE FROM bcThangdocx WHERE id='{idBaoCao}';" };
+                foreach (var t in listTablePL) { tsql.Add($"DELETE FROM {t} WHERE id_bc='{idBaoCao}';"); }
+                db.Execute(string.Join(" ", tsql));
                 db.Close();
                 db = BuildDatabase.getDataImportBCThang(idtinh);
-                db.Execute($@"DELETE FROM b02 WHERE id_bc='{idBaoCao}';
-                        DELETE FROM b04 WHERE id_bc='{idBaoCao}';
-                        DELETE FROM b26 WHERE id_bc='{idBaoCao}';
-                        DELETE FROM b02chitiet WHERE id_bc='{idBaoCao}';
-                        DELETE FROM b04chitiet WHERE id_bc='{idBaoCao}';
-                        DELETE FROM b26chitiet WHERE id_bc='{idBaoCao}';");
+                listTablePL = new List<string>() { "thangb01", "thangb02", "thangb04", "thangb21", "thangb26", "thangb01chitiet", "thangb02chitiet", "thangb04chitiet", "thangb21chitiet", "thangb26chitiet" };
+                tsql = new List<string>();
+                foreach (var t in listTablePL) { tsql.Add($"DELETE FROM {t} WHERE id_bc='{idBaoCao}';"); }
+                db.Execute(string.Join(" ", tsql));
+                db.Close();
             }
             catch (Exception ex)
             {
