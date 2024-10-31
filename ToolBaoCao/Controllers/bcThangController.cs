@@ -3,7 +3,6 @@ using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -1421,15 +1420,15 @@ namespace ToolBaoCao.Controllers
                 {
                     var timeStart = DateTime.Now;
                     item = new Dictionary<string, string>() {
-                        { "x1", Request.getValue("x1").sqliteGetValueField() },
-                        { "x33", Request.getValue("x33").sqliteGetValueField() },
-                        { "x34", Request.getValue("x34").sqliteGetValueField() },
-                        { "x35", Request.getValue("x35").sqliteGetValueField() },
-                        { "x36", Request.getValue("x36").sqliteGetValueField() },
-                        { "x37", Request.getValue("x37").sqliteGetValueField() },
-                        { "x38", Request.getValue("x38").sqliteGetValueField() }
+                        { "x1", Request.getValue("x1") },
+                        { "x33", Request.getValue("x33") },
+                        { "x34", Request.getValue("x34") },
+                        { "x35", Request.getValue("x35") },
+                        { "x36", Request.getValue("x36") },
+                        { "x37", Request.getValue("x37") },
+                        { "x38", Request.getValue("x38") }
                     };
-                    dbBaoCao.Execute(tsql);
+                    dbBaoCao.Update("bcthangdocx", item, $"id='{id.sqliteGetValueField()}'");
                     tsql = $"SELECT * FROM bcthangdocx WHERE id='{id.sqliteGetValueField()}' LIMIT 1";
                     var data = dbBaoCao.getDataTable(tsql);
                     dbBaoCao.Close();
@@ -1445,7 +1444,9 @@ namespace ToolBaoCao.Controllers
                         createFileBcThangDocx(id, idtinh, bcThang),
                         createFilePhuLucBcThang(id, idtinh, dbBaoCao, bcThang)
                     };
-                    AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip"), listFile);
+                    string fileZip = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip");
+                    if (System.IO.File.Exists(fileZip)) { System.IO.File.Delete(fileZip); }
+                    AppHelper.zipAchive(fileZip, listFile);
                     foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
