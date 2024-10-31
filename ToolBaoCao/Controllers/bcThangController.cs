@@ -1430,7 +1430,7 @@ namespace ToolBaoCao.Controllers
                         { "x38", Request.getValue("x38").sqliteGetValueField() }
                     };
                     dbBaoCao.Execute(tsql);
-                    tsql = $"SELECT * FROM bcThangdocx WHERE id='{id.sqliteGetValueField()}' LIMIT 1";
+                    tsql = $"SELECT * FROM bcthangdocx WHERE id='{id.sqliteGetValueField()}' LIMIT 1";
                     var data = dbBaoCao.getDataTable(tsql);
                     dbBaoCao.Close();
                     if (data.Rows.Count == 0)
@@ -1439,7 +1439,7 @@ namespace ToolBaoCao.Controllers
                         return View();
                     }
                     var bcThang = new Dictionary<string, string>();
-                    foreach (DataColumn c in data.Columns) { bcThang.Add("{" + c.ColumnName.ToUpper() + "}", $"{data.Rows[0][c.ColumnName]}"); }
+                    foreach (DataColumn c in data.Columns) { bcThang.Add(c.ColumnName, $"{data.Rows[0][c.ColumnName]}"); }
                     var listFile = new List<string>
                     {
                         createFileBcThangDocx(id, idtinh, bcThang),
@@ -1449,7 +1449,7 @@ namespace ToolBaoCao.Controllers
                     foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
-                tsql = $"SELECT * FROM bcThangdocx WHERE id='{id.sqliteGetValueField()}'";
+                tsql = $"SELECT * FROM bcthangdocx WHERE id='{id.sqliteGetValueField()}'";
                 var d = dbBaoCao.getDataTable(tsql);
                 dbBaoCao.Close();
                 if (d.Rows.Count == 0)
