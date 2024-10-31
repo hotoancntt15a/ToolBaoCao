@@ -295,7 +295,6 @@ namespace ToolBaoCao
                         tmp = Regex.Replace(tmp, "CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", RegexOptions.IgnoreCase);
                     }
                     tmp = RemoveColumns(tmp, colsRemove);
-                    AppHelper.saveError(tmp);
                     dbTo.Execute(tmp);
                     dbTo.Execute("CREATE INDEX xml123_index1 ON xml123(MA_TINH,KY_QT,MA_CHA,MA_CSKCB);");
                 }
@@ -326,7 +325,6 @@ namespace ToolBaoCao
                         tmp = Regex.Replace(tmp, "CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ", RegexOptions.IgnoreCase);
                     }
                     tmp = RemoveColumns(tmp, colsRemove);
-                    AppHelper.saveError(tmp);
                     dbTo.Execute(tmp);
                     dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
                 }
@@ -347,8 +345,8 @@ namespace ToolBaoCao
                     var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
-                    var md5EncyptCols = colsMD5;
-                    foreach (var v in md5EncyptCols) { if (lfield.Contains(v) == false) { md5EncyptCols.Remove(v); } }
+                    var md5EncyptCols = new List<string>();
+                    foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
                     var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
                     try
                     {
@@ -399,8 +397,8 @@ namespace ToolBaoCao
                     rowCopyed = 0;
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
-                    var md5EncyptCols = colsMD5;
-                    foreach (var v in md5EncyptCols) { if (lfield.Contains(v) == false) { md5EncyptCols.Remove(v); } }
+                    var md5EncyptCols = new List<string>();
+                    foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
                     var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
                     try
                     {
@@ -451,8 +449,8 @@ namespace ToolBaoCao
                     rowCopyed = 0;
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
-                    var md5EncyptCols = colsMD5;
-                    foreach (var v in md5EncyptCols) { if (lfield.Contains(v) == false) { md5EncyptCols.Remove(v); } }
+                    var md5EncyptCols = new List<string>();
+                    foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
                     var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
                     try
                     {
