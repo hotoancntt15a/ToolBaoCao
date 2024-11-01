@@ -603,7 +603,8 @@ namespace ToolBaoCao.Controllers
                 /* Trường hợp không tìm thấy tập tin nào thì tạo lại nếu còn dữ liệu */
                 var tsql = "";
                 var matinh = tmp;
-                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}.zip")) == false)
+                string fileZip = Path.Combine(d.FullName, $"bcThang_{id}.zip");
+                if (System.IO.File.Exists(fileZip) == false)
                 {
                     /* Tạo lại báo cáo */
                     var dbBaoCao = BuildDatabase.getDataBCThang(matinh);
@@ -622,8 +623,7 @@ namespace ToolBaoCao.Controllers
                         createFileBcThangDocx(id, matinh, bcThang),
                         createFilePhuLucBcThang(id, matinh, dbBaoCao, bcThang)
                     };
-                    AppHelper.zipAchive(Path.Combine(d.FullName, $"bcThang_{id}.zip"), listFile);
-                    foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
+                    AppHelper.zipAchive(fileZip, listFile);
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }
@@ -694,7 +694,6 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Close();
                 listFile.Add(createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang, bcThang));
                 AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
-                foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
             }
             catch (Exception ex)
             {
@@ -1197,7 +1196,8 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("nam1", $"{data.Rows[0]["nam"]}");
             bcThang.Add("nam2", (int.Parse($"{data.Rows[0]["nam"]}") - 1).ToString());
             bcThang.Add("thang", $"{data.Rows[0]["den_thang"]}");
-            bcThang.Add("ngay2", $"01/{bcThang["thang"]}/{bcThang["nam1"]}");
+            tmp = bcThang["thang"].Length < 2 ? "0" + bcThang["thang"] : bcThang["thang"];
+            bcThang.Add("ngay2", $"01/{tmp}/{bcThang["nam1"]}");
             var time = new DateTime(int.Parse(bcThang["nam1"]), int.Parse(bcThang["thang"]), 1);
             time = time.AddMonths(1).AddDays(-1);
             bcThang["ngay1"] = $"{time:dd/MM/yyyy}";
@@ -1447,7 +1447,6 @@ namespace ToolBaoCao.Controllers
                     string fileZip = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip");
                     if (System.IO.File.Exists(fileZip)) { System.IO.File.Delete(fileZip); }
                     AppHelper.zipAchive(fileZip, listFile);
-                    foreach (var f in listFile) { try { System.IO.File.Delete(f); } catch { } }
                     return Content($"Lưu thành công ({timeStart.getTimeRun()})".BootstrapAlter());
                 }
                 tsql = $"SELECT * FROM bcthangdocx WHERE id='{id.sqliteGetValueField()}'";
