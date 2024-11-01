@@ -799,7 +799,7 @@
     <Content Include="Areas\Admin\Views\DMCSKCB\Update.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\TruyVan.cshtml" />
     <Content Include="App_Data\bcThang.docx" />
-    <Content Include="App_Data\plthang.xlsx" />
+    <Content Include="App_Data\bcThangPL.xlsx" />
     <Content Include="App_Data\plthang-MoTa.xlsx" />
     <Content Include="App_Data\bcThang-MoTa.docx" />
     <Content Include="App_Data\DM_COSOKCB_TQ.xlsx" />

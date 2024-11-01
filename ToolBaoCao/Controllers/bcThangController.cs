@@ -232,15 +232,13 @@ namespace ToolBaoCao.Controllers
         private string createFilePhuLucBcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, Dictionary<string, string> bcThang = null)
         {
             if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
-            var fileName = $"bcThang_pl_{idBaoCao}.xlsx";
-            var pathPLBCThang = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
-            System.IO.File.Copy(Path.Combine(AppHelper.pathAppData, "plthang.xlsx"), pathPLBCThang, true);
+            var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
             var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
             var data = new DataTable();
             if (bcThang == null)
             {
                 bcThang = new Dictionary<string, string>();
-                data = dbBCThang.getDataTable($"SELECT * FROM bcThangdocx WHERE id='{idBaoCaoVauleField}';");
+                data = dbBCThang.getDataTable($"SELECT * FROM bcthangdocx WHERE id='{idBaoCaoVauleField}';");
                 if (data.Rows.Count > 0)
                 {
                     foreach (DataColumn c in data.Columns)
@@ -267,7 +265,6 @@ namespace ToolBaoCao.Controllers
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
             var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL03a, PL03b, PL04a, PL04b);
-            var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", fileName);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
@@ -624,6 +621,14 @@ namespace ToolBaoCao.Controllers
                         createFilePhuLucBcThang(id, matinh, dbBaoCao, bcThang)
                     };
                     AppHelper.zipAchive(fileZip, listFile);
+                }
+                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}.docx")) == false)
+                {
+                    AppHelper.zipExtract(fileZip, ".docx");
+                }
+                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}_pl.xlsx")) == false)
+                {
+                    AppHelper.zipExtract(fileZip, ".xlsx");
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }
@@ -1534,8 +1539,7 @@ namespace ToolBaoCao.Controllers
             var folder = new DirectoryInfo(Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{idtinh}"));
             if (folder.Exists)
             {
-                foreach (var f in folder.GetFiles($"bcThang_{id}.*")) { try { f.Delete(); } catch { } }
-                foreach (var f in folder.GetFiles($"bcThang_pl_{id}*.*")) { try { f.Delete(); } catch { } }
+                foreach (var f in folder.GetFiles($"bcThang_{id}*.*")) { try { f.Delete(); } catch { } }
                 foreach (var f in folder.GetFiles($"id{id}*.*")) { try { f.Delete(); } catch { } }
             }
             /* Xoá trong cơ sở dữ liệu */

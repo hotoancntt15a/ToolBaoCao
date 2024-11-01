@@ -65,7 +65,7 @@ namespace ToolBaoCao
                                 i++;
                                 dbFileFound = true;
                                 entry.ExtractToFile(Path.Combine(extractFolderPath, entry.FullName), overwrite: true);
-                                if (i > allFileExt) { break; }
+                                if (i >= allFileExt) { break; }
                             }
                         }
                     }
