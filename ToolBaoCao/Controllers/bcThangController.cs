@@ -624,11 +624,11 @@ namespace ToolBaoCao.Controllers
                 }
                 if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}.docx")) == false)
                 {
-                    AppHelper.zipExtract(fileZip, ".docx");
+                    AppHelper.zipExtract(fileZip, d.FullName, ".docx");
                 }
                 if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}_pl.xlsx")) == false)
                 {
-                    AppHelper.zipExtract(fileZip, ".xlsx");
+                    AppHelper.zipExtract(fileZip, d.FullName, ".xlsx");
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.Message; }

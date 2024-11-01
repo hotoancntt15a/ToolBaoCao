@@ -18,6 +18,7 @@ namespace ToolBaoCao.Controllers
      * Nếu User bị thay đổi mã tỉnh làm việc sẽ huỷ toàn bộ tiến trình các bước nếu có
      * Dữ liệu bắt buộc B02 00, b02 cs, b04 00, b26 00, b26 cs
      */
+
     public class bcTuanController : ControllerCheckLogin
     {
         public ActionResult Index()
@@ -165,14 +166,14 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private void createFilePhuLucBCTuan(string idBaoCao, string matinh, dbSQLite dbBaoCaoTuan = null, Dictionary<string, string> bcTuan = null)
+        private void createFilePhuLucBCTuan(string idBaoCao, string matinh, dbSQLite dbBcTuan = null, Dictionary<string, string> bcTuan = null)
         {
-            if (dbBaoCaoTuan == null) { dbBaoCaoTuan = BuildDatabase.getDataBCTuan(matinh); }
+            if (dbBcTuan == null) { dbBcTuan = BuildDatabase.getDataBCTuan(matinh); }
             var idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
             if (bcTuan == null)
             {
                 bcTuan = new Dictionary<string, string>();
-                var data = dbBaoCaoTuan.getDataTable($"SELECT * FROM bctuandocx WHERE id='{idBaoCaoVauleField}';");
+                var data = dbBcTuan.getDataTable($"SELECT * FROM bctuandocx WHERE id='{idBaoCaoVauleField}';");
                 if (data.Rows.Count > 0)
                 {
                     foreach (DataColumn c in data.Columns)
@@ -182,18 +183,18 @@ namespace ToolBaoCao.Controllers
                 }
             }
             /* Tạo phụ lục báo cáo */
-            var pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}';");
+            var pl = dbBcTuan.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc01 = createPhuLuc01(pl, matinh, bcTuan);
 
-            pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}';");
+            pl = dbBcTuan.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc02 = createPhuLuc02(pl, matinh);
 
-            pl = dbBaoCaoTuan.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}';");
+            pl = dbBcTuan.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc03 = createPhuLuc03(pl, matinh, phuluc01);
 
             var xlsx = exportPhuLucBCTuan(phuluc01, phuluc02, phuluc03);
 
-            var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{matinh}", $"bctuan_pl_{idBaoCao}.xlsx");
+            var tmp = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{matinh}", $"bctuan_{idBaoCao}_pl.xlsx");
             if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
             using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
@@ -368,7 +369,7 @@ namespace ToolBaoCao.Controllers
                 listValue[tmpInt] = "1";
                 if (listValue[0] == "00") { listValue[tmpInt] = "0"; cs = false; }
                 tmp = string.Join(",", listValue);
-                if(tmp.Contains(",,")) { throw new Exception($"Biểu {bieu} không đúng định dạng."); }
+                if (tmp.Contains(",,")) { throw new Exception($"Biểu {bieu} không đúng định dạng."); }
                 /* Kiểm tra có đúng dữ liệu không */
                 if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
                 matinhImport = listValue[0];
@@ -473,7 +474,8 @@ namespace ToolBaoCao.Controllers
                 /* Trường hợp không tìm thấy tập tin nào thì tạo lại nếu còn dữ liệu */
                 var tsql = "";
                 var matinh = tmp;
-                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_{id}.docx")) == false || System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_pl_{id}.docx")) == false)
+                var fileZip = Path.Combine(d.FullName, $"bctuan_{id}.zip");
+                if (System.IO.File.Exists(fileZip) == false)
                 {
                     /* Tạo lại báo cáo */
                     var dbBaoCao = BuildDatabase.getDataBCTuan(matinh);
@@ -490,10 +492,27 @@ namespace ToolBaoCao.Controllers
                     createFileBCTuanDocx(id, matinh, bcTuan);
                     createFilePhuLucBCTuan(id, matinh, dbBaoCao, bcTuan);
                     dbBaoCao.Close();
+                    var listFile = new List<string>() { Path.Combine(d.FullName, $"bctuan_{id}.docx"), Path.Combine(d.FullName, $"bctuan_{id}_pl.xlsx") };
+                    tmp = Path.Combine(d.FullName, $"id{id}_b26_00.xlsx");
+                    if (System.IO.File.Exists(tmp)) { listFile.Add(tmp); }
+                    AppHelper.zipAchive(fileZip, listFile);
+                }
+                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_{id}.docx")) == false)
+                {
+                    AppHelper.zipExtract(fileZip, d.FullName, ".docx");
+                }
+                if (System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_{id}_pl.xlsx")) == false)
+                {
+                    AppHelper.zipExtract(fileZip, d.FullName, "_pl.xlsx");
                 }
                 tmp = Path.Combine(d.FullName, $"id{id}_b26_00.xlsx");
                 if (System.IO.File.Exists(tmp) == false)
                 {
+                    AppHelper.zipExtract(fileZip, d.FullName, "_b26_00.xlsx");
+                }
+                if (System.IO.File.Exists(tmp) == false)
+                {
+                    AppHelper.zipExtract(fileZip, d.FullName, "_b26_00.xlsx");
                     /* Tạo lại biểu 26 Toàn quốc */
                     var dbImport = BuildDatabase.getDataImportBCTuan(matinh);
                     var data = dbImport.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{id.sqliteGetValueField()}' AND ma_tinh <> ''");
@@ -1058,7 +1077,7 @@ namespace ToolBaoCao.Controllers
             d.Add(key2, $"{tmp}%");
             /* X63 = số tuyệt đối X63 {tính toán: [X61 trừ đi (X61 chia (cột AE+100)*100)] & “bệnh nhân”} */
             var so2 = (double)row[field2];
-            d.Add(key3, (tmp.StartsWith("t") ? "tăng " : "giảm ")+ Math.Abs(so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
+            d.Add(key3, (tmp.StartsWith("t") ? "tăng " : "giảm ") + Math.Abs(so1 - (so1 / (so2 + 100) * 100)).FormatCultureVN() + " bệnh nhân");
             return d;
         }
 
