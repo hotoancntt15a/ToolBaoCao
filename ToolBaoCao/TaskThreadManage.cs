@@ -52,6 +52,7 @@ namespace ToolBaoCao
                 var item = new ItemTask(row["id"].ToString(), row["nametask"].ToString(), $"{row["actionname"]}", $"{row["args"]}", long.Parse($"{row["timestart"]}"));
                 Add(item, false);
             }
+            Call();
         }
 
         public void Add(ItemTask item, bool callRun = true)
@@ -125,8 +126,9 @@ namespace ToolBaoCao
             }
         }
 
-        public void setFinshThreadInAppStart()
+        public void setFinshThreadInAppStart(bool threadAbortedContinue = true)
         {
+            if (threadAbortedContinue) { return; }
             Thread t = new Thread(new ThreadStart(() =>
             {
                 var d = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml"));
@@ -340,9 +342,9 @@ namespace ToolBaoCao
                 }
                 else
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                     /* Chuyển dữ liệu */
                     rowCopyed = 0;
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                     var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
@@ -358,7 +360,7 @@ namespace ToolBaoCao
                                 /* Copy AND ignore */
                                 dbTo.Insert(tableName, data, "IGNORE", batchSize);
                                 rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                                 data.Rows.Clear();
                             }
                             DataRow dr = data.NewRow();
@@ -371,7 +373,7 @@ namespace ToolBaoCao
                             /* Copy AND ignore */
                             dbTo.Insert(tableName, data, "IGNORE", batchSize);
                             rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                         }
                     }
                     catch (Exception ex2)
@@ -393,9 +395,9 @@ namespace ToolBaoCao
                 }
                 else
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
-                    /* Chuyển dữ liệu */
                     rowCopyed = 0;
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                    /* Chuyển dữ liệu */
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
                     var md5EncyptCols = new List<string>();
@@ -410,7 +412,7 @@ namespace ToolBaoCao
                                 /* Copy AND ignore */
                                 dbTo.Insert(tableName, data, "IGNORE", batchSize);
                                 rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                                 data.Rows.Clear();
                             }
                             DataRow dr = data.NewRow();
@@ -423,7 +425,7 @@ namespace ToolBaoCao
                             /* Copy AND ignore */
                             dbTo.Insert(tableName, data, "IGNORE", batchSize);
                             rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                         }
                     }
                     catch (Exception ex2)
@@ -445,9 +447,9 @@ namespace ToolBaoCao
                 }
                 else
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}(0/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
                     /* Chuyển dữ liệu */
                     rowCopyed = 0;
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
                     var md5EncyptCols = new List<string>();
@@ -462,7 +464,7 @@ namespace ToolBaoCao
                                 /* Copy AND ignore */
                                 dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                                 rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                                 data.Rows.Clear();
                             }
                             DataRow dr = data.NewRow();
@@ -475,7 +477,7 @@ namespace ToolBaoCao
                             /* Copy AND ignore */
                             dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                             rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = 'Sao chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) từ {fileName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
                         }
                     }
                     catch (Exception ex2)
