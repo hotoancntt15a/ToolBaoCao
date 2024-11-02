@@ -243,7 +243,7 @@ namespace ToolBaoCao
                         dbFrom.Close();
                         continue;
                     }
-                    dbXML.Execute($"UPDATE xmlthread SET pageindex = {indexFileTarget} WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET pageindex = {(indexFileTarget + 1)} WHERE id='{id}'");
                 }
                 dbXML.Execute($"UPDATE xmlthread SET title = 'Hoàn thành', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
                 data = dbXML.getDataTable($"SELECT * FROM xmlthread WHERE id='{id}'");
