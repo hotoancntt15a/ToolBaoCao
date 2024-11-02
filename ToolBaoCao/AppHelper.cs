@@ -470,7 +470,6 @@ namespace ToolBaoCao
             /* Check Folder Exists */
             var folders = new List<string>() { pathCache, pathTemp };
             foreach (var pathFolder in folders) { if (Directory.Exists(pathFolder) == false) { Directory.CreateDirectory(pathFolder); } }
-            threadManage.setFinshThreadInAppStart();
         }
 
         public static void SapXepNgauNhien(this List<string> arr)

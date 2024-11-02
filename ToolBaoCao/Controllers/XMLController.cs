@@ -13,6 +13,7 @@ namespace ToolBaoCao.Controllers
     public class XMLController : ControllerCheckLogin
     {
         /* GET: XML */
+
         public ActionResult Index()
         {
             try
@@ -110,8 +111,21 @@ namespace ToolBaoCao.Controllers
                     if (w.Count > 0) { tsql += " WHERE " + string.Join(" AND ", w); }
                     var dbXML = BuildDatabase.getDataXML(matinh);
                     var data = dbXML.getDataTable(tsql + " ORDER BY time1 DESC LIMIT 50");
-                    ViewBag.data = data;
+                    var view = data.AsEnumerable().Where(x => x.Field<string>("title") == "Thread was being aborted.").ToList();
+                    ViewBag.threadabort = view.Count;
+                    if (view.Count > 0)
+                    {
+                        foreach (DataRow row in view)
+                        {
+                            var itemTask = new ItemTask(row["id"].ToString(), $"Controller.XML.{row["id"]}", "Controller.XML", $"{row["matinh"]}|{row["id"]}", long.Parse(row["time1"].ToString()));
+                            AppHelper.threadManage.Add(itemTask, false);
+                            dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; Recreate Thread {DateTime.Now:HH:mm:ss}', time2=0 WHERE id='{row["id"]}'");
+                        }
+                        AppHelper.threadManage.Call();
+                        data = dbXML.getDataTable(tsql + " ORDER BY time1 DESC LIMIT 50");
+                    }
                     dbXML.Close();
+                    ViewBag.data = data;
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
@@ -149,7 +163,7 @@ namespace ToolBaoCao.Controllers
                     db.Close();
                     return View();
                 }
-                if(mode == "xlsx")
+                if (mode == "xlsx")
                 {
                     string dataName = Request.getValue("data");
                     string tsql = Request.getValue("tsql").Trim();

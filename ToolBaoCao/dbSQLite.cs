@@ -173,6 +173,13 @@ namespace ToolBaoCao
             return l;
         }
 
+        public bool tableExist(string tableName)
+        {
+            var dt = getDataTable($"SELECT [name] FROM [sqlite_master] WHERE type IN ('table') AND name = '{tableName}'", getCache: false);
+            if (dt.Rows.Count == 0) { return false; }
+            return true;
+        }
+
         public void backup(string pathsave)
         {
             using (var destination = new SQLiteConnection($"Data Source={pathsave};Version=3;"))

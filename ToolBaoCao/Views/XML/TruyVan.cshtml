@@ -3,7 +3,7 @@
     <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
     return;
 }
-<div class="alert alert-info">Dữ liệu truy vấn báo cáo được tạo từ @Request.getValue("ngay1") đến @Request.getValue("ngay2")</div>
+<div class="alert alert-info">Dữ liệu truy vấn báo cáo được tạo từ @Request.getValue("ngay1") đến @Request.getValue("ngay2"); Thread Abort: @ViewBag.threadabort</div>
 @{
     if (Request.getValue("layout") == "null") { Layout = null; }
     var data = ViewBag.data == null ? new DataTable() : ViewBag.data as DataTable;
@@ -22,10 +22,10 @@
             <tr>
                 <th style="width: 65px;">Chọn</th>
                 <th>Khởi tạo lúc</th>
-                <th>Tập tin</th>
-                <th>Trạng thái</th>
-                <th>Lỗi luỹ kế</th>
                 <th>Hoàn thành lúc</th>
+                <th>Trạng thái</th>
+                <th>Thông báo</th>
+                <th>Tập tin</th>
             </tr>
         </thead>
         <tbody>
@@ -42,10 +42,12 @@
                 <tr data-id="@row["id"]">
                     <td class="text-center"><input type="checkbox" class="custom-checkbox" name="id" value="@row["id"]" /></td>
                     <td>@Html.Raw(linkEdit)</td>
-                    <td>@row["name"]</td>
-                    <td>@row["title"]</td>
-                    <td>@row["args2"]</td>
                     <td>@time2</td>
+                    <td colspan="3">@row["title"]</td>
+                </tr>
+                <tr data-id="@row["id"]">
+                    <td colspan="3">@row["args2"]</td>
+                    <td colspan="3">@row["name"]</td>
                 </tr>
             }
         </tbody>

@@ -52,6 +52,29 @@ namespace ToolBaoCao
                 var item = new ItemTask(row["id"].ToString(), row["nametask"].ToString(), $"{row["actionname"]}", $"{row["args"]}", long.Parse($"{row["timestart"]}"));
                 Add(item, false);
             }
+            /* XML */
+            var d = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml"));
+            if ((d.Exists == false)) { d.Create(); }
+            else
+            {
+                foreach (var f in d.GetFiles("*.db"))
+                {
+                    var db = new dbSQLite(f.FullName);
+                    try
+                    {
+                        if (db.tableExist("xmlthread") == false) { continue; }
+                        var dt = db.getDataTable("SELECT * FROM xmlthread WHERE title='Thread was being aborted.';");
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            var itemTask = new ItemTask(row["id"].ToString(), $"Controller.XML.{row["id"]}", "Controller.XML", $"{row["matinh"]}|{row["id"]}", long.Parse(row["time1"].ToString()));
+                            Add(itemTask, false);
+                        }
+                        db.Execute($"UPDATE xmlthread SET time2 = 0, arg2 = arg2 || '; Recall Thread {DateTime.Now:HH:mm:ss}' WHERE title='Thread was being aborted.';");
+                    }
+                    catch { }
+                    db.Close();
+                }
+            }
             Call();
         }
 
@@ -92,64 +115,36 @@ namespace ToolBaoCao
                 IDRunning = "";
             }
             var item = _threads.Values.FirstOrDefault();
-            if (item != null)
+            if (item == null) { return; }
+            IDRunning = item.ID;
+            try
             {
-                IDRunning = item.ID;
-                try
+                switch (item.ActionName.ToLower())
                 {
-                    switch (item.ActionName.ToLower())
-                    {
-                        case "controller.xml":
-                            Thread t = new Thread(new ThreadStart(() =>
-                            {
-                                try
-                                {
-                                    /* Kiểm tra xem có trong danh sách XMLThread không? */
-                                    var tmp = item.Args.Split('|');
-                                    var dbXML = BuildDatabase.getDataXML(tmp[0]);
-                                    tmp[0] = $"{dbXML.getValue($"SELECT time2 FROM xmlthread WHERE id='{tmp[1]}';")}";
-                                    dbXML.Close();
-                                    if (tmp[0] == "") { Delete(tmp[1]); return; }
-                                    if (tmp[0] != "0") { Delete(tmp[1]); return; }
-                                    XMLThread(item.Args);
-                                    Delete(tmp[1]);
-                                }
-                                catch (Exception exT) { AppHelper.saveError($"Lỗi XMLThread({item.ID} - {item.ActionName} - {item.Args}): {exT.Message}"); }
-                            }));
-                            t.Start();
-                            break;
-
-                        default: AppHelper.saveError($"Không tìm thấy Task({item.ID} - {item.ActionName} - {item.Args})"); break;
-                    }
-                }
-                catch (Exception ex) { AppHelper.saveError($"Task({item.ID} - {item.ActionName} - {item.Args}) Lỗi: {ex.Message}"); }
-            }
-        }
-
-        public void setFinshThreadInAppStart(bool threadAbortedContinue = true)
-        {
-            if (threadAbortedContinue) { return; }
-            Thread t = new Thread(new ThreadStart(() =>
-            {
-                var d = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml"));
-                if ((d.Exists == false)) { d.Create(); return; }
-                foreach (var f in d.GetFiles("*.db"))
-                {
-                    var db = new dbSQLite(f.FullName);
-                    try
-                    {
-                        var tables = db.getAllTables();
-                        if (tables.Contains("xmlthread"))
+                    case "controller.xml":
+                        Thread t = new Thread(new ThreadStart(() =>
                         {
-                            /* AND title <> 'Thread was being aborted.' */
-                            db.Execute($"UPDATE xmlthread SET title='Lỗi do do hệ thống bị ngắt đột ngột', time2={DateTime.Now.toTimestamp()} WHERE time2=0;");
-                        }
-                    }
-                    catch { }
-                    db.Close();
+                            try
+                            {
+                                /* Kiểm tra xem có trong danh sách XMLThread không? */
+                                var tmp = item.Args.Split('|');
+                                var dbXML = BuildDatabase.getDataXML(tmp[0]);
+                                tmp[0] = $"{dbXML.getValue($"SELECT time2 FROM xmlthread WHERE id='{tmp[1]}';")}";
+                                dbXML.Close();
+                                if (tmp[0] == "") { Delete(tmp[1]); return; }
+                                if (tmp[0] != "0") { Delete(tmp[1]); return; }
+                                XMLThread(item.Args);
+                                Delete(tmp[1]);
+                            }
+                            catch (Exception exT) { AppHelper.saveError($"Lỗi XMLThread({item.ID} - {item.ActionName} - {item.Args}): {exT.Message}"); }
+                        }));
+                        t.Start();
+                        break;
+
+                    default: AppHelper.saveError($"Không tìm thấy Task({item.ID} - {item.ActionName} - {item.Args})"); break;
                 }
-            }));
-            t.Start();
+            }
+            catch (Exception ex) { AppHelper.saveError($"Task({item.ID} - {item.ActionName} - {item.Args}) Lỗi: {ex.Message}"); }
         }
 
         /// <summary>
@@ -178,20 +173,20 @@ namespace ToolBaoCao
                     item[data.Columns[i].ColumnName] = data.Rows[0][i].ToString();
                 }
                 var lfile = item["args"].Split('|').ToList();
-                int ij = 0;
+                var lfileTarget = item["name"].Split(',').ToList();
+                int ij = 0; int indexFileTarget = int.Parse(item["pageindex"]);
                 var XMLdb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"t{matinh}", $"xml{id}.db"));
-                XMLdb.Execute("DROP TABLE IF EXISTS xml123; DROP TABLE IF EXISTS xml7980a; DROP TABLE IF EXISTS xmlthread;");
                 XMLdb.createTableXMLThread();
-                foreach (string f in lfile)
+                for (; indexFileTarget <= lfile.Count; indexFileTarget++)
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET title = 'Đang thao tác tại {f} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                    string f = lfile[indexFileTarget];
+                    dbXML.Execute($"UPDATE xmlthread SET title = 'Đang thao tác tại {f} ({DateTime.Now:HH:mm:ss})' WHERE id='{id}'");
                     ij++;
                     var fileName = AppHelper.pathApp + f;
                     if (System.IO.File.Exists(fileName) == false) { throw new Exception($"XMLThread '{id}' có tập tin '{f}' không tồn tại trong hệ thống"); }
                     var ext = Path.GetExtension(fileName);
                     if (ext == ".zip")
                     {
-                        string nameFileImport = Path.GetFileName(fileName);
                         using (ZipArchive archive = ZipFile.OpenRead(fileName))
                         {
                             foreach (ZipArchiveEntry entry in archive.Entries)
@@ -199,12 +194,12 @@ namespace ToolBaoCao
                                 ij++;
                                 if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Đang giải nén {entry.FullName} ({DateTime.Now:dd/MM/yyyy HH:mm})' WHERE id='{id}'");
+                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Đang giải nén {entry.FullName} ({DateTime.Now:HH:mm:ss})' WHERE id='{id}'");
                                     var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip{ij}.db");
                                     entry.ExtractToFile(fdbForm, overwrite: true);
                                     var dbFrom = new dbSQLite(fdbForm);
                                     /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:dd/MM/yyyy HH:mm})', time2 = 0 WHERE id='{id}'");
+                                    dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:HH:mm:ss})', time2 = 0 WHERE id='{id}'");
                                     var tables = dbFrom.getAllTables();
                                     var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
                                     var tableName = "xml123";
@@ -217,20 +212,19 @@ namespace ToolBaoCao
                                         throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                                     }
                                     /* Chuyển dữ liệu */
-                                    XMLCopyTable(XMLdb, dbFrom, dbXML, id, nameFileImport);
+                                    XMLCopyTable(XMLdb, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
                                     dbFrom.Close();
                                     /* Xoá đi sau khi sao chép song */
                                     try { System.IO.File.Delete(fdbForm); } catch { }
                                 }
                             }
                         }
-                        continue;
                     }
                     if (ext == ".db")
                     {
                         var dbFrom = new dbSQLite(fileName);
                         /* Kiểm tra có đúng cấu trúc dữ liệu không? */
-                        dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {f} ({DateTime.Now:dd/MM/yyyy HH:mm})', time2 = 0 WHERE id='{id}'");
+                        dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {f} ({DateTime.Now:HH:mm:ss})', time2 = 0 WHERE id='{id}'");
                         var tables = dbFrom.getAllTables();
                         var tsql = "SELECT MIN(KY_QT) AS X1, MAX(KY_QT) AS X2 FROM ";
                         if (tables.Contains("xml7980a")) { tsql += "xml7980a"; }
@@ -245,15 +239,19 @@ namespace ToolBaoCao
                             dbFrom.Close();
                             throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                         }
-                        XMLCopyTable(XMLdb, dbFrom, dbXML, id, "");
+                        XMLCopyTable(XMLdb, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
                         dbFrom.Close();
                         continue;
                     }
+                    dbXML.Execute($"UPDATE xmlthread SET pageindex = {indexFileTarget} WHERE id='{id}'");
                 }
-                dbXML.Execute($"UPDATE xmlthread SET title = 'Hoàn thành', pageindex = 1, time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
+                dbXML.Execute($"UPDATE xmlthread SET title = 'Hoàn thành', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
                 data = dbXML.getDataTable($"SELECT * FROM xmlthread WHERE id='{id}'");
                 XMLdb.Insert("xmlthread", data, "replace");
                 XMLdb.Close();
+                /* Xoá hết các tập tin tạm để giải phóng dung lượng */
+                var d = new DirectoryInfo(folderTemp);
+                foreach (var f in d.GetFiles($"xml{id}*.*")) { try { f.Delete(); } catch { } }
             }
             catch (Exception ex)
             {
@@ -278,7 +276,7 @@ namespace ToolBaoCao
         {
             var tablesTo = dbTo.getAllTables();
             var tablesFrom = dbFrom.getAllTables();
-            var fileName = Path.GetFileName(dbFrom.getPathDataFile()) + (nameFile == "" ? "" : $" [{nameFile}]");
+            var fileName = $"{nameFile}: " + Path.GetFileName(dbFrom.getPathDataFile());
             var tmp = "";
             int batchSize = 1000; double rowCopyed = 0;
             var colsRemove = new HashSet<string> { "TEN_TINH", "TEN_CSKCB", "COSOKCB_ID", "MA_TINH_THE", "T_VUOTTRAN" };
@@ -344,7 +342,7 @@ namespace ToolBaoCao
                 {
                     /* Chuyển dữ liệu */
                     rowCopyed = 0;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                     var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
@@ -360,7 +358,7 @@ namespace ToolBaoCao
                                 /* Copy AND ignore */
                                 dbTo.Insert(tableName, data, "IGNORE", batchSize);
                                 rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                                 data.Rows.Clear();
                             }
                             DataRow dr = data.NewRow();
@@ -373,7 +371,7 @@ namespace ToolBaoCao
                             /* Copy AND ignore */
                             dbTo.Insert(tableName, data, "IGNORE", batchSize);
                             rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                         }
                     }
                     catch (Exception ex2)
@@ -396,7 +394,7 @@ namespace ToolBaoCao
                 else
                 {
                     rowCopyed = 0;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                     /* Chuyển dữ liệu */
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
@@ -412,7 +410,7 @@ namespace ToolBaoCao
                                 /* Copy AND ignore */
                                 dbTo.Insert(tableName, data, "IGNORE", batchSize);
                                 rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                                 data.Rows.Clear();
                             }
                             DataRow dr = data.NewRow();
@@ -425,7 +423,7 @@ namespace ToolBaoCao
                             /* Copy AND ignore */
                             dbTo.Insert(tableName, data, "IGNORE", batchSize);
                             rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                         }
                     }
                     catch (Exception ex2)
@@ -449,7 +447,7 @@ namespace ToolBaoCao
                 {
                     /* Chuyển dữ liệu */
                     rowCopyed = 0;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                     var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
                     data.Rows.RemoveAt(0);
                     var md5EncyptCols = new List<string>();
@@ -464,7 +462,7 @@ namespace ToolBaoCao
                                 /* Copy AND ignore */
                                 dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                                 rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                                 data.Rows.Clear();
                             }
                             DataRow dr = data.NewRow();
@@ -477,8 +475,9 @@ namespace ToolBaoCao
                             /* Copy AND ignore */
                             dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
                             rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:dd/MM/yyyy HH:mm}' WHERE id='{id}'");
+                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
                         }
+                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} Đã sao chép {rowCopyed.FormatCultureVN()}/{tableName}' WHERE id='{id}'");
                     }
                     catch (Exception ex2)
                     {
