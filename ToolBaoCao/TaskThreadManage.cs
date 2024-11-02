@@ -189,6 +189,7 @@ namespace ToolBaoCao
                     var ext = Path.GetExtension(fileName);
                     if (ext == ".zip")
                     {
+                        string nameFileImport = Path.GetFileName(fileName);
                         using (ZipArchive archive = ZipFile.OpenRead(fileName))
                         {
                             foreach (ZipArchiveEntry entry in archive.Entries)
@@ -214,7 +215,7 @@ namespace ToolBaoCao
                                         throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                                     }
                                     /* Chuyển dữ liệu */
-                                    XMLCopyTable(XMLdb, dbFrom, dbXML, id);
+                                    XMLCopyTable(XMLdb, dbFrom, dbXML, id, nameFileImport);
                                     dbFrom.Close();
                                     /* Xoá đi sau khi sao chép song */
                                     try { System.IO.File.Delete(fdbForm); } catch { }
@@ -242,7 +243,7 @@ namespace ToolBaoCao
                             dbFrom.Close();
                             throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                         }
-                        XMLCopyTable(XMLdb, dbFrom, dbXML, id);
+                        XMLCopyTable(XMLdb, dbFrom, dbXML, id, "");
                         dbFrom.Close();
                         continue;
                     }
@@ -271,11 +272,11 @@ namespace ToolBaoCao
             return Regex.Replace(tsql, @"\s+", " ");
         }
 
-        private void XMLCopyTable(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string id)
+        private void XMLCopyTable(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string id, string nameFile)
         {
             var tablesTo = dbTo.getAllTables();
             var tablesFrom = dbFrom.getAllTables();
-            var fileName = Path.GetFileName(dbFrom.getPathDataFile());
+            var fileName = Path.GetFileName(dbFrom.getPathDataFile()) + (nameFile == "" ? "" : $" [{nameFile}]");
             var tmp = "";
             int batchSize = 1000; double rowCopyed = 0;
             var colsRemove = new HashSet<string> { "TEN_TINH", "TEN_CSKCB", "COSOKCB_ID", "MA_TINH_THE", "T_VUOTTRAN" };
