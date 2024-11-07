@@ -111,7 +111,7 @@ namespace ToolBaoCao.Controllers
                     if (w.Count > 0) { tsql += " WHERE " + string.Join(" AND ", w); }
                     var dbXML = BuildDatabase.getDataXML(matinh);
                     var data = dbXML.getDataTable(tsql + " ORDER BY time1 DESC LIMIT 50");
-                    var view = data.AsEnumerable().Where(x => x.Field<string>("title") == "Thread was being aborted." || x.Field<long>("time2") == 0).ToList();
+                    var view = data.AsEnumerable().Where(x => x.Field<string>("title") == "Thread was being aborted.").ToList();
                     ViewBag.threadabort = view.Count;
                     if (view.Count > 0)
                     {

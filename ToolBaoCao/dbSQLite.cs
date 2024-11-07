@@ -14,6 +14,7 @@ namespace ToolBaoCao
         private SQLiteConnection connection = new SQLiteConnection();
         public int CommandTimeout = 0;
         private string fileDataName = "";
+        public string pathLog = "";
 
         public long getTimestamp(DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
 
@@ -87,6 +88,7 @@ namespace ToolBaoCao
 
         public DataTable getDataTable(string query, object parameters = null, bool getCache = true)
         {
+            wrireLog(query);
             var data = new DataTable("DataTable");
             if (string.IsNullOrEmpty(query)) { return data; }
             var fileCache = "";
@@ -118,6 +120,7 @@ namespace ToolBaoCao
 
         public SQLiteDataReader getDataReader(string query, object parameters = null)
         {
+            wrireLog(query);
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             var command = new SQLiteCommand(query, connection);
             if (parameters != null)
@@ -128,8 +131,15 @@ namespace ToolBaoCao
             return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
         }
 
+        private void wrireLog(string query)
+        {
+            if (pathLog == "") { return; }
+            try { File.AppendAllText(pathLog, $"{Environment.NewLine}{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {query}", Encoding.Unicode); } catch { }
+        }
+
         public int Execute(string query, object parameters = null)
         {
+            wrireLog(query);
             var rs = 0;
             var par = ConvertObjectToParameter(parameters);
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
@@ -145,6 +155,7 @@ namespace ToolBaoCao
 
         public object getValue(string query, object parameters = null)
         {
+            wrireLog(query);
             SQLiteParameter[] par = ConvertObjectToParameter(parameters);
             if (connection.State == ConnectionState.Closed) { connection.Open(); }
             using (var command = new SQLiteCommand(query, connection))

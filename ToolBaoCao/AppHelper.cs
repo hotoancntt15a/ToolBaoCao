@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.Services.Description;
 using ToolBaoCao.CaptchaImage;
 using UAParser;
 
@@ -311,13 +312,13 @@ namespace ToolBaoCao
         public static string FormatCultureVN(this long numberUS)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            return numberUS.ToString($"N", vietnamCulture.NumberFormat);
+            return numberUS.ToString($"N0", vietnamCulture.NumberFormat);
         }
 
         public static string FormatCultureVN(this int numberUS)
         {
             CultureInfo vietnamCulture = new CultureInfo("vi-VN");
-            return numberUS.ToString($"N", vietnamCulture.NumberFormat);
+            return numberUS.ToString($"N0", vietnamCulture.NumberFormat);
         }
 
         public static string FormatCultureVN(this double numberUS, int decimalDigits = 2)
@@ -705,29 +706,12 @@ namespace ToolBaoCao
 
         public static string chuThuongDauChuoi(this string inputString) => inputString.First().ToString().ToLower() + inputString.Substring(1);
 
-        public static void saveError(this Exception ex, string message = "")
-        {
-            try
-            {
-                using (var sw = new StreamWriter(Path.Combine(pathApp, "error.log"), true, Encoding.Unicode))
-                {
-                    try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {ex.Message} {message} {ex.StackTrace}"); sw.Flush(); } catch { }
-                }
-            }
-            catch { }
-        }
+        public static void saveError(this Exception ex, string message = "") => saveError($"{ex.Message} {message} {ex.StackTrace}");
 
         public static void saveError(string message, string pathSave = "")
         {
-            try
-            {
-                if (pathSave == "") { pathSave = Path.Combine(pathApp, "error.log"); }
-                using (var sw = new StreamWriter(pathSave, true, Encoding.Unicode))
-                {
-                    try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {message}"); sw.Flush(); } catch { }
-                }
-            }
-            catch { }
+            if (pathSave == "") { pathSave = Path.Combine(pathApp, "error.log"); }
+            try { File.AppendAllText(pathSave, $"{Environment.NewLine}{DateTime.Now:dd/MM/yyyy HH:mm:ss} {message}", Encoding.Unicode); } catch { }
         }
 
         public static string getLineHTML(this Exception ex, string description = "")
@@ -744,14 +728,7 @@ namespace ToolBaoCao
             /* Chỉ lấy dòng có chỉ số dòng */
             var stackTrace = ex.StackTrace.Replace(pathCodeProject, "");
             var msg = stackTrace.Split('\n').Where(p => Regex.IsMatch(p, @":line \d+")).ToList();
-            try
-            {
-                using (var sw = new StreamWriter(HttpContext.Current.Server.MapPath("~/error.log"), true, Encoding.Unicode))
-                {
-                    try { sw.WriteLine($"{DateTime.Now:dd/MM/yyyy HH:mm:ss} {ex.Message}{Environment.NewLine}{string.Join(Environment.NewLine, msg)}"); sw.Flush(); } catch { }
-                }
-            }
-            catch { }
+            saveError($"{ex.Message}{Environment.NewLine}{string.Join(Environment.NewLine, msg)}");
             return $"Lỗi: {ex.Message}{newLineReturn}Chi tiết:{string.Join(newLineReturn, msg)}";
         }
 
