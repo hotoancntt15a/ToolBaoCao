@@ -175,8 +175,10 @@ namespace ToolBaoCao
                 var lfile = item["args"].Split('|').ToList();
                 var lfileTarget = item["name"].Split(',').ToList();
                 int ij = 0; int indexFileTarget = int.Parse(item["pageindex"]);
-                var XMLdb = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"t{matinh}", $"xml{id}.db"));
-                XMLdb.createTableXMLThread();
+                var dbTo = new dbSQLite(Path.Combine(AppHelper.pathAppData, "xml", $"t{matinh}", $"xml{id}.db"));
+                dbTo.createTableXMLThread();
+                data = dbXML.getDataTable($"SELECT * FROM xmlthread WHERE id='{id}'");
+                dbTo.Insert("xmlthread", data, "ignore");
                 for (; indexFileTarget <= lfile.Count; indexFileTarget++)
                 {
                     string f = lfile[indexFileTarget];
@@ -196,7 +198,16 @@ namespace ToolBaoCao
                                 {
                                     dbXML.Execute($"UPDATE xmlthread SET title = 'Đang giải nén {entry.FullName} ({DateTime.Now:HH:mm:ss})' WHERE id='{id}'");
                                     var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip{ij}.db");
-                                    entry.ExtractToFile(fdbForm, overwrite: true);
+                                    if (File.Exists($"{fdbForm}.done"))
+                                    {
+                                        try { File.Delete($"{fdbForm}.done"); } catch { }
+                                        entry.ExtractToFile($"{fdbForm}.done", overwrite: true);
+                                        File.Move($"{fdbForm}.done", fdbForm);
+                                    }
+                                    if (File.Exists(fdbForm) == false)
+                                    {
+                                        entry.ExtractToFile(fdbForm, overwrite: true);
+                                    }
                                     var dbFrom = new dbSQLite(fdbForm);
                                     /* Kiểm tra có đúng cấu trúc dữ liệu không? */
                                     dbXML.Execute($"UPDATE xmlthread SET title = 'Kiểm tra cấu trúc {entry.FullName} ({DateTime.Now:HH:mm:ss})', time2 = 0 WHERE id='{id}'");
@@ -212,7 +223,7 @@ namespace ToolBaoCao
                                         throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                                     }
                                     /* Chuyển dữ liệu */
-                                    XMLCopyTable(XMLdb, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
+                                    XMLCopyTable(dbTo, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
                                     dbFrom.Close();
                                     /* Xoá đi sau khi sao chép song */
                                     try { System.IO.File.Delete(fdbForm); } catch { }
@@ -239,7 +250,7 @@ namespace ToolBaoCao
                             dbFrom.Close();
                             throw new Exception($"XMLThread '{id}' có tập tin '{f}' không có dữ liệu");
                         }
-                        XMLCopyTable(XMLdb, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
+                        XMLCopyTable(dbTo, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
                         dbFrom.Close();
                         continue;
                     }
@@ -247,8 +258,8 @@ namespace ToolBaoCao
                 }
                 dbXML.Execute($"UPDATE xmlthread SET title = 'Hoàn thành', time2='{DateTime.Now.toTimestamp()}' WHERE id='{id}'");
                 data = dbXML.getDataTable($"SELECT * FROM xmlthread WHERE id='{id}'");
-                XMLdb.Insert("xmlthread", data, "replace");
-                XMLdb.Close();
+                dbTo.Insert("xmlthread", data, "replace");
+                dbTo.Close();
                 /* Xoá hết các tập tin tạm để giải phóng dung lượng */
                 var d = new DirectoryInfo(folderTemp);
                 foreach (var f in d.GetFiles($"xml{id}*.*")) { try { f.Delete(); } catch { } }
@@ -272,16 +283,75 @@ namespace ToolBaoCao
             return Regex.Replace(tsql, @"\s+", " ");
         }
 
+        private void XMLCopyTable2(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string idThread, string nameFile, string tableName, string fileName, int batchSize, List<string> colsMD5)
+        {
+            string totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
+            if (totalRow == "0")
+            {
+                dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{idThread}'");
+                return;
+            }
+            long ID = long.Parse($"{dbFrom.getValue($"SELECT pageindex FROM xmlthread WHERE id = '{idThread}'")}");
+            string tableTo = tableName == "xml123" ? "xml123" : "xml7980a";
+            /* Chuyển dữ liệu */
+            long rowCopyed = long.Parse($"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName} WHERE ID > {ID}")}");
+            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
+            var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
+            var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
+            data.Rows.RemoveAt(0);
+            var md5EncyptCols = new List<string>();
+            foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
+            var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName} ORDER BY ID");
+            try
+            {
+                while (reader.Read())
+                {
+                    if (data.Rows.Count >= batchSize)
+                    {
+                        /* Copy AND ignore */
+                        dbTo.Insert(tableTo, data, "IGNORE", batchSize);
+                        rowCopyed += data.Rows.Count;
+                        dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
+                        dbTo.Execute($"UPDATE xmlthread arg2='{tableName}', pageindex={data.Rows[data.Rows.Count - 1]["ID"]} WHERE id= '{idThread}'");
+                        data.Rows.Clear();
+                    }
+                    DataRow dr = data.NewRow();
+                    foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
+                    foreach (var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
+                    data.Rows.Add(dr);
+                }
+                if (data.Rows.Count > 0)
+                {
+                    /* Copy AND ignore */
+                    dbTo.Insert(tableTo, data, "IGNORE", batchSize);
+                    rowCopyed += data.Rows.Count;
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
+                    dbTo.Execute($"UPDATE xmlthread arg2='{tableName}', pageindex={data.Rows[data.Rows.Count - 1]["ID"]} WHERE id= '{idThread}'");
+                }
+            }
+            catch (Exception ex2)
+            {
+                dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{idThread}'");
+                ex2.saveError();
+            }
+            reader.Close();
+        }
+
         private void XMLCopyTable(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string id, string nameFile)
         {
             var tablesTo = dbTo.getAllTables();
             var tablesFrom = dbFrom.getAllTables();
+            var tablesCopy = new List<string>();
+            if (tablesFrom.Contains("xml123")) { tablesCopy.Add("xml123"); }
+            if (tablesFrom.Contains("xml7980a")) { tablesCopy.Add("xml7980a"); }
+            if (tablesFrom.Contains("bhyt7980a")) { tablesCopy.Add("bhyt7980a"); }
             var fileName = $"{nameFile}: " + Path.GetFileName(dbFrom.getPathDataFile());
+            if (tablesCopy.Count == 0) { dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()}: không có bảng dữ liệu cần sao chép.' WHERE id='{id}'"); }
             var tmp = "";
-            int batchSize = 1000; double rowCopyed = 0;
+            int batchSize = 1000;
             var colsRemove = new HashSet<string> { "TEN_TINH", "TEN_CSKCB", "COSOKCB_ID", "MA_TINH_THE", "T_VUOTTRAN" };
             var colsMD5 = new List<string>() { "MA_THE", "NGAY_SINH", "HO_TEN", "DIA_CHI" };
-            /* Tạo bảo nếu chưa có */
+            /* Tạo bảng nếu chưa có */
             if (tablesTo.Contains("xml123") == false)
             {
                 if (tablesFrom.Contains("xml123"))
@@ -330,164 +400,21 @@ namespace ToolBaoCao
                     dbTo.Execute("CREATE INDEX xml7980a_index1 ON xml7980a(MA_TINH,KY_QT,MA_CSKCB);");
                 }
             }
-            string totalRow = "", tableName = "xml123";
-            if (tablesFrom.Contains(tableName))
+            /* Ghi lại danh sách bảng cần sao chép */
+            dbTo.Execute($"UPDATE xmlthread SET arg = '{string.Join(",", tablesCopy)}' WHERE id='{id}'");
+            /* Loại bỏ các bảng đã sao chép */
+            if (tablesCopy.Count > 1)
             {
-                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
-                if (totalRow == "0")
+                int i = -1;
+                tmp = $"{dbTo.getValue($"SELECT arg2 FROM WHERE id='{id}'")}";
+                if (tmp != "")
                 {
-                    dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{id}'");
+                    foreach (var table in tablesCopy) { i++; if (table == tmp) { break; } }
+                    if (i > 0) { var obj = new List<string>(); for (; i < tablesCopy.Count; i++) { obj.Add(tablesCopy[i]); } tablesCopy = obj; }
                 }
-                else
-                {
-                    /* Chuyển dữ liệu */
-                    rowCopyed = 0;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                    var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
-                    var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
-                    data.Rows.RemoveAt(0);
-                    var md5EncyptCols = new List<string>();
-                    foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
-                    var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
-                    try
-                    {
-                        while (reader.Read())
-                        {
-                            if (data.Rows.Count >= batchSize)
-                            {
-                                /* Copy AND ignore */
-                                dbTo.Insert(tableName, data, "IGNORE", batchSize);
-                                rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                                data.Rows.Clear();
-                            }
-                            DataRow dr = data.NewRow();
-                            foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
-                            foreach (var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
-                            data.Rows.Add(dr);
-                        }
-                        if (data.Rows.Count > 0)
-                        {
-                            /* Copy AND ignore */
-                            dbTo.Insert(tableName, data, "IGNORE", batchSize);
-                            rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                        }
-                    }
-                    catch (Exception ex2)
-                    {
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{id}'");
-                        ex2.saveError();
-                    }
-                    reader.Close();
-                }
+                foreach (var table in tablesCopy) { XMLCopyTable2(dbTo, dbFrom, dbXML, id, nameFile, table, fileName, batchSize, colsMD5); }
+                dbFrom.Close(); dbTo.Close(); dbXML.Close();
             }
-            tableName = "xml7980a";
-            if (tablesFrom.Contains(tableName))
-            {
-                var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
-                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
-                if (totalRow == "0")
-                {
-                    dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{id}'");
-                }
-                else
-                {
-                    rowCopyed = 0;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                    /* Chuyển dữ liệu */
-                    var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
-                    data.Rows.RemoveAt(0);
-                    var md5EncyptCols = new List<string>();
-                    foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
-                    var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
-                    try
-                    {
-                        while (reader.Read())
-                        {
-                            if (data.Rows.Count >= batchSize)
-                            {
-                                /* Copy AND ignore */
-                                dbTo.Insert(tableName, data, "IGNORE", batchSize);
-                                rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                                data.Rows.Clear();
-                            }
-                            DataRow dr = data.NewRow();
-                            foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
-                            foreach (var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
-                            data.Rows.Add(dr);
-                        }
-                        if (data.Rows.Count > 0)
-                        {
-                            /* Copy AND ignore */
-                            dbTo.Insert(tableName, data, "IGNORE", batchSize);
-                            rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                        }
-                    }
-                    catch (Exception ex2)
-                    {
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{id}'");
-                        ex2.saveError();
-                    }
-                    reader.Close();
-                }
-            }
-            tableName = "bhyt7980a";
-            if (tablesFrom.Contains(tableName))
-            {
-                var lfield = dbTo.getColumns("xml7980a").Select(p => p.ColumnName).ToList();
-                totalRow = $"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName}")}".FormatCultureVN();
-                if (totalRow == "0")
-                {
-                    dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} không có dữ liệu {tableName}' WHERE id='{id}'");
-                }
-                else
-                {
-                    /* Chuyển dữ liệu */
-                    rowCopyed = 0;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                    var data = dbFrom.getDataTable($"SELECT {string.Join(", ", lfield)} FROM {tableName} LIMIT 1");
-                    data.Rows.RemoveAt(0);
-                    var md5EncyptCols = new List<string>();
-                    foreach (var v in colsMD5) { if (lfield.Contains(v)) { md5EncyptCols.Add(v); } }
-                    var reader = dbFrom.getDataReader($"SELECT {string.Join(", ", lfield)} FROM {tableName}");
-                    try
-                    {
-                        while (reader.Read())
-                        {
-                            if (data.Rows.Count >= batchSize)
-                            {
-                                /* Copy AND ignore */
-                                dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
-                                rowCopyed += data.Rows.Count;
-                                dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                                data.Rows.Clear();
-                            }
-                            DataRow dr = data.NewRow();
-                            foreach (DataColumn c in data.Columns) { dr[c.ColumnName] = reader[c.ColumnName]; }
-                            foreach (var c in md5EncyptCols) { dr[c] = $"{dr[c]}".MD5Encrypt(); }
-                            data.Rows.Add(dr);
-                        }
-                        if (data.Rows.Count > 0)
-                        {
-                            /* Copy AND ignore */
-                            dbTo.Insert("xml7980a", data, "IGNORE", batchSize);
-                            rowCopyed += data.Rows.Count;
-                            dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{id}'");
-                        }
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} Đã sao chép {rowCopyed.FormatCultureVN()}/{tableName}' WHERE id='{id}'");
-                    }
-                    catch (Exception ex2)
-                    {
-                        dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: {ex2.Message.sqliteGetValueField()}' WHERE id='{id}'");
-                        ex2.saveError();
-                    }
-                    reader.Close();
-                }
-            }
-            dbFrom.Close(); dbTo.Close(); dbXML.Close();
         }
     }
 }
