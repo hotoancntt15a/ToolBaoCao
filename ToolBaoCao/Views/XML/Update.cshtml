@@ -103,9 +103,10 @@
         }
     }
     function thucThiTSQL(sender = "") {
+        var frm = $('#@idform');
+        if (frm.find('textarea[name="tsql"]').text().trim() == "") { return; }
         var mode = 'tsql';
         if (typeof (sender) == 'string') { if (sender == "xlsx") { mode = 'xlsx'; } }
-        var frm = $('#@idform');
         frm.find('input[name="mode"]').val(mode);
         if (mode == 'xlsx') { mode = "_blank"; } else { mode = ""; }
         frm.attr('target', mode);

@@ -288,6 +288,7 @@ namespace ToolBaoCao
             long idCopy = long.Parse(tmp);
             string tableTo = tableName == "xml123" ? "xml123" : "xml7980a";
             /* Chuyển dữ liệu */
+            int soTrung = 0; int soExecute = 0;
             long rowCopyed = long.Parse($"{dbFrom.getValue($"SELECT COUNT(ID) AS X FROM {tableName} WHERE ID <= {idCopy}")}");
             dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
             var lfield = dbTo.getColumns(tableName).Select(p => p.ColumnName).ToList();
@@ -303,9 +304,9 @@ namespace ToolBaoCao
                     if (data.Rows.Count >= batchSize)
                     {
                         /* Copy AND ignore */
-                        dbTo.Insert(tableTo, data, "IGNORE", batchSize);
-                        rowCopyed += data.Rows.Count;
-                        dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
+                        soExecute = dbTo.Insert(tableTo, data, "IGNORE", batchSize);
+                        rowCopyed += data.Rows.Count; soTrung = data.Rows.Count - soExecute;
+                        dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow} Trùng {soTrung.FormatCultureVN()}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
                         dbTo.Execute($"UPDATE xmlthread SET args2='{tableName}', pageindex={data.Rows[data.Rows.Count - 1]["ID"]} WHERE id= '{idThread}'");
                         data.Rows.Clear();
                     }
@@ -317,9 +318,9 @@ namespace ToolBaoCao
                 if (data.Rows.Count > 0)
                 {
                     /* Copy AND ignore */
-                    dbTo.Insert(tableTo, data, "IGNORE", batchSize);
-                    rowCopyed += data.Rows.Count;
-                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
+                    soExecute = dbTo.Insert(tableTo, data, "IGNORE", batchSize);
+                    rowCopyed += data.Rows.Count; soTrung = data.Rows.Count - soExecute;
+                    dbXML.Execute($"UPDATE xmlthread SET title = '{fileName}: đã chép {tableName}({rowCopyed.FormatCultureVN()}/{totalRow} Trùng {soTrung.FormatCultureVN()}) {DateTime.Now:HH:mm:ss}' WHERE id='{idThread}'");
                     dbTo.Execute($"UPDATE xmlthread SET args2='{tableName}', pageindex={data.Rows[data.Rows.Count - 1]["ID"]} WHERE id= '{idThread}'");
                 }
             }
@@ -329,7 +330,7 @@ namespace ToolBaoCao
                 ex2.saveError();
             }
             reader.Close();
-            dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: Đã chép {rowCopyed.FormatCultureVN()}' WHERE id='{idThread}'");
+            dbXML.Execute($"UPDATE xmlthread SET args2 = args2 || '; {fileName.sqliteGetValueField()} - {tableName}: Đã chép {rowCopyed.FormatCultureVN()} Trùng {soTrung.FormatCultureVN()}' WHERE id='{idThread}'");
         }
 
         private void XMLCopyTable(dbSQLite dbTo, dbSQLite dbFrom, dbSQLite dbXML, string id, string nameFile)

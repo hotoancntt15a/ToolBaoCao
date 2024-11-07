@@ -31,9 +31,8 @@
         <tbody>
             @foreach (DataRow row in data.Rows)
             {
-                pageindex = $"{row["pageindex"]}";
                 time2 = $"{row["time2"]}";
-                if (pageindex == "1")
+                if (time2 != "0" && $"{row["title"]}" == "Hoàn thành")
                 {
                     linkEdit = $"<a href=\"/XML/Update?objectid={row["id"]}\">{row["thoigian1"]}</a>";
                 }
