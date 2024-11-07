@@ -46,8 +46,11 @@
                     <td colspan="3">@row["title"]</td>
                 </tr>
                 <tr data-id="@row["id"]">
-                    <td colspan="3">@row["args2"]</td>
-                    <td colspan="3">@row["name"]</td>
+                    <td colspan="3">@Html.Raw($"{row["name"]}".Replace(",", "<br />"))</td>
+                    @{
+                        var tmp = $"{row["args2"]}"; if (tmp != "") { tmp = tmp.Substring(2); };
+                    }
+                    <td colspan="3">@Html.Raw(tmp.Replace(";", "<br />"))</td>
                 </tr>
             }
         </tbody>
