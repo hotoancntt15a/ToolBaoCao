@@ -12,27 +12,30 @@ namespace ToolBaoCao
 
         public AppConfig(string configFilePath = "")
         {
-            filePath = configFilePath;
+            if (configFilePath == "") { filePath = Path.Combine(AppHelper.pathApp, "config.json"); }
+            else { filePath = configFilePath; }
             Load();
         }
 
-        // Đọc cấu hình từ file
+        /* Đọc cấu hình từ file */
+
         private void Load()
         {
             if (File.Exists(filePath))
             {
                 timeLastWrite = File.GetLastWriteTime(filePath).ToString();
-                string json = File.ReadAllText(filePath);
+                string json = File.ReadAllText(filePath, System.Text.Encoding.Unicode);
                 Config = JsonConvert.DeserializeObject<Config>(json) ?? new Config { Settings = new List<Setting>() };
             }
             else { Config = new Config { Settings = new List<Setting>() }; }
         }
 
-        // Lưu cấu hình vào file
+        /* Lưu cấu hình vào file */
+
         private void Save()
         {
             string json = JsonConvert.SerializeObject(Config, Formatting.Indented);
-            File.WriteAllText(filePath, json);
+            File.WriteAllText(filePath, json, System.Text.Encoding.Unicode);
             timeLastWrite = File.GetLastWriteTime(filePath).ToString();
         }
 
@@ -46,7 +49,8 @@ namespace ToolBaoCao
             Save();
         }
 
-        // Xóa phần tử
+        /* Xóa phần tử */
+
         public void Remove(string key)
         {
             var setting = Config.Settings.Find(s => s.Key == key);
@@ -57,17 +61,17 @@ namespace ToolBaoCao
             }
         }
 
-        // Lấy giá trị của phần tử
+        /* Lấy giá trị của phần tử */
+
         public string Get(string key, string valueDefault = "")
         {
             try { if (timeLastWrite != File.GetLastWriteTime(filePath).ToString()) { Load(); } } catch { }
             var setting = Config.Settings.Find(s => s.Key == key);
-            if (setting == null)
-            {
-                if (key == "app.title" || key == "App.Title") { return "HIA-Tools"; }
-                return valueDefault;
-            }
-            return setting.Value;
+            if (setting != null) { return setting.Value; }
+            if (key == "app.title" || key == "App.Title") { return "HIA-Tools"; }
+            Config.Settings.Add(new Setting { Key = key, Value = valueDefault });
+            Save();
+            return valueDefault;
         }
     }
 

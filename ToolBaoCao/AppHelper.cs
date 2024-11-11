@@ -12,7 +12,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Services.Description;
 using ToolBaoCao.CaptchaImage;
 using UAParser;
 
@@ -22,7 +21,6 @@ namespace ToolBaoCao
     {
         public static List<string> listKeyConfigCrypt = new List<string>() { "" };
         private static readonly string keyMD5 = typeof(AppHelper).Namespace;
-        public static AppConfig appConfig = new AppConfig();
         public static readonly string pathApp = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string pathAppData = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
         public static readonly string pathTemp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
@@ -30,6 +28,8 @@ namespace ToolBaoCao
         public static readonly string pathCodeProject = Assembly.GetExecutingAssembly().GetPathCodeProject();
         public static readonly string projectTitle = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         public static readonly string projectName = typeof(AppHelper).Namespace;
+
+        public static AppConfig appConfig = new AppConfig();
         public static dbSQLite dbSqliteMain = new dbSQLite();
         public static dbSQLite dbSqliteWork = new dbSQLite();
         public static TaskManage threadManage = new TaskManage();
@@ -457,7 +457,6 @@ namespace ToolBaoCao
 
         public static void LoadStart()
         {
-            appConfig = new AppConfig(Path.Combine(pathApp, "config.json"));
             if (appConfig.Config.Settings.Count == 0)
             {
                 appConfig.Set("App.Title", "HIA-Tools");
@@ -552,7 +551,7 @@ namespace ToolBaoCao
                 }
                 catch { }
             }
-            catch (Exception ex) { return $"Lỗi: {ex.Message} <br />Chi tiết: {ex.StackTrace}"; }
+            catch (Exception ex) { return $"Lỗi: {ex.Message}<br />Chi tiết: {ex.StackTrace}"; }
             var db = BuildDatabase.getDBUserOnline();
             var tmp = $"{http.Session["ten_hien_thi"]}".sqliteGetValueField();
             db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip, ten_hien_thi, local) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}', '{tmp}', '{http.Session[keyMSG.SessionBrowserInfo]}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");

@@ -47,13 +47,15 @@ namespace ToolBaoCao
                     int i = 1800000;
                     try
                     {
-                        var tmp = AppHelper.getConfig("threadload.sleep", "1800000");
+                        var tmp = AppHelper.getConfig("threadload.sleep", "666");
+                        AppHelper.saveError(tmp);
                         if (Regex.IsMatch(tmp, @"^\d+$") == false) { tmp = i.ToString(); }
                         i = int.Parse(tmp);
                         if (i < 600) { i = 600; }
                         i = i * 1000;
                     }
                     catch { }
+                    AppHelper.saveError($"Thread load start {i}");
                     Thread.Sleep(i);
                     try { Call(); }
                     catch (Exception exT) { AppHelper.saveError($"Lỗi Thread Load: {exT.Message}"); }
@@ -134,7 +136,7 @@ namespace ToolBaoCao
                 IDRunning = "";
             }
             var item = _threads.Values.FirstOrDefault();
-            if (item == null) { return; }
+            if (item == null) { Load(); return; }
             IDRunning = item.ID;
             try
             {

@@ -7,12 +7,9 @@
         <div class="card">
             <div class="card-body text-center">
                 <p>
-                    @{ tmp = AppHelper.getConfig("App.Welcome"); if (tmp == "") { tmp = "Chào mừng đến với “Công cụ phân tích bảo hiểm y tế”"; } }
-                    @tmp
-                    @{ tmp = AppHelper.getConfig("App.TitleEN"); if (tmp == "") { tmp = "Health insurance analysis tools"; } }
-                    <br />@tmp
-                    @{ tmp = AppHelper.getConfig("App.Title"); if (tmp == "") { tmp = "HIA-Tools"; } }
-                    <br />(@tmp)
+                    @AppHelper.getConfig("App.Home.Welcome", "Chào mừng đến với “Công cụ phân tích bảo hiểm y tế”")
+                    <br />@AppHelper.getConfig("App.Home.TitleEN", "Health insurance analysis tools")
+                    <br />@AppHelper.getConfig("App.Title", "HIA-Tools")
                 </p>
                 <img src="~/images/graph-clipart-data-statistics.png" />
             </div>
