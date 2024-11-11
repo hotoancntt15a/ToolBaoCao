@@ -33,14 +33,33 @@ namespace ToolBaoCao
     public class TaskManage
     {
         private ConcurrentDictionary<string, ItemTask> _threads = new ConcurrentDictionary<string, ItemTask>();
-        private Timer _timer;
         private dbSQLite dbTask = new dbSQLite(Path.Combine(AppHelper.pathAppData, "task.db"));
         public string IDRunning = "";
 
         public TaskManage()
         {
             Load();
-            _timer = new Timer(_ => Call(), null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+            Thread t = new Thread(new ThreadStart(() =>
+            {
+                while (true)
+                {
+                    /* Mặc định 30 phút = 30 * 60 * 1000 */
+                    int i = 1800000;
+                    try
+                    {
+                        var tmp = AppHelper.getConfig("threadload.sleep", "1800000");
+                        if (Regex.IsMatch(tmp, @"^\d+$") == false) { tmp = i.ToString(); }
+                        i = int.Parse(tmp);
+                        if (i < 600) { i = 600; }
+                        i = i * 1000;
+                    }
+                    catch { }
+                    Thread.Sleep(i);
+                    try { Call(); }
+                    catch (Exception exT) { AppHelper.saveError($"Lỗi Thread Load: {exT.Message}"); }
+                }
+            }));
+            t.Start();
         }
 
         public void Load()
