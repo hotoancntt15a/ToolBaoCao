@@ -136,7 +136,7 @@ namespace ToolBaoCao
                 IDRunning = "";
             }
             var item = _threads.Values.FirstOrDefault();
-            if (item == null) { Load(); return; }
+            if (item == null) { return; }
             IDRunning = item.ID;
             try
             {

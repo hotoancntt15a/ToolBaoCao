@@ -114,7 +114,7 @@ namespace ToolBaoCao
                 if (par != null) { command.Parameters.AddRange(par); }
                 using (var adapter = new SQLiteDataAdapter(command)) { adapter.Fill(data); }
             }
-            if (fileCache != "") { data.WriteXml(fileCache); }
+            if (fileCache != "") { try { data.WriteXml(fileCache); } catch { } } 
             return data;
         }
 
