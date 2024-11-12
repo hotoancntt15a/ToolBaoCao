@@ -48,7 +48,6 @@ namespace ToolBaoCao
                     try
                     {
                         var tmp = AppHelper.getConfig("threadload.sleep", "666");
-                        AppHelper.saveError(tmp);
                         if (Regex.IsMatch(tmp, @"^\d+$") == false) { tmp = i.ToString(); }
                         i = int.Parse(tmp);
                         if (i < 600) { i = 600; }
