@@ -41,7 +41,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <button type="button" onclick="postform('@idFormTruyVan', '', '@idViewTruyVan');" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</button>
+                            <button type="button" onclick="truyvan();" class="btn btn-primary btn-sm"><i class="fa fa-eye"></i> Xem</button>
                         </td>
                     </tr>
                 </tbody>
@@ -59,7 +59,10 @@
     <div id="tabImport" class="tab-pane fade"></div>
 </div>
 <script>
+    function truyvan() { postform('@idFormTruyVan', '', '@idViewTruyVan'); }
     $(document).ready(function () {
         showgeturl('@Url.Action("Buoc1", "XML", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
+        /* 30s load một lần */
+        setInterval(truyvan, 30000);
     });
 </script>
