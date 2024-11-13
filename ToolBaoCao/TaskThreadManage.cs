@@ -54,7 +54,6 @@ namespace ToolBaoCao
                         i = i * 1000;
                     }
                     catch { }
-                    AppHelper.saveError($"Thread load start {i}");
                     Thread.Sleep(i);
                     try { Call(); }
                     catch (Exception exT) { AppHelper.saveError($"Lỗi Thread Load: {exT.Message}"); }
@@ -63,15 +62,8 @@ namespace ToolBaoCao
             t.Start();
         }
 
-        public void Load()
+        private void findThread()
         {
-            dbTask.Execute("CREATE TABLE IF NOT EXISTS task(id text not null primary key, nametask text not null default '', actionname text not null default '', args text not null default '', running integer not null default 0, timestart integer not null);");
-            var data = dbTask.getDataTable("SELECT * FROM task ORDER BY timestart");
-            foreach (DataRow row in data.Rows)
-            {
-                var item = new ItemTask(row["id"].ToString(), row["nametask"].ToString(), $"{row["actionname"]}", $"{row["args"]}", long.Parse($"{row["timestart"]}"));
-                Add(item, false);
-            }
             /* XML */
             var d = new DirectoryInfo(Path.Combine(AppHelper.pathAppData, "xml"));
             if ((d.Exists == false)) { d.Create(); }
@@ -94,6 +86,17 @@ namespace ToolBaoCao
                     catch { }
                     db.Close();
                 }
+            }
+        }
+
+        public void Load()
+        {
+            dbTask.Execute("CREATE TABLE IF NOT EXISTS task(id text not null primary key, nametask text not null default '', actionname text not null default '', args text not null default '', running integer not null default 0, timestart integer not null);");
+            var data = dbTask.getDataTable("SELECT * FROM task ORDER BY timestart");
+            foreach (DataRow row in data.Rows)
+            {
+                var item = new ItemTask(row["id"].ToString(), row["nametask"].ToString(), $"{row["actionname"]}", $"{row["args"]}", long.Parse($"{row["timestart"]}"));
+                Add(item, false);
             }
             Call();
         }
@@ -135,7 +138,7 @@ namespace ToolBaoCao
                 IDRunning = "";
             }
             var item = _threads.Values.FirstOrDefault();
-            if (item == null) { return; }
+            if (item == null) { findThread(); return; }
             IDRunning = item.ID;
             try
             {
