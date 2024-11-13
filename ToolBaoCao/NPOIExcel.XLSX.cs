@@ -16,52 +16,41 @@ namespace zModules.NPOIExcel
         private static Regex regField = new Regex("{@[a-zA-Z0-9_]+}");
         private static List<System.Type> typeNumber = new List<System.Type>() { Type.GetType("System.Int16"), Type.GetType("System.Int32"), Type.GetType("System.Int64"), Type.GetType("System.Decimal"), Type.GetType("System.Double"), Type.GetType("System.Single") };
         private static List<System.Type> typeDateTime = new List<System.Type>() { Type.GetType("System.DateTime") };
+        private static Dictionary<string, ICellStyle> cellStyleCache = new Dictionary<string, ICellStyle>();
 
         public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false)
         {
-            var cell = hw.CreateCellStyle();
-            cell.BorderLeft = BorderStyle.Thin;
-            cell.BorderRight = BorderStyle.Thin;
-            cell.BorderTop = BorderStyle.Thin;
-            cell.BorderBottom = BorderStyle.Thin;
-            cell.WrapText = wrapText;
-            if (title)
+            string styleKey = $"{fontBold}.{wrapText}.{title}";
+            if (!cellStyleCache.TryGetValue(styleKey, out ICellStyle cell))
             {
-                cell.Alignment = HorizontalAlignment.Center;
-                cell.VerticalAlignment = VerticalAlignment.Center;
+                cell.BorderLeft = BorderStyle.Thin;
+                cell.BorderRight = BorderStyle.Thin;
+                cell.BorderTop = BorderStyle.Thin;
+                cell.BorderBottom = BorderStyle.Thin;
+                cell.WrapText = wrapText;
+                if (title)
+                {
+                    cell.Alignment = HorizontalAlignment.Center;
+                    cell.VerticalAlignment = VerticalAlignment.Center;
+                }
+                IFont font = hw.CreateFont();
+                font.FontName = "Times New Roman";
+                font.IsBold = fontBold;
+                cell.SetFont(font);
+                cellStyleCache[styleKey] = cell;
             }
-            IFont font = hw.CreateFont();
-            font.FontName = "Times New Roman";
-            font.IsBold = fontBold;
-            cell.SetFont(font);
             return cell;
-        }
-
-        public static ICellStyle CreateCellStyleTitle(this XSSFWorkbook hw)
-        {
-            var cell = hw.CreateCellStyleThin();
-            cell.WrapText = true;
-            cell.Alignment = HorizontalAlignment.Center;
-            cell.VerticalAlignment = VerticalAlignment.Center;
-            cell.SetFont(hw.CreateFontTahomaBold());
-            return cell;
-        }
-
-        public static IFont CreateFontTahomaBold(this XSSFWorkbook hw)
-        {
-            IFont fb = hw.CreateFont();
-            fb.IsBold = true;
-            fb.FontName = "Tahoma";
-            return fb;
         }
 
         public static XSSFWorkbook exportExcel(params DataTable[] par)
         {
+            cellStyleCache.Clear();
             XSSFWorkbook workbook = new XSSFWorkbook();
             int i = 0; int rowIndex = 0;
             var names = new List<string>();
             foreach (DataTable dt in par)
-            {                
+            {
+                if (dt.Rows.Count > 1048575) { throw new Exception("Số bản ghi đã vượt quá 1,048,576 cho phép của XLSX"); }
                 var sheet = names.Contains(dt.TableName) ? workbook.CreateSheet() : workbook.CreateSheet(dt.TableName);
                 names.Add(dt.TableName);
                 /* Tạo tiêu đề */
@@ -97,6 +86,7 @@ namespace zModules.NPOIExcel
         public static XSSFWorkbook exportXLSX(this DataTable dt, string FileTemplate = "", string PathSave = "", List<CellMerge> lsTieuDe = null, int RowIndex = 0, bool ShowHeader = true, bool addColumnAutoNumber = false, string formatDate = "dd/MM/yyyy HH:mm:ss")
         {
             /* Tạo mới */
+            cellStyleCache.Clear();
             XSSFWorkbook hssfworkbook = new XSSFWorkbook();
             if (FileTemplate != "")
             {
@@ -109,13 +99,12 @@ namespace zModules.NPOIExcel
             int index = RowIndex <= 0 ? 1 : RowIndex;
             int pointIndex = index - 1;
             /* Tạo hoặc lấy Sheet */
-            if(dt.TableName == "") { dt.TableName = "NewDataTable"; }
+            if (dt.TableName == "") { dt.TableName = "NewDataTable"; }
             var sheet = FileTemplate == "" ? hssfworkbook.CreateSheet(dt.TableName) : hssfworkbook.GetSheetAt(0);
             /* Tạo đường viền của ô */
             var cell = hssfworkbook.CreateCellStyleThin();
             /* tạo tiêu đề */
-            var cellb = hssfworkbook.CreateCellStyleTitle();
-            var fb = hssfworkbook.CreateFontTahomaBold();
+            var cellb = hssfworkbook.CreateCellStyleThin(true, true, true);
             if (ShowHeader)
             {
                 var cr = sheet.CreateRow(index - 1);
@@ -130,7 +119,6 @@ namespace zModules.NPOIExcel
                         var cc = cr.CreateCell(i + 1, CellType.String);
                         cc.SetCellValue(c.ColumnName);
                         cc.CellStyle = cellb;
-                        cc.CellStyle.SetFont(fb);
                         i++;
                     }
                 }
@@ -263,6 +251,7 @@ namespace zModules.NPOIExcel
         {
             if (string.IsNullOrEmpty(tsql)) { throw new Exception("Truy vấn không tồn tại"); }
             if (fields == null) { fields = new List<string>(); }
+            cellStyleCache.Clear();
             var hssfworkbook = new XSSFWorkbook();
             if (string.IsNullOrEmpty(fileTemplate) == false)
             {
@@ -280,7 +269,7 @@ namespace zModules.NPOIExcel
             if (fields.Count > 0)
             {
                 /* tạo tiêu đề */
-                var cellb = hssfworkbook.CreateCellStyleTitle();
+                var cellb = hssfworkbook.CreateCellStyleThin(true, true, true);
                 var row0 = sheet.CreateRow(0);
                 for (int j = 0; j < fields.Count; j++)
                 {
@@ -307,7 +296,7 @@ namespace zModules.NPOIExcel
                     if (fields.Count == 0)
                     {
                         /* tạo tiêu đề */
-                        var cellb = hssfworkbook.CreateCellStyleTitle();
+                        var cellb = hssfworkbook.CreateCellStyleThin(true, true, true);
                         var row0 = sheet.CreateRow(0);
                         for (int j = 0; j < reader.FieldCount; j++)
                         {
@@ -504,6 +493,7 @@ namespace zModules.NPOIExcel
         public static XSSFWorkbook fromXlsx(this DataTable dt, string fileTemplate, Dictionary<string, string> dtField = null, string formatDate = "dd/MM/yyyy HH:mm", bool showHeader = false, bool autoNumber = false, Dictionary<string, string> headerText = null, int sheetIndex = 0)
         {
             /* Tạo mới */
+            cellStyleCache.Clear();
             XSSFWorkbook hw;
             ISheet sheet;
             if (string.IsNullOrEmpty(fileTemplate))
