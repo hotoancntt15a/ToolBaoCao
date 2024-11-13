@@ -220,8 +220,11 @@ namespace ToolBaoCao
                                 if (entry.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase) == false) { continue; }
                                 ij++; indexDBZip++;
                                 dbXML.Execute($"UPDATE xmlthread SET title = 'Đang giải nén {entry.FullName} ({DateTime.Now:HH:mm:ss})' WHERE id='{id}'");
-                                var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip{ij}.db");
-                                entry.ExtractToFile(fdbForm, overwrite: true);
+                                var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip_{indexFileTarget}_{indexDBZip}.db");
+                                bool extract = true;
+                                var fi = new FileInfo(fdbForm);
+                                if (fi.Exists) { if(fi.Length == entry.Length) { extract = false; } }
+                                if (extract) { entry.ExtractToFile(fdbForm, overwrite: true); }
                                 var dbFrom = new dbSQLite(fdbForm);
                                 /* Chuyển dữ liệu */
                                 XMLCopyTable(dbTo, dbFrom, dbXML, id, lfileTarget[indexFileTarget] + $"[{indexDBZip}]");
