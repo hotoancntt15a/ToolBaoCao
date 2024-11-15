@@ -23,6 +23,7 @@ namespace zModules.NPOIExcel
             string styleKey = $"{fontBold}.{wrapText}.{title}";
             if (!cellStyleCache.TryGetValue(styleKey, out ICellStyle cell))
             {
+                cell = hw.CreateCellStyle();
                 cell.BorderLeft = BorderStyle.Thin;
                 cell.BorderRight = BorderStyle.Thin;
                 cell.BorderTop = BorderStyle.Thin;

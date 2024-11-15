@@ -54,9 +54,8 @@ namespace ToolBaoCao
                         i = i * 1000;
                     }
                     catch { }
+                    Call();
                     Thread.Sleep(i);
-                    try { Call(); }
-                    catch (Exception exT) { AppHelper.saveError($"Lỗi Thread Load: {exT.Message}"); }
                 }
             }));
             t.Start();
@@ -98,7 +97,6 @@ namespace ToolBaoCao
                 var item = new ItemTask(row["id"].ToString(), row["nametask"].ToString(), $"{row["actionname"]}", $"{row["args"]}", long.Parse($"{row["timestart"]}"));
                 Add(item, false);
             }
-            Call();
         }
 
         public void Add(ItemTask item, bool callRun = true)
