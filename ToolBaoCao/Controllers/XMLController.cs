@@ -146,6 +146,7 @@ namespace ToolBaoCao.Controllers
             try
             {
                 pathDB = Path.Combine(AppHelper.pathAppData, "xml", $"t{idtinh}", $"xml{id}.db");
+                if (System.IO.File.Exists(pathDB) == false) { throw new Exception($"Không tìm thấy XMLThread có ID '{id}'"); }
                 if (mode == "tsql")
                 {
                     string dataName = Request.getValue("data");
