@@ -2,22 +2,11 @@
     if (Request.getValue("layout") == "null") { Layout = null; }
     ViewBag.Title = "Views File and Folder";
     var len = AppHelper.pathApp.Length;
-    var idform = $"frmviewfile";
     var folders = ViewBag.folders as List<string>;
     var listfolder = ViewBag.listfolder as List<DirectoryInfo>;
     var listfile = ViewBag.listfile as List<FileInfo>;
     var idtarget = Request.getValue("idtarget");
 }
-<form id="@idform" method="post" action="@Url.Action("views", "TapTin", new { area = "Admin" })">
-    <input type="hidden" name="layout" value="null" />
-    <input type="hidden" name="path" value="@ViewBag.path" />
-    <table class="table table-hover table-sm">
-        <tbody>
-            <tr><td>Từ khoá <input type="text" name="key" value="@ViewBag.key" /></td></tr>
-            <tr><td><a class="btn btn-primary btn-sm" href="#" onclick="postform('@idform', '', '@idtarget')"> <i class="fa fa-search"></i> Tìm</a></td></tr>
-        </tbody>
-    </table>
-</form>
 <div class="font-weight-bold">
     Vị trí:
     @if (folders.Count > 0)
