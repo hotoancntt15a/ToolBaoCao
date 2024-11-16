@@ -1,4 +1,5 @@
 ﻿@{
+    if (Request.getValue("layuot") == "null") { Layout = null; }
     ViewBag.Title = "CẬP NHẬT HỆ THỐNG";
     if (ViewBag.Error != null)
     {
@@ -14,7 +15,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("Index", "Update", new { area = "Admin", layout = "null", mode="update" })">
-                    <p class="text-center">Kéo và thả tập tin Excel 2007 trở lên (Type of file: Microsoft Excel Worksheet) vào khu vực này hoặc nhấp để chọn file</p>
+                    <p class="text-center">Kéo và thả tập tin cập nhật hệ thống (.zip) vào khu vực này hoặc nhấp để chọn file</p>
                 </div>
                 <div id="fileDetails" class="mt-4">
                     <h5>Danh sách tập tin đã chọn:</h5>

@@ -79,6 +79,7 @@
     <script src="~/vendor/datatables/jquery.dataTables.js"></script>
     <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="~/js/sb-admin-2.min.js"></script>
+    <script src="~/js/drapDropFiles.js?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/js/drapDropFiles.js")).ToOADate())"></script>
     <script src="~/js/site.js?v=@(System.IO.File.GetLastWriteTime(Server.MapPath("~/js/site.js")).ToOADate())"></script>
     @RenderSection("scripts", required: false)
     <script>
