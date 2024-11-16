@@ -39,16 +39,13 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                         }
                     }
                     if (lsfile.Contains($"bin/{AppHelper.projectName}.dll") == false) { throw new Exception("Tập tin cập nhật không đúng"); }
-                    string fileExecute = Path.Combine(AppHelper.pathApp, "7z.exe");
-                    if (System.IO.File.Exists(fileExecute) == false) { throw new Exception("Chương trình thực thi hệ thống không tồn tại (7z.exe)"); }
-                    if (System.IO.File.Exists(Path.Combine(AppHelper.pathApp, "7z.dll")) == false) { throw new Exception("Thư viện chương trình thực thi hệ thống không tồn tại (7z.dll)"); }
+                    /* Kiểm tra xem có đang nằm trong thư mực Developer không */
+                    string tmp = Path.Combine(AppHelper.pathApp, "dbSQLite.cs");
+                    if (System.IO.File.Exists(tmp) == false) { throw new Exception("Hệ thống đang chạy thử nghiệm. Không thể cập nhật"); }
+                    AppHelper.Extract7z(fileUpdate, AppHelper.pathApp);
                 }
-                catch (Exception ex)
-                {
-                    ViewBag.Error = ex.getLineHTML();
-                    return View();
-                }
-                return Content("Thao tacs thanhf coong");
+                catch (Exception ex) { return Content(ex.getLineHTML()); }
+                return Content("Thao tác thành công");
             }
             return View();
         }

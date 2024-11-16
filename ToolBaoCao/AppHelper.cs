@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
@@ -84,6 +85,35 @@ namespace ToolBaoCao
                 }
             }
             return dbFileFound;
+        }
+
+        public static void Extract7z(string zipPath, string extractPath)
+        {
+            /* Kiểm tra chương trình giải nén có tồn tại không? */
+            string fileExecute = Path.Combine(pathApp, "7z.exe");
+            if (System.IO.File.Exists(fileExecute) == false) { throw new Exception("Chương trình giải nén hệ thống không tồn tại (7z.exe)"); }
+            if (System.IO.File.Exists(Path.Combine(pathApp, "7z.dll")) == false) { throw new Exception("Thư viện chương trình giải nén hệ thống không tồn tại (7z.dll)"); }
+
+            /* Kiểm tra xem thư mục đích có tồn tại không, nếu không thì tạo mới */
+            if (!Directory.Exists(extractPath)) { Directory.CreateDirectory(extractPath); }
+
+            /* Tạo đối tượng Process */
+            ProcessStartInfo processStartInfo = new ProcessStartInfo
+            {
+                FileName = fileExecute,
+                Arguments = $"x \"{zipPath}\" -o\"{extractPath}\" -y", /* Lệnh giải nén với 7z */
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (Process process = Process.Start(processStartInfo))
+            {
+                process.ErrorDataReceived += (sender, args) => { if (args.Data != null) saveError("ERROR: " + args.Data); };
+                process.BeginErrorReadLine();
+                /* process.WaitForExit(); */ /* Chờ đến khi quá trình giải nén kết thúc */
+            }
         }
 
         public static string SQLiteLike(this string field, string value) => dbSqliteMain.like(field, value);
