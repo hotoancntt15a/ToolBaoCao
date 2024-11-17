@@ -41,11 +41,11 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     if (lsfile.Contains($"bin/{AppHelper.projectName}.dll") == false) { throw new Exception("Tập tin cập nhật không đúng"); }
                     /* Kiểm tra xem có đang nằm trong thư mực Developer không */
                     string tmp = Path.Combine(AppHelper.pathApp, "dbSQLite.cs");
-                    if (System.IO.File.Exists(tmp)) { throw new Exception("Hệ thống đang chạy ở chế độ develop. Không thể cập nhật"); }
+                    if (System.IO.File.Exists(tmp)) { throw new Exception("Hệ thống đang chạy ở chế độ phát triển, không thể cập nhật"); }
                     AppHelper.Extract7z(fileUpdate, AppHelper.pathApp);
                 }
                 catch (Exception ex) { return Content(ex.getLineHTML()); }
-                return Content("Thao tác thành công");
+                return Content("Đã đưa vào tiến trình nâng cấp. Vùi lòng chờ hoàn thành khoảng 5-15 phút tuỳ vào từng Server");
             }
             return View();
         }

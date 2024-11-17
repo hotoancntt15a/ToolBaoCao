@@ -110,7 +110,14 @@ namespace ToolBaoCao
 
             using (Process process = Process.Start(processStartInfo))
             {
-                process.ErrorDataReceived += (sender, args) => { if (args.Data != null) saveError("ERROR: " + args.Data); };
+                process.ErrorDataReceived += (sender, args) =>
+                {
+                    string pathSave = Path.Combine(pathApp, "error.log");
+                    if (args.Data != null)
+                    {
+                        try { File.AppendAllText(pathSave, $"{Environment.NewLine}{DateTime.Now:dd/MM/yyyy HH:mm:ss} {args.Data}", Encoding.Unicode); } catch { }
+                    };
+                };
                 process.BeginErrorReadLine();
                 /* process.WaitForExit(); */ /* Chờ đến khi quá trình giải nén kết thúc */
             }
