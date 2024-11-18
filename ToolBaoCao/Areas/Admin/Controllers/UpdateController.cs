@@ -45,7 +45,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     AppHelper.Extract7z(fileUpdate, AppHelper.pathApp);
                 }
                 catch (Exception ex) { return Content(ex.getLineHTML()); }
-                return Content("Đã đưa vào tiến trình nâng cấp. Vùi lòng chờ hoàn thành khoảng 5-15 phút tuỳ vào từng Server");
+                return Content("Đã đưa vào tiến trình nâng cấp. Vùi lòng chờ hoàn thành khoảng 3-15 phút tuỳ vào từng Server");
             }
             return View();
         }

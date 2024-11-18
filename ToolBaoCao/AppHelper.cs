@@ -90,9 +90,18 @@ namespace ToolBaoCao
         public static void Extract7z(string zipPath, string extractPath)
         {
             /* Kiểm tra chương trình giải nén có tồn tại không? */
+            string zip7z = Path.Combine(pathApp, "7z.zip");
             string fileExecute = Path.Combine(pathApp, "7z.exe");
-            if (System.IO.File.Exists(fileExecute) == false) { throw new Exception("Chương trình giải nén hệ thống không tồn tại (7z.exe)"); }
-            if (System.IO.File.Exists(Path.Combine(pathApp, "7z.dll")) == false) { throw new Exception("Thư viện chương trình giải nén hệ thống không tồn tại (7z.dll)"); }
+            if (System.IO.File.Exists(fileExecute) == false)
+            {
+                if (File.Exists(zip7z)) { zipExtract(zip7z, pathApp); }
+                throw new Exception("Chương trình giải nén hệ thống không tồn tại (7z.exe)");
+            }
+            if (System.IO.File.Exists(Path.Combine(pathApp, "7z.dll")) == false)
+            {
+                if (File.Exists(zip7z)) { zipExtract(zip7z, pathApp); }
+                throw new Exception("Thư viện chương trình giải nén hệ thống không tồn tại (7z.dll)");
+            }
 
             /* Kiểm tra xem thư mục đích có tồn tại không, nếu không thì tạo mới */
             if (!Directory.Exists(extractPath)) { Directory.CreateDirectory(extractPath); }
