@@ -1,33 +1,36 @@
 ﻿@{
     if (Request.getValue("layout") == "null") { Layout = null; }
-    ViewBag.Title = "Views File and Folder";
+    ViewBag.Title = "Hiển thị tập tin và thư mục";
     var len = AppHelper.pathApp.Length;
     var folders = ViewBag.folders as List<string>;
     var listfolder = ViewBag.listfolder as List<DirectoryInfo>;
     var listfile = ViewBag.listfile as List<FileInfo>;
     var idtarget = Request.getValue("idtarget");
+    if (idtarget == "") { idtarget = "viewfiles"; }
+    var lsFileTxt = new List<string> { ".log", ".txt", ".cs", ".json" };
 }
 <div class="font-weight-bold">
     Vị trí:
     @if (folders.Count > 0)
     {
-        <a href="#" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null" })&idtarget=@idtarget', '@idtarget');">[Thư mục gốc]</a>
+        <a href="javascript:void(0);" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null" })&idtarget=@idtarget', '@idtarget');">[Thư mục gốc]</a>
 
         var tmpl = new List<string>();
         for (int i = 0; i < folders.Count; i++)
         {
             tmpl.Add(folders[i]);
-            <span> / </span> <a href="#" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null", path = string.Join(@"\", tmpl) })&idtarget=@idtarget', '@idtarget');"> @folders[i]</a>
+            <span> / </span> <a href="javascript:void(0);" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null", path = string.Join(@"\", tmpl) })&idtarget=@idtarget', '@idtarget');"> @folders[i]</a>
         }
     }
 </div>
 <ol>
     @foreach (var f in listfolder)
     {
-        <li> <a href="#" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null", path = f.FullName.Substring(len) })&idtarget=@idtarget', '@idtarget');"> @f.Name </a> </li>
+        <li> <a href="javascript:void(0);" onclick="showgeturl('@Url.Action("views", "TapTin", new { area = "Admin", layout = "null", path = f.FullName.Substring(len) })&idtarget=@idtarget', '@idtarget');"> @f.Name </a> </li>
     }
     @foreach (var f in listfile)
     {
-        <li> <a href="@Url.Action("Index", "Tai", new { area = "", @object = f.FullName.Substring(len).MD5Encrypt() })"> <i class="fa fa-download"></i> </a> @f.Name (@f.Length.getFileSize()) </li>
+        var tmp = !lsFileTxt.Contains(f.Extension.ToLower()) ? "" : " <a href=\"javascript:void(0);\" onclick=\"showgeturl('" + Url.Action("ReadText", "TapTin", new { area = "Admin", layout = "null", path = f.FullName.Substring(len).MD5Encrypt() }) + "');\"> <i class=\"fa fa-eye\"></i> </a>";
+        <li> <a href="@Url.Action("Index", "Tai", new { area = "", @object = f.FullName.Substring(len).MD5Encrypt() })"> <i class="fa fa-download"></i> </a>@Html.Raw(tmp) @f.Name (@f.Length.getFileSize()) </li>
     }
 </ol>
