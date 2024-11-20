@@ -3184,6 +3184,7 @@
     <Content Include="Views\XML\Delete.cshtml" />
     <Content Include="Views\XML\Index.cshtml" />
     <Content Include="Views\XML\TruyVan.cshtml" />
+    <Content Include="Views\Home\GetMessages.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cache\" />

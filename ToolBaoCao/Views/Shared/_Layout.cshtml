@@ -89,10 +89,13 @@
             $(".clsnumber").keypress(function (e) { if (!String.fromCharCode(e.keyCode).match(/[0-9.-]/g)) return false; });
             if (typeof (setClsNumberTooltip) === "function") { setClsNumberTooltip(); }
         }
+        function reLoadMessage() { showgeturl('/Home/GetMessages?v=' + Math.floor((new Date()).getTime() / 1000).toString(), 'liMessagesDropdown'); }
         $(document).ready(function () {
             fixAllClass();
             if ($('.apptitle').length > 0) { $('title').text($('.apptitle').first().text() + ' - @AppHelper.getConfig("App.Title")'); }
             setActiveLiMenu();
+            reLoadMessage();
+            setInterval(reLoadMessage, 60000)
         });
     </script>
 </body>

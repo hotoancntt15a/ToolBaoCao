@@ -60,7 +60,7 @@ namespace ToolBaoCao
             }));
             t.Start();
         }
-
+        public Dictionary<string, ItemTask> GetData() => _threads.ToDictionary(v => v.Key, v =>v.Value);
         private void findThread()
         {
             /* XML */
@@ -88,7 +88,7 @@ namespace ToolBaoCao
             }
         }
 
-        public void Load()
+        private void Load()
         {
             dbTask.Execute("CREATE TABLE IF NOT EXISTS task(id text not null primary key, nametask text not null default '', actionname text not null default '', args text not null default '', running integer not null default 0, timestart integer not null);");
             var data = dbTask.getDataTable("SELECT * FROM task ORDER BY timestart");
@@ -172,7 +172,7 @@ namespace ToolBaoCao
         /// idThread = {MaTinh}|{ID table XML}
         /// </summary>
         /// <param name="idThread">{MaTinh}|{ID table XML}</param>
-        public void XMLThread(string idThread)
+        private void XMLThread(string idThread)
         {
             string folderTemp = "", folderSave = "", id = "", matinh = "";
             var dbXML = BuildDatabase.getDataXML(matinh);

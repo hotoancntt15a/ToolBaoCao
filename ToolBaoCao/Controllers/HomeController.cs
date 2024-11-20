@@ -28,7 +28,9 @@ namespace ToolBaoCao.Controllers
 
             return View();
         }
-
+        public ActionResult GetMessages() {
+            return View();
+        }
         public ActionResult TaiKhoan()
         {
             var id = $"{Session["iduser"]}";

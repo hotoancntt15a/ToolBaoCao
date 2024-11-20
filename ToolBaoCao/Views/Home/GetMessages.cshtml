@@ -1,0 +1,32 @@
+﻿@{
+    Layout = null;
+    var items = AppHelper.threadManage.GetData();
+    if(items.Count == 0) { return; }
+}
+<a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <i class="fas fa-envelope fa-fw"></i>
+    <!-- Counter - Messages -->
+    <span class="badge badge-danger badge-counter">@items.Count</span>
+</a>
+<!-- Dropdown - Messages -->
+<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+     aria-labelledby="messagesDropdown" id="messagesDropdownView">
+    <h6 class="dropdown-header">Trung tâm thông báo</h6>
+    @foreach (var v in items)
+    {
+        <a class="dropdown-item d-flex align-items-center" href="#">
+            <div class="dropdown-list-image mr-3">
+                <i class="fa fa-list"></i>
+                <div class="status-indicator bg-success"></div>
+            </div>
+            <div class="font-weight-bold">
+                <div class="text-truncate">
+                    @v.Value.ActionName
+                </div>
+                <div class="small text-gray-500">@v.Value.TimeStart</div>
+            </div>
+        </a>
+    }
+    <a class="dropdown-item text-center small text-gray-500" href="#">Đọc thêm tin nhắn</a>
+</div>
