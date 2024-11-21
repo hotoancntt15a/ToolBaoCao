@@ -53,12 +53,20 @@
         overflow-x: scroll; /* Ẩn cuộn ngang nếu không cần thiết */
     }
 </style>
-<!-- DataTales Admins -->
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">@ViewBag.Title</h6>
-    </div>
-    <div class="card-body">
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">@ViewBag.Title</h1>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Truy vấn dữ liệu</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Kho dữ liệu mẫu</a>
+    </li>
+</ul>
+<!-- Tab panes -->
+<div class="tab-content">
+    <div id="tabHome" class="tab-pane active">
         <form id="@idform" method="post">
             <input name="layout" value="null" type="hidden" />
             <input name="mode" value="tsql" type="hidden" />
@@ -91,6 +99,25 @@
         </form>
         <div id="view_@idform" class="scroll-div"></div>
     </div>
+    <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
+    <div id="tabImport" class="tab-pane fade">
+        <table class="table table-sm table-hover">
+            <tbody>
+                <tr><td><button type="button" class="btn btn-primary btn-sm" onclick="showgeturl('/XML/StoreTSQL?mode=view&layout=null', 'dsstoretsql');"><i class="fa fa-play"></i> Tải lại</button></td></tr>
+                <tr><td id="dsstoretsql">Không có danh sách nào được cập nhật</td></tr>
+            </tbody>
+        </table>
+        <div id="viewupstoretsql">
+            <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("StoreTSQL", "XML", new { area = "", layout = "null" })" data-target="viewupstoretsql">
+                <p class="text-center">Kéo và thả tập tin .txt chứa dữ liệu. vào khu vực này hoặc nhấp để chọn file</p>
+            </div>
+            <div id="fileDetails" class="mt-4">
+                <h5>Danh sách tập tin đã chọn:</h5>
+                <ul id="fileList" class="list-group"></ul>
+            </div>
+            <button id="uploadButton" class="btn btn-primary mt-3" disabled><i class="fa fa-plus"></i> Đẩy lên máy chủ</button>
+        </div>
+    </div>
 </div>
 <script>
     function ShowHidenClass(e, className) {
@@ -112,4 +139,5 @@
         if (mode != "") { $('#@idform').submit(); return; }
         postform('@idform', '', 'view_@idform');
     }
+    $(document).ready(function () { drapDropFiles(".txt"); });
 </script>

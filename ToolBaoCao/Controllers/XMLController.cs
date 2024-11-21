@@ -211,6 +211,22 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
+        public ActionResult StoreTSQL()
+        {
+            string mode = Request.getValue("mode");
+            try
+            {
+                if (mode == "view")
+                {
+                    var db = BuildDatabase.getDataStoreTSQL();
+                    var dt = db.getDataTable("SELECT * FROM storetsql ORDER BY timeup LIMIT 1000");
+                    ViewBag.data = dt;
+                    return View();
+                }
+            } catch(Exception ex) { ViewBag.Error = ex.getLineHTML(); }
+            return View();
+        }
+
         public ActionResult Delete()
         {
             var timeStart = DateTime.Now;

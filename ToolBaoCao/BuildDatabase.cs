@@ -228,7 +228,9 @@ namespace ToolBaoCao
             db.CreateBcTuan(tables);
             return db;
         }
-        public static void createTableXMLThread(this dbSQLite db) {
+
+        public static void createTableXMLThread(this dbSQLite db)
+        {
             db.Execute(@"CREATE TABLE IF NOT EXISTS xmlthread (id text NOT NULL PRIMARY KEY
                 ,name text NOT NULL DEFAULT ''
                 ,args text NOT NULL DEFAULT ''
@@ -1113,6 +1115,14 @@ namespace ToolBaoCao
             }
             var tsql = string.Join(Environment.NewLine, tsqlCreate);
             if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
+        }
+
+        public static dbSQLite getDataStoreTSQL()
+        {
+            string path = Path.Combine(AppHelper.pathAppData, "storetsql.db");
+            var db = new dbSQLite(path);
+            db.Execute("CREATE TABLE IF NOT EXISTS storetsql (id INTEGER PRIMARY KEY AUTOINCREMENT, iduser TEXT NOT NULL, timeup INTEGER NOT NULL, noidung TEXT NOT NULL, ghichu TEXT NOT NULL default '')");
+            return db;
         }
     }
 }

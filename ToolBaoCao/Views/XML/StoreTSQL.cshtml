@@ -1,0 +1,29 @@
+﻿@{
+    Layout = null;
+    string mode = Request.getValue("mode");
+    if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning">
+            @Html.Raw(ViewBag.Error)
+        </div>
+        return;
+    }
+    var dt = ViewBag.data as DataTable;
+    if (dt.Rows.Count == 0)
+    {
+        <div class="alert alert-danger">Chưa có dữ liệu về TSQL</div>
+    }
+    else
+    {
+        <table class="table table-sm table-hover">
+            <tbody>
+                @foreach (DataRow r in dt.Rows)
+                {
+                    <tr>
+                        <td>@r["timeup"].ToString().toDateTime() - @r["noidung"]</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
