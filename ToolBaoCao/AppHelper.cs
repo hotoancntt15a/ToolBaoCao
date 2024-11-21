@@ -409,6 +409,45 @@ namespace ToolBaoCao
             return Regex.IsMatch(sanitizedSql, @"\b(UPDATE|DELETE|INSERT|MERGE)\b(?!.*')", RegexOptions.IgnoreCase);
         }
 
+        public static DataTable RemoveColumns(this DataTable dt, List<string> fieldRemove, bool phanBietHoaThuong = true)
+        {
+            if (dt.Rows.Count == 0) { return dt; }
+            var listIndexColumn = new List<int>();
+            if (phanBietHoaThuong == false)
+            {
+                for (int i = 0; i < fieldRemove.Count; i++) { fieldRemove[i] = fieldRemove[i].ToLower(); }
+                /* Bỏ các cột đã chỉnh định */
+                var col1 = new List<string>();
+                var col2 = new List<string>();
+                foreach (DataColumn column in dt.Columns)
+                {
+                    col1.Add(column.ColumnName); col2.Add(column.ColumnName.ToLower());
+                }
+                foreach (var f in fieldRemove)
+                {
+                    var i = col2.IndexOf(f);
+                    if (i == -1) { continue; }
+                    listIndexColumn.Add(i);
+                }
+            }
+            else
+            {
+                /* Bỏ các cột đã chỉnh định */
+                var col = new List<string>();
+                foreach (DataColumn column in dt.Columns) { col.Add(column.ColumnName); }
+                foreach (var f in fieldRemove)
+                {
+                    var i = col.IndexOf(f);
+                    if (i == -1) { continue; }
+                    listIndexColumn.Add(i);
+                }
+            }
+            if (listIndexColumn.Count == 0) { return dt; }
+            listIndexColumn = listIndexColumn.Distinct().OrderByDescending(p => p).ToList();
+            foreach (var i in listIndexColumn) { dt.Columns.RemoveAt(i); }
+            return dt;
+        }
+
         public static string GetPathFileCacheQuery(string tsql, string dataName)
         {
             var tables = GetTableNameFromTsql(tsql);

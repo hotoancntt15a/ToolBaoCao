@@ -140,6 +140,7 @@ namespace ToolBaoCao.Controllers
             ViewBag.id = id;
             if (id == "") { ViewBag.Error = "Tham số bỏ trống"; return View(); }
             if (Regex.IsMatch(id, "^[a-z0-9_]+$") == false) { ViewBag.Error = $"Tham số không đúng {id}"; return View(); }
+            var lsFieldRemove = new List<string>() { "ma_the", "ho_ten", "ngay_sinh" };
             var timeStart = DateTime.Now;
             var mode = Request.getValue("mode"); var pathDB = ""; var limit = 1000;
             var db = new dbSQLite();
@@ -159,6 +160,7 @@ namespace ToolBaoCao.Controllers
                         if (!Regex.IsMatch(tsql, @"limit\s+[0-9]+;?$", RegexOptions.IgnoreCase)) { tsql += $" LIMIT {limit}"; }
                     }
                     var data = db.getDataTable(tsql);
+                    data = data.RemoveColumns(lsFieldRemove, false);
                     ViewBag.content = $"Data {dataName}; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
                     ViewBag.data = data;
                     db.Close();
@@ -177,6 +179,7 @@ namespace ToolBaoCao.Controllers
                     }
                     var data = db.getDataTable(tsql);
                     db.Close();
+                    data = data.RemoveColumns(lsFieldRemove, false);
                     var wb = XLSX.exportExcel(data);
                     using (MemoryStream stream = new MemoryStream())
                     {
