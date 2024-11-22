@@ -1,0 +1,27 @@
+﻿@{
+    Layout = null;
+    var dbUserOnilne = BuildDatabase.getDBUserOnline();
+    var userOnline = dbUserOnilne.getDataTable("SELECT *, datetime(time1, 'auto', '+7 hour') as t1, datetime(time2, 'auto', '+7 hour') as t2 FROM useronline");
+    if (userOnline.Rows.Count > 0)
+    {
+        <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-user fa-fw"></i>
+            <!-- Counter - Messages -->
+            <span class="badge badge-danger badge-counter">@userOnline.Rows.Count</span>
+        </a>
+        <!-- Dropdown - Messages -->
+        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="messagesDropdown">
+            <h6 class="dropdown-header"> Danh sách User Online </h6>
+            @foreach (DataRow dr in userOnline.Rows)
+            {
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                    <div>
+                        <div class="text-truncate"> @dr["userid"] (@dr["ten_hien_thi"]) </div>
+                        <div class="small text-gray-500">@dr["ip"]; @dr["t2"]; @dr["local"]</div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+}
