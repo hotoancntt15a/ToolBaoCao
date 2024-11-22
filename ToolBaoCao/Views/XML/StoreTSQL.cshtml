@@ -19,8 +19,9 @@
             <tbody>
                 @foreach (DataRow r in dt.Rows)
                 {
+
                     <tr>
-                        <td>@r["timeup"].ToString().toDateTime() - @r["noidung"]</td>
+                        <td>Cập nhật lúc @r["timeup"].ToString().toDateTime() <br />@r["noidung"]</td>
                     </tr>
                 }
             </tbody>

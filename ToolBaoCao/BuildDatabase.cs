@@ -1121,7 +1121,7 @@ namespace ToolBaoCao
         {
             string path = Path.Combine(AppHelper.pathAppData, "storetsql.db");
             var db = new dbSQLite(path);
-            db.Execute("CREATE TABLE IF NOT EXISTS storetsql (id INTEGER PRIMARY KEY AUTOINCREMENT, iduser TEXT NOT NULL, timeup INTEGER NOT NULL, noidung TEXT NOT NULL, ghichu TEXT NOT NULL default '')");
+            db.Execute("CREATE TABLE IF NOT EXISTS storetsql (id INTEGER PRIMARY KEY AUTOINCREMENT, iduser TEXT NOT NULL, timeup INTEGER NOT NULL, actionname TEXT NOT NULL default '', noidung TEXT NOT NULL, ghichu TEXT NOT NULL default '')");
             return db;
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Mvc;
 
 namespace ToolBaoCao.Areas.Admin.Controllers
@@ -24,12 +25,13 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                 var p2 = path.MD5Decrypt(); if (p2.StartsWith("Lỗi:") == false) { path = p2; }
                 /* Không hỗ trợ \\{PC Share}\ Nếu có yêu cầu Map Network Drive */
                 path = path.Replace("/", @"\");
-                path = Path.Combine(AppHelper.pathApp, Regex.Replace(path, @"^\\+", ""));
-                if (System.IO.File.Exists(path))
+                var fi = new FileInfo(Path.Combine(AppHelper.pathApp, Regex.Replace(path, @"^\\+", "")));
+                if (fi.Exists)
                 {
-                    return Content(System.IO.File.ReadAllText(path).Replace(Environment.NewLine, "<br />"));
+                    var text = HttpUtility.HtmlEncode(System.IO.File.ReadAllText(fi.FullName)).Replace("\r\n", "<br>").Replace("\n", "<br>");
+                    return Content(text.Replace(" ", "&nbsp;"));
                 }
-                return Content($"Không tìm thấy tập tin {path} với Path='{Request.getValue("path")}'; MD5Check: {p2}".BootstrapAlter("warning"));
+                return Content($"Không tìm thấy tập tin {fi.Name} với Path='{Request.getValue("path")}'; MD5Check: {p2}".BootstrapAlter("warning"));
             }
             catch (Exception ex) { return Content(ex.getErrorSave().BootstrapAlter("warning")); }
         }

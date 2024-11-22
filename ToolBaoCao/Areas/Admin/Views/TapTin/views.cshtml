@@ -7,7 +7,7 @@
     var listfile = ViewBag.listfile as List<FileInfo>;
     var idtarget = Request.getValue("idtarget");
     if (idtarget == "") { idtarget = "viewfiles"; }
-    var lsFileTxt = new List<string> { ".log", ".txt", ".cs", ".json" };
+    var lsFileTxt = new List<string> { ".log", ".txt", ".cs", ".css", ".json", ".xml" };
 }
 <div class="font-weight-bold">
     Vị trí:
@@ -30,7 +30,15 @@
     }
     @foreach (var f in listfile)
     {
-        var tmp = !lsFileTxt.Contains(f.Extension.ToLower()) ? "" : " <a href=\"javascript:void(0);\" onclick=\"showgeturl('" + Url.Action("ReadText", "TapTin", new { area = "Admin", layout = "null", path = f.FullName.Substring(len).MD5Encrypt() }) + "');\"> <i class=\"fa fa-eye\"></i> </a>";
+        var tmp = "";
+        if (lsFileTxt.Contains(f.Extension.ToLower()))
+        {
+            /* > 2MB chỉ tải */
+            if (f.Length <= 2097152)
+            {
+                tmp = " <a href=\"javascript:void(0);\" onclick=\"showgeturl('" + Url.Action("ReadText", "TapTin", new { area = "Admin", layout = "null", path = f.FullName.Substring(len).MD5Encrypt() }) + "');\"> <i class=\"fa fa-eye\"></i> </a>";
+            }
+        }
         <li> <a href="@Url.Action("Index", "Tai", new { area = "", @object = f.FullName.Substring(len).MD5Encrypt() })"> <i class="fa fa-download"></i> </a>@Html.Raw(tmp) @f.Name (@f.Length.getFileSize()) </li>
     }
 </ol>

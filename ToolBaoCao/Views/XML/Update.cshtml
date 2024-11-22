@@ -108,8 +108,8 @@
             </tbody>
         </table>
         <div id="viewupstoretsql">
-            <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("StoreTSQL", "XML", new { area = "", layout = "null" })" data-target="viewupstoretsql">
-                <p class="text-center">Kéo và thả tập tin .txt chứa dữ liệu. vào khu vực này hoặc nhấp để chọn file</p>
+            <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("StoreTSQL", "XML", new { area = "", layout = "null", mode="uptext" })" data-target="viewupstoretsql">
+                <p class="text-center">Kéo và thả tập tin .txt, .sql chứa dữ liệu. vào khu vực này hoặc nhấp để chọn file</p>
             </div>
             <div id="fileDetails" class="mt-4">
                 <h5>Danh sách tập tin đã chọn:</h5>
@@ -139,5 +139,5 @@
         if (mode != "") { $('#@idform').submit(); return; }
         postform('@idform', '', 'view_@idform');
     }
-    $(document).ready(function () { drapDropFiles(".txt"); });
+    $(document).ready(function () { drapDropFiles(".txt,.sql"); });
 </script>

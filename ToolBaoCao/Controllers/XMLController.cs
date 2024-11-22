@@ -214,16 +214,47 @@ namespace ToolBaoCao.Controllers
         public ActionResult StoreTSQL()
         {
             string mode = Request.getValue("mode");
+            string iduser = $"{Session["iduser"]}";
             try
             {
                 if (mode == "view")
                 {
                     var db = BuildDatabase.getDataStoreTSQL();
-                    var dt = db.getDataTable("SELECT * FROM storetsql ORDER BY timeup LIMIT 1000");
+                    var dt = db.getDataTable("SELECT * FROM storetsql WHERE actionname='xml' ORDER BY timeup LIMIT 1000");
+                    db.Dispose();
                     ViewBag.data = dt;
                     return View();
                 }
-            } catch(Exception ex) { ViewBag.Error = ex.getLineHTML(); }
+                if (mode == "uptext")
+                {
+                    if (iduser == "") { throw new Exception("Bạn chưa đăng nhập "); }
+                    if (Request.Files.Count == 0) { throw new Exception("Không có tập tin text nào"); }
+                    var listExt = new List<string>() { ".txt", ".sql" };
+                    if (listExt.Contains(Path.GetExtension(Request.Files[0].FileName).ToLower()) == false)
+                    {
+                        throw new Exception($"Không hỗ trợ tập tin {Path.GetExtension(Request.Files[0].FileName)}");
+                    }
+                    if (Request.Files[0].ContentLength > 123456789) { throw new Exception("Tập tin có dung lượng lớn hơn giới hạn trường dữ liệu"); }
+                    var noidung = "";
+                    using (StreamReader reader = new StreamReader(Request.Files[0].InputStream))
+                    {
+                        noidung = reader.ReadToEnd();
+                    }
+                    if (noidung.sqliteGetValueField().Length > 123456789) { throw new Exception("Dữ liệu tập tin có dung lượng lớn hơn giới hạn trường dữ liệu"); }
+                    var item = new Dictionary<string, string>
+                    {
+                        { "iduser", iduser },
+                        { "timeup", DateTime.Now.toTimestamp().ToString() },
+                        { "actionname", "xml" },
+                        { "noidung", noidung }
+                    };
+                    var db = BuildDatabase.getDataStoreTSQL();
+                    db.Update("storetsql", item);
+                    db.Close();
+                    return Content("<div class=\"alert alert-info\">Thao tác thành công</div>");
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
 
