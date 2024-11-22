@@ -47,7 +47,11 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>&copy; @DateTime.Now.Year - @AppHelper.getConfig("App.Title") [Cập nhật lúc @(System.IO.File.GetLastWriteTime(Server.MapPath($"~/Bin/{AppHelper.projectName}.dll")).ToString("dd/MM/yyyy HH:mm:ss"))]</span>
+                        @{
+                            string title = "Cập nhật lúc";
+                            if ($"{Session["nhom"]}" == "0") { title = $"<a href=\"/Admin/Update/Index\" class=\"btn btn-sm btn-primary\">{title}</a>"; }
+                        }
+                        <span>&copy; @DateTime.Now.Year - @AppHelper.getConfig("App.Title") [@Html.Raw(title)  @(System.IO.File.GetLastWriteTime(Server.MapPath($"~/Bin/{AppHelper.projectName}.dll")).ToString("dd/MM/yyyy HH:mm:ss"))]</span>
                     </div>
                 </div>
             </footer>
