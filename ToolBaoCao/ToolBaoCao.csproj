@@ -387,8 +387,6 @@
     <Compile Include="WebConfigHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="7z.dll" />
-    <Content Include="7z.exe" />
     <Content Include="App_Data\dmTinh.sql" />
     <Content Include="ckeditor\adapters\jquery.js" />
     <Content Include="ckeditor\build-config.js" />
