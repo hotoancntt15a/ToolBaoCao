@@ -168,7 +168,10 @@ namespace ToolBaoCao
             {
                 try
                 {
-                    if (connection.State != ConnectionState.Open) { connection.Cancel(); }
+                    if (connection.State == ConnectionState.Executing || connection.State == ConnectionState.Fetching)
+                    {
+                        foreach (SqlCommand command in connection.GetSchema("Commands").Rows) { command.Cancel(); }
+                    }
                     connection.Close();
                 }
                 catch { }
