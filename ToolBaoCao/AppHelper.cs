@@ -402,11 +402,11 @@ namespace ToolBaoCao
             return tableNames;
         }
 
-        public static bool IsUpdateData(string tsql)
+        public static bool IsUpdateData(this string tsql)
         {
             /* Xóa các chuỗi trong nháy đơn (để tránh bắt từ khóa bên trong văn bản) */
             string sanitizedSql = Regex.Replace(tsql, @"'[^']*'", string.Empty, RegexOptions.IgnoreCase);
-            return Regex.IsMatch(sanitizedSql, @"\b(UPDATE|DELETE|INSERT|MERGE)\b(?!.*')", RegexOptions.IgnoreCase);
+            return Regex.IsMatch(sanitizedSql, @"\b(UPDATE|DELETE|INSERT|MERGE|DROP)\b(?!.*')", RegexOptions.IgnoreCase);
         }
 
         public static DataTable RemoveColumns(this DataTable dt, List<string> fieldRemove, bool phanBietHoaThuong = true)

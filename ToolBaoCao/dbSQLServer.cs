@@ -10,11 +10,18 @@ using System.Threading;
 
 namespace ToolBaoCao
 {
-    public class dbSQLServer
+    public class dbSQLServer : IDisposable
     {
         public SqlConnectionStringBuilder ConnectionString = new SqlConnectionStringBuilder();
         private SqlConnection connection = new SqlConnection();
         public int CommandTimeOut = 0;
+
+        public static bool IsUpdateData(string tsql)
+        {
+            /* Xóa các chuỗi trong nháy đơn (để tránh bắt từ khóa bên trong văn bản) */
+            string sanitizedSql = Regex.Replace(tsql, @"'[^']*'", string.Empty, RegexOptions.IgnoreCase);
+            return Regex.IsMatch(sanitizedSql, @"\b(UPDATE|DELETE|INSERT|MERGE|DROP)\b(?!.*')", RegexOptions.IgnoreCase);
+        }
 
         public dbSQLServer(string connectionString = "")
         {
@@ -22,7 +29,7 @@ namespace ToolBaoCao
             {
                 try { ConnectionString = new SqlConnectionStringBuilder(connectionString); }
                 catch { connectionString = ""; }
-                if (connection.State == ConnectionState.Open) { connection.Close(); }
+                Close();
                 connection = new SqlConnection(connectionString);
             }
         }
@@ -34,6 +41,7 @@ namespace ToolBaoCao
             value = Regex.Replace(value, "[%]+", "%");
             return $"{field} LIKE '{value.Replace("'", "''")}'";
         }
+
         private SqlParameter[] ConvertObjectToParameter(object parameters)
         {
             if (parameters == null) { return null; }
@@ -155,7 +163,23 @@ namespace ToolBaoCao
         }
 
         public void Close()
-        { if (connection.State != ConnectionState.Closed) { connection.Close(); } }
+        {
+            if (connection.State != ConnectionState.Closed)
+            {
+                try
+                {
+                    if (connection.State != ConnectionState.Open) { connection.Cancel(); }
+                    connection.Close();
+                }
+                catch { }
+            }
+        }
+
+        public void Dispose()
+        {
+            Close();
+            connection.Dispose();
+        }
 
         public Dictionary<string, object> getItem(string query, object parameters = null)
         {

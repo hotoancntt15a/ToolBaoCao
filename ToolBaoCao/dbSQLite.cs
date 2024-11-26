@@ -16,6 +16,13 @@ namespace ToolBaoCao
         private string fileDataName = "";
         public string pathLog = "";
 
+        public bool IsUpdateData(string tsql)
+        {
+            /* Xóa các chuỗi trong nháy đơn (để tránh bắt từ khóa bên trong văn bản) */
+            string sanitizedSql = Regex.Replace(tsql, @"'[^']*'", string.Empty, RegexOptions.IgnoreCase);
+            return Regex.IsMatch(sanitizedSql, @"\b(UPDATE|DELETE|INSERT|MERGE|DROP)\b(?!.*')", RegexOptions.IgnoreCase);
+        }
+
         public long getTimestamp(DateTime time) => ((DateTimeOffset)time).ToUnixTimeSeconds();
 
         public dbSQLite(string pathOrConnectionString = "main.data", string password = "", int commandTimeout = 0)
@@ -62,7 +69,10 @@ namespace ToolBaoCao
         }
 
         public void Dispose()
-        { Close(); connection.Dispose(); }
+        {
+            Close();
+            connection.Dispose();
+        }
 
         private SQLiteParameter[] ConvertObjectToParameter(object parameters)
         {
@@ -114,7 +124,7 @@ namespace ToolBaoCao
                 if (par != null) { command.Parameters.AddRange(par); }
                 using (var adapter = new SQLiteDataAdapter(command)) { adapter.Fill(data); }
             }
-            if (fileCache != "") { try { data.WriteXml(fileCache); } catch { } } 
+            if (fileCache != "") { try { data.WriteXml(fileCache); } catch { } }
             return data;
         }
 
