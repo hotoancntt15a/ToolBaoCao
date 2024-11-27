@@ -236,13 +236,16 @@ namespace ToolBaoCao.Controllers
                 rowIndex = 0;
                 var row = sheet.CreateRow(rowIndex);
                 i = -1;
+                var csHeader = workbook.CreateCellStyleThin(true, true, true, getCache: false);
                 foreach (DataColumn col in dt.Columns)
                 {
                     i++;
                     var cell = row.CreateCell(i, CellType.String);
-                    cell.CellStyle = workbook.CreateCellStyleThin(true, true, true);
+                    cell.CellStyle = csHeader;
                     cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
                 }
+                var csContent = workbook.CreateCellStyleThin(getCache: false);
+                var csContentBold = workbook.CreateCellStyleThin(true, getCache: false);
                 /* Đổ dữ liệu */
                 foreach (DataRow r in dt.Rows)
                 {
@@ -255,7 +258,7 @@ namespace ToolBaoCao.Controllers
                         {
                             i++;
                             var cell = row.CreateCell(i, CellType.String);
-                            cell.CellStyle = workbook.CreateCellStyleThin();
+                            cell.CellStyle = csContent;
                             cell.SetCellValue("");
                         }
                     }
@@ -268,12 +271,12 @@ namespace ToolBaoCao.Controllers
                             tmp = $"{r[i]}";
                             if (tmp.StartsWith("<b>"))
                             {
-                                cell.CellStyle = workbook.CreateCellStyleThin(true);
+                                cell.CellStyle = csContentBold;
                                 cell.SetCellValue(tmp.Substring(3));
                             }
                             else
                             {
-                                cell.CellStyle = workbook.CreateCellStyleThin();
+                                cell.CellStyle = csContent;
                                 cell.SetCellValue(tmp);
                             }
                             if (listColRight.Contains(i)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
@@ -492,9 +495,12 @@ namespace ToolBaoCao.Controllers
                     createFileBCTuanDocx(id, matinh, bcTuan);
                     createFilePhuLucBCTuan(id, matinh, dbBaoCao, bcTuan);
                     dbBaoCao.Close();
-                    var listFile = new List<string>() { Path.Combine(d.FullName, $"bctuan_{id}.docx"), Path.Combine(d.FullName, $"bctuan_{id}_pl.xlsx") };
+                    var listFile = new List<string>() {
+                        Path.Combine(d.FullName, $"bctuan_{id}.docx")
+                        , Path.Combine(d.FullName, $"bctuan_{id}_pl.xlsx") };
                     tmp = Path.Combine(d.FullName, $"id{id}_b26_00.xlsx");
                     if (System.IO.File.Exists(tmp)) { listFile.Add(tmp); }
+                    else { AppHelper.zipExtract(fileZip, d.FullName, "_b26_00.xlsx"); }
                     AppHelper.zipAchive(fileZip, listFile);
                 }
                 if (System.IO.File.Exists(Path.Combine(d.FullName, $"bctuan_{id}.docx")) == false)
@@ -572,7 +578,7 @@ namespace ToolBaoCao.Controllers
                 var xlsx = exportPhuLucBCTuan(phuluc01, phuluc02, phuluc03);
                 phuluc01 = null; phuluc02 = null; phuluc03 = null;
 
-                tmp = Path.Combine(folderSave, $"bctuan_pl_{idBaoCao}.xlsx");
+                tmp = Path.Combine(folderSave, $"bctuan_{idBaoCao}_pl.xlsx");
                 if (System.IO.File.Exists(tmp)) { System.IO.File.Delete(tmp); }
                 using (FileStream stream = new FileStream(tmp, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
                 xlsx.Close(); xlsx.Clear();
@@ -602,6 +608,16 @@ namespace ToolBaoCao.Controllers
                 data = dbTemp.getDataTable($"SELECT * FROM b26chitiet WHERE id_bc='{idBaoCaoVauleField}';");
                 data.Columns.RemoveAt(0); dbImport.Insert("b26chitiet", data);
                 dbTemp.Close();
+
+                /* Nén tập tin lại */
+                tmp = Path.Combine(folderSave, $"bctuan_{idBaoCao}.zip");
+                if (System.IO.File.Exists(tmp)) { try { System.IO.File.Delete(tmp); } catch { } }
+                var lsFile = new List<string>() {
+                    Path.Combine(folderSave, $"bctuan_{idBaoCao}.docx")
+                    ,Path.Combine(folderSave, $"bctuan_{idBaoCao}_pl.xlsx")
+                    ,Path.Combine(folderSave, $"id{idBaoCao}_b26_00.xlsx")
+                };
+                AppHelper.zipAchive(tmp, lsFile);
             }
             catch (Exception ex)
             {

@@ -18,8 +18,27 @@ namespace zModules.NPOIExcel
         private static List<System.Type> typeDateTime = new List<System.Type>() { Type.GetType("System.DateTime") };
         private static Dictionary<string, ICellStyle> cellStyleCache = new Dictionary<string, ICellStyle>();
 
-        public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false)
+        public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false, bool getCache = true)
         {
+            if (getCache == false)
+            {
+                ICellStyle cs = hw.CreateCellStyle();
+                cs.BorderLeft = BorderStyle.Thin;
+                cs.BorderRight = BorderStyle.Thin;
+                cs.BorderTop = BorderStyle.Thin;
+                cs.BorderBottom = BorderStyle.Thin;
+                cs.WrapText = wrapText;
+                if (title)
+                {
+                    cs.Alignment = HorizontalAlignment.Center;
+                    cs.VerticalAlignment = VerticalAlignment.Center;
+                }
+                IFont font = hw.CreateFont();
+                font.FontName = "Times New Roman";
+                font.IsBold = fontBold;
+                cs.SetFont(font);
+                return cs;
+            }
             string styleKey = $"{fontBold}.{wrapText}.{title}";
             if (!cellStyleCache.TryGetValue(styleKey, out ICellStyle cell))
             {

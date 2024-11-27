@@ -52,6 +52,7 @@ namespace ToolBaoCao
         public static bool zipExtract(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;
+            if(System.IO.File.Exists(zipFilePath) == false) { return dbFileFound; }
             using (ZipArchive archive = ZipFile.OpenRead(zipFilePath))
             {
                 if (ext == "") { archive.ExtractToDirectory(extractFolderPath); dbFileFound = true; }

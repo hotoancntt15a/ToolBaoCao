@@ -23,6 +23,10 @@ namespace ToolBaoCao.Controllers
             if (Directory.Exists(folder) == false) { Directory.CreateDirectory(folder); }
             return View();
         }
+        public ActionResult CapNhatPL01()
+        {
+            return View();
+        }
 
         public ActionResult Buoc1()
         {
@@ -327,14 +331,17 @@ namespace ToolBaoCao.Controllers
                 rowIndex = 0;
                 var row = sheet.CreateRow(rowIndex);
                 i = -1;
+                var csHeader = workbook.CreateCellStyleThin(true, true, true, getCache: false);
                 foreach (DataColumn col in dt.Columns)
                 {
                     i++;
                     var cell = row.CreateCell(i, CellType.String);
-                    cell.CellStyle = workbook.CreateCellStyleThin(true, true, true);
+                    cell.CellStyle = csHeader;
                     cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
                 }
                 /* Đổ dữ liệu */
+                var csContext = workbook.CreateCellStyleThin(getCache: false);
+                var csContextBold = workbook.CreateCellStyleThin(true, getCache: false);
                 foreach (DataRow r in dt.Rows)
                 {
                     rowIndex++;
@@ -346,7 +353,7 @@ namespace ToolBaoCao.Controllers
                         {
                             i++;
                             var cell = row.CreateCell(i, CellType.String);
-                            cell.CellStyle = workbook.CreateCellStyleThin();
+                            cell.CellStyle = csContext;
                             cell.SetCellValue("");
                         }
                     }
@@ -359,12 +366,12 @@ namespace ToolBaoCao.Controllers
                             tmp = $"{r[i]}";
                             if (tmp.StartsWith("<b>"))
                             {
-                                cell.CellStyle = workbook.CreateCellStyleThin(true);
+                                cell.CellStyle = csContextBold;
                                 cell.SetCellValue(tmp.Substring(3));
                             }
                             else
                             {
-                                cell.CellStyle = workbook.CreateCellStyleThin();
+                                cell.CellStyle = csContext;
                                 cell.SetCellValue(tmp);
                             }
                             if (listColRight.Contains(i)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
