@@ -103,7 +103,7 @@ namespace ToolBaoCao.Controllers
                 ,chi_bq_noi, userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(chi_bq_chung) AS chi_bq_chung
                     ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(chi_bq_noi) AS chi_bq_noi
@@ -123,7 +123,7 @@ namespace ToolBaoCao.Controllers
                 ,chi_bq_noi, userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(chi_bq_chung) AS chi_bq_chung
                     ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(chi_bq_noi) AS chi_bq_noi
@@ -134,7 +134,7 @@ namespace ToolBaoCao.Controllers
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 var data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(chi_bq_chung) AS chi_bq_chung
                     ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(chi_bq_noi) AS chi_bq_noi
@@ -165,7 +165,7 @@ namespace ToolBaoCao.Controllers
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq) AS ngay_dtri_bq
+                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(chi_bq_chung) AS chi_bq_chung
                     ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(chi_bq_noi) AS chi_bq_noi
@@ -1251,9 +1251,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x9", $"{item["tong_luot"]}");
             bcThang.Add("x10", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x11", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x21", $"{item["tong_chi"]}");
-            bcThang.Add("x22", $"{item["tong_chi_ngoai"]}");
-            bcThang.Add("x23", $"{item["tong_chi_noi"]}");
+            bcThang.Add("x21", $"{item["tong_chi"]}".lamTronTrieuDong());
+            bcThang.Add("x22", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            bcThang.Add("x23", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
             /* ,x12 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x13 real not null default 0 /* Lượt ngoại {nam1} luỹ kế
                 ,x14 real not null default 0 /* Lượt nội {nam1} luỹ kế
@@ -1266,9 +1266,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x12", $"{item["tong_luot"]}");
             bcThang.Add("x13", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x14", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x24", $"{item["tong_chi"]}");
-            bcThang.Add("x25", $"{item["tong_chi_ngoai"]}");
-            bcThang.Add("x26", $"{item["tong_chi_noi"]}");
+            bcThang.Add("x24", $"{item["tong_chi"]}".lamTronTrieuDong());
+            bcThang.Add("x25", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            bcThang.Add("x26", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
 
             /* ,x15 real not null default 0 /* Tổng lượt = 2+3 (x10+x11)
                 ,x16 real not null default 0 /* Lượt ngoại {nam2}
@@ -1282,9 +1282,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x15", $"{item["tong_luot"]}");
             bcThang.Add("x16", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x17", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x27", $"{item["tong_chi"]}");
-            bcThang.Add("x28", $"{item["tong_chi_ngoai"]}");
-            bcThang.Add("x29", $"{item["tong_chi_noi"]}");
+            bcThang.Add("x27", $"{item["tong_chi"]}".lamTronTrieuDong());
+            bcThang.Add("x28", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            bcThang.Add("x29", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
 
             /* ,x18 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x19 real not null default 0 /* Lượt ngoại {nam2} luỹ kế
@@ -1298,9 +1298,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x18", $"{item["tong_luot"]}");
             bcThang.Add("x19", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x20", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x30", $"{item["tong_chi"]}");
-            bcThang.Add("x31", $"{item["tong_chi_ngoai"]}");
-            bcThang.Add("x32", $"{item["tong_chi_noi"]}");
+            bcThang.Add("x30", $"{item["tong_chi"]}".lamTronTrieuDong());
+            bcThang.Add("x31", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            bcThang.Add("x32", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
 
             /* Tăng giảm so với cùng kỳ năm trước
              * ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 (x15-x9)
@@ -1380,7 +1380,7 @@ namespace ToolBaoCao.Controllers
                     foreach (var run in paragraph.Runs)
                     {
                         var tmp = run.ToString();
-                        MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9]+}", RegexOptions.IgnoreCase);
+                        MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
                         foreach (Match match in matches)
                         {
                             tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, ""));
@@ -1400,7 +1400,7 @@ namespace ToolBaoCao.Controllers
                                 foreach (var run in paragraph.Runs)
                                 {
                                     var tmp = run.ToString();
-                                    MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9]+}", RegexOptions.IgnoreCase);
+                                    MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
                                     foreach (Match match in matches)
                                     {
                                         tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, ""));

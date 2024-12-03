@@ -1,0 +1,18 @@
+PL01 
+Tổng nhóm theo mã cha của mã CSKCB, ko kê chi tiết đến Trạm y tế xã, Phòng khám.
+Biểu này tổng nhóm theo mã cha của mã CSKCB, ko kê chi tiết đến Trạm y tế xã, Phòng khám. Lấy từ biểu B01-10 tại cột D cho cột C của file excel và cột G cho cột D của excel
+Lệnh truy vấn cần nối đến table DM bệnh viện để có mã cha.
+
+PL02a
+Tỷ lệ nội trú Vùng Trung du và MN phía bắc chưa đúng: PM đang lấy tổng /14; cách tính đúng phải là tổng cộng lượt nội trú (cột F)/tổng tổng cộng cột tổng cộng (cột D)*100 của các tỉnh có mã vùng = "1"
+Chi BQ chung Vùng Trung du và MN phía bắc chưa đúng: Cách tính đúng phả là tổng cộng cột tiền tổng chi (Cột L)/tổng cộng cột tổng cộng lượt (cột D)*100 của các tỉnh có mã vùng = "1"
+Chi BQ Nội trú Vùng Trung du và MN phía bắc chưa đúng: Cách tính đúng phải là tổng cộng cột Nội trú (Cột P)/tổng cộng cột lượt Ngoại trú (cột F)*100 của các tỉnh có mã vùng = "1"
+Chi BQ Ngoại trú Vùng Trung du và MN phía bắc chưa đúng: Cách tính đúng phải là tổng cộng cột Ngoại trú (Cột N)/tổng cộng cột lượt Ngoại trú (cột E)*100 của các tỉnh có mã vùng = "1"
+
+PL02b
+Tỷ lệ nội trú Vùng Trung du và MN phía bắc chưa đúng: PM đang lấy tổng /14; cách tính đúng phải là tổng cộng lượt nội trú (cột F)/ tổng cộng cột tổng cộng (cột D)*100 của các tỉnh có mã vùng = "1"
+Chi BQ chung Vùng Trung du và MN phía bắc chưa đúng: Cách tính đúng phả là tổng cộng cột tiền tổng chi (Cột L)/tổng cộng cột tổng cộng lượt (cột D)*100 của các tỉnh có mã vùng = "1"
+Chi BQ Nội trú Vùng Trung du và MN phía bắc chưa đúng: Cách tính đúng phải là tổng cộng cột Nội trú (Cột P)/tổng cộng cột lượt Ngoại trú (cột F)*100 của các tỉnh có mã vùng = "1"
+Chi BQ Ngoại trú Vùng Trung du và MN phía bắc chưa đúng: Cách tính đúng phải là tổng cộng cột Ngoại trú (Cột N)/tổng cộng cột lượt Ngoại trú (cột E)*100 của các tỉnh có mã vùng = "1"
+
+Các phụ lục khác OK
