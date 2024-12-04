@@ -100,13 +100,18 @@ namespace ToolBaoCao.Controllers
                 ,ngay_dtri_bq
                 ,chi_bq_chung
                 ,chi_bq_ngoai
-                ,chi_bq_noi, userid)
+                ,chi_bq_noi
+                ,tong_luot, tong_luot_noi, tong_luot_ngoai
+                ,tong_chi, tong_chi_noi, tong_chi_ngoai
+                ,userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
                     ,ROUND(tyle_noitru, 2) AS tyle_noitru
                     ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(chi_bq_chung) AS chi_bq_chung
                     ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,tong_luot, tong_luot_noi, tong_luot_ngoai
+                    ,tong_chi, tong_chi_noi, tong_chi_ngoai
                     ,'{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Tạo Phục Lục 2b */
