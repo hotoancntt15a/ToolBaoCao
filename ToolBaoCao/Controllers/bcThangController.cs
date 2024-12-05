@@ -83,9 +83,7 @@ namespace ToolBaoCao.Controllers
                     ,idtinh
                     ,ma_cskcb
                     ,ten_cskcb
-                    ,dtgiao
-                    ,tien_bhtt
-                    ,tl_sudungdt
+                    ,dtgiao ,tien_bhtt ,tl_sudungdt
                     ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2='{tmp}';";
                 dbTemp.Execute(tsql);
@@ -96,20 +94,12 @@ namespace ToolBaoCao.Controllers
                 ,ma_tinh
                 ,ten_tinh
                 ,ma_vung
-                ,tyle_noitru
-                ,ngay_dtri_bq
-                ,chi_bq_chung
-                ,chi_bq_ngoai
-                ,chi_bq_noi
+                ,tyle_noitru ,ngay_dtri_bq ,chi_bq_chung ,chi_bq_ngoai ,chi_bq_noi
                 ,tong_luot, tong_luot_noi, tong_luot_ngoai
                 ,tong_chi, tong_chi_noi, tong_chi_ngoai
                 ,userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
-                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
-                    ,ROUND(chi_bq_chung) AS chi_bq_chung
-                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
-                    ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
                     ,tong_luot, tong_luot_noi, tong_luot_ngoai
                     ,tong_chi, tong_chi_noi, tong_chi_ngoai
                     ,'{idUser}' AS userid
@@ -120,29 +110,22 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh
                 ,ma_tinh
                 ,ten_tinh
-                ,ma_vung
-                ,tyle_noitru
-                ,ngay_dtri_bq
-                ,chi_bq_chung
-                ,chi_bq_ngoai
-                ,chi_bq_noi, userid)
+                ,ma_vung                
+                ,tyle_noitru ,ngay_dtri_bq ,chi_bq_chung ,chi_bq_ngoai ,chi_bq_noi
+                ,tong_luot, tong_luot_noi, tong_luot_ngoai
+                ,tong_chi, tong_chi_noi, tong_chi_ngoai
+                ,userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
-                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
-                    ,ROUND(chi_bq_chung) AS chi_bq_chung
-                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
-                    ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,tong_luot, tong_luot_noi, tong_luot_ngoai
+                    ,tong_chi, tong_chi_noi, tong_chi_ngoai
                     ,'{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Tạo Phục Lục 3a */
                 /* Lấy dữ liệu từ biểu b02 csyt trong tháng */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 var data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
-                    ,ROUND(chi_bq_chung) AS chi_bq_chung
-                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
-                    ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
                     ,'' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Lấy danh sách Ma_CSKCB */
@@ -169,11 +152,7 @@ namespace ToolBaoCao.Controllers
                 /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    ,ROUND(tyle_noitru, 2) AS tyle_noitru
-                    ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
-                    ,ROUND(chi_bq_chung) AS chi_bq_chung
-                    ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
-                    ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
                     ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 foreach (DataRow row in data.Rows)
@@ -193,25 +172,14 @@ namespace ToolBaoCao.Controllers
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb04 WHERE id_bc='{id}' AND ma_tinh='00' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";
                 dbTemp.Execute($@"INSERT INTO thangpl04a (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
-                    ,ROUND(bq_xn) AS chi_bq_xn
-                    ,ROUND(bq_cdha) AS chi_bq_cdha
-                    ,ROUND(bq_thuoc) AS chi_bq_thuoc
-                    ,ROUND(bq_ptt) AS chi_bq_pttt
-                    ,ROUND(bq_vtyt) AS chi_bq_vtyt
-                    ,ROUND(bq_giuong) AS chi_bq_giuong
-                    ,ROUND(ngay_ttbq, 2) AS ngay_ttbq, '{idUser}' AS userid
+                    ,ROUND(bq_xn) AS chi_bq_xn ,ROUND(bq_cdha) AS chi_bq_cdha ,ROUND(bq_thuoc) AS chi_bq_thuoc ,ROUND(bq_ptt) AS chi_bq_pttt ,ROUND(bq_vtyt) AS chi_bq_vtyt ,ROUND(bq_giuong) AS chi_bq_giuong ,ROUND(ngay_ttbq, 2) AS ngay_ttbq
+                    ,'{idUser}' AS userid
                     FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';");
                 /* Tạo thangpl04b */
                 /* Nguồn dữ liệu B04_10 của tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần, nhưng chi tiết từng CSKCB và phân nhóm theo tuyến tỉnh huyện xã */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb04 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
                 tsql = $@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    ,ROUND(bq_xn) AS chi_bq_xn
-                    ,ROUND(bq_cdha) AS chi_bq_cdha
-                    ,ROUND(bq_thuoc) AS chi_bq_thuoc
-                    ,ROUND(bq_ptt) AS chi_bq_pttt
-                    ,ROUND(bq_vtyt) AS chi_bq_vtyt
-                    ,ROUND(bq_giuong) AS chi_bq_giuong
-                    ,ROUND(ngay_ttbq, 2) AS ngay_ttbq
+                    ,ROUND(bq_xn) AS chi_bq_xn ,ROUND(bq_cdha) AS chi_bq_cdha ,ROUND(bq_thuoc) AS chi_bq_thuoc ,ROUND(bq_ptt) AS chi_bq_pttt ,ROUND(bq_vtyt) AS chi_bq_vtyt ,ROUND(bq_giuong) AS chi_bq_giuong ,ROUND(ngay_ttbq, 2) AS ngay_ttbq
                     ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid
                     FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';";
                 data = dbTemp.getDataTable(tsql);

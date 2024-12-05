@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace ToolBaoCao
@@ -714,8 +715,27 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng) */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú */
+                ,tong_luot integer not null default 0
+                ,tong_luot_noi integer not null default 0
+                ,tong_luot_ngoai integer not null default 0
+                ,tong_chi real not null default 0
+                ,tong_chi_noi real not null default 0
+                ,tong_chi_ngoai real not null default 0
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_thangpl02a_id_bc ON thangpl02a (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangpl02a_id_bc ON thangpl02a (id_bc);");
+            } else
+            {
+                var cols = dbConnect.getColumns("thangpl02a");
+                if(cols.Any(p=>p.ColumnName == "tong_luot") == false)
+                {
+                    tsqlCreate.Add($@"ALTER TABLE thangpl02a ADD COLUMN tong_luot INTEGER NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02a ADD COLUMN tong_luot_noi INTEGER NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02a ADD COLUMN tong_luot_ngoai INTEGER NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02a ADD COLUMN tong_chi REAL NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02a ADD COLUMN tong_chi_noi REAL NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02a ADD COLUMN tong_chi_ngoai REAL NOT NULL DEFAULT 0;
+                    ");
+                }
             }
             if (tables.Contains("thangpl02b") == false)
             {
@@ -731,8 +751,27 @@ namespace ToolBaoCao
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng) */
                 ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng) */
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú */
+                ,tong_luot integer not null default 0
+                ,tong_luot_noi integer not null default 0
+                ,tong_luot_ngoai integer not null default 0
+                ,tong_chi real not null default 0
+                ,tong_chi_noi real not null default 0
+                ,tong_chi_ngoai real not null default 0
                 ,userid text not null default '' /* Lưu ID của người dùng */);
-                 CREATE INDEX IF NOT EXISTS index_thangpl02b_id_bc ON thangpl02b (id_bc);");
+                CREATE INDEX IF NOT EXISTS index_thangpl02b_id_bc ON thangpl02b (id_bc);");
+            } else
+            {
+                var cols = dbConnect.getColumns("thangpl02b");
+                if (cols.Any(p => p.ColumnName == "tong_luot") == false)
+                {
+                    tsqlCreate.Add($@"ALTER TABLE thangpl02b ADD COLUMN tong_luot INTEGER NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02b ADD COLUMN tong_luot_noi INTEGER NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02b ADD COLUMN tong_luot_ngoai INTEGER NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02b ADD COLUMN tong_chi REAL NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02b ADD COLUMN tong_chi_noi REAL NOT NULL DEFAULT 0;
+                    ALTER TABLE thangpl02b ADD COLUMN tong_chi_ngoai REAL NOT NULL DEFAULT 0;
+                    ");
+                }
             }
 
             if (tables.Contains("thangpl03a") == false)
