@@ -23,6 +23,7 @@ namespace ToolBaoCao.Controllers
             if (Directory.Exists(folder) == false) { Directory.CreateDirectory(folder); }
             return View();
         }
+
         public ActionResult CapNhatPL01()
         {
             return View();
@@ -110,7 +111,7 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh
                 ,ma_tinh
                 ,ten_tinh
-                ,ma_vung                
+                ,ma_vung
                 ,tyle_noitru ,ngay_dtri_bq ,chi_bq_chung ,chi_bq_ngoai ,chi_bq_noi
                 ,tong_luot, tong_luot_noi, tong_luot_ngoai
                 ,tong_chi, tong_chi_noi, tong_chi_ngoai
@@ -753,21 +754,24 @@ namespace ToolBaoCao.Controllers
                 .GroupBy(x => x.Field<string>("ma_vung"))
                 .Select(g => new
                 {
-                    tyle_noitru = g.Sum(x => x.Field<double>("tyle_noitru")) / indexRow,
-                    ngay_dtri_bq = g.Sum(x => x.Field<double>("ngay_dtri_bq")) / indexRow,
-                    chi_bq_chung = g.Sum(x => x.Field<double>("chi_bq_chung")) / indexRow,
-                    chi_bq_noi = g.Sum(x => x.Field<double>("chi_bq_noi")) / indexRow,
-                    chi_bq_ngoai = g.Sum(x => x.Field<double>("chi_bq_ngoai")) / indexRow
+                    luot = g.Sum(x => x.Field<long>("tong_luot")),
+                    luotNoi = g.Sum(x => x.Field<long>("tong_luot_noi")),
+                    luotNgoai = g.Sum(x => x.Field<long>("tong_luot_ngoai")),
+                    ngaydtr = g.Sum(x => x.Field<double>("ngay_dtri_bq") * x.Field<long>("tong_luot_noi")),
+                    chi = g.Sum(x => x.Field<double>("tong_chi")),
+                    chiNoi = g.Sum(x => x.Field<double>("tong_chi_noi")),
+                    chiNgoai = g.Sum(x => x.Field<double>("tong_chi_ngoai"))
                 })
                 .FirstOrDefault();
             if (vung == null) { phuLuc.Rows.Add(itemVung.Key, itemVung.Value, "0", itemVung.Value, "0", itemVung.Value, "0", itemVung.Value, "0", itemVung.Value, "0"); }
             else
             {
-                phuLuc.Rows.Add(itemVung.Key, itemVung.Value, $"{vung.tyle_noitru.ToString("0.##")}",
-                    itemVung.Value, $"{vung.ngay_dtri_bq.ToString("0.##")}",
-                    itemVung.Value, $"{vung.chi_bq_chung.ToString("0.##")}",
-                    itemVung.Value, $"{vung.chi_bq_noi.ToString("0.##")}",
-                    itemVung.Value, $"{vung.chi_bq_ngoai.ToString("0.##")}");
+                phuLuc.Rows.Add(itemVung.Key,
+                    itemVung.Value, (((double)vung.luotNoi / (double)vung.luot) * 100).ToString("0.##"), /* Tỷ lệ nội */
+                    itemVung.Value, ((vung.ngaydtr / (double)vung.luotNoi) * 100).ToString("0.##"), /* ngày điều trị*/
+                    itemVung.Value, ((vung.chi / (double)vung.luot) * 100).ToString("0.##"), /* chi bình quân */
+                    itemVung.Value, ((vung.chiNoi / (double)vung.luotNoi) * 100).ToString("0.##"), /* chi bình quân nội */
+                    itemVung.Value, ((vung.chiNgoai / (double)vung.luotNgoai) * 100).ToString("0.##")); /* chi bình quân ngoại */
             }
             DataRow rowVung = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Tỉnh */
