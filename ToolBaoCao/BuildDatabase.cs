@@ -588,7 +588,6 @@ namespace ToolBaoCao
 
         public static void CreateBcThang(this dbSQLite dbConnect, List<string> tables = null)
         {
-            if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
             /* BaoCaoTuanDocx */
             tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthangdocx (id text not null primary key
@@ -677,6 +676,70 @@ namespace ToolBaoCao
             CREATE INDEX IF NOT EXISTS bcthangdocx_ma_tinh ON bcthangdocx(ma_tinh);
             CREATE INDEX IF NOT EXISTS index_bcthangdocx_timecreate ON bcthangdocx(timecreate);
             CREATE INDEX IF NOT EXISTS index_bcthangdocx_ngay ON bcthangdocx(ngay1);");
+            tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthangpldocx (
+                id text not null primary key
+                ,t5 real not null default 0
+                ,t6 real not null default 0
+                ,t7 text not null default ''
+                ,t8 integer not null default 0
+                ,t9 real not null default 0
+                ,t10 text not null default ''
+                ,t11 integer not null default 0
+                ,t12 real not null default 0
+                ,t13 real not null default 0
+                ,t14 text not null default ''
+                ,t15 integer not null default 0
+                ,t16 real not null default 0
+                ,t17 text not null default ''
+                ,t18 integer not null default 0
+                ,t19 real not null default 0
+                ,t20 real not null default 0
+                ,t21 text not null default ''
+                ,t22 integer not null default 0
+                ,t23 real not null default 0
+                ,t24 text not null default ''
+                ,t25 integer not null default 0
+                ,t26 real not null default 0
+                ,t27 real not null default 0
+                ,t28 text not null default ''
+                ,t29 integer not null default 0
+                ,t30 real not null default 0
+                ,t31 text not null default ''
+                ,t32 integer not null default 0
+                ,t33 real not null default 0 
+                ,t34 real not null default 0
+                ,t35 text not null default ''
+                ,t36 integer not null default 0
+                ,t37 real not null default 0
+                ,t38 text not null default ''
+                ,t39 integer not null default 0
+                ,t40 real not null default 0
+                ,t41 real not null default 0
+                ,t42 text not null default ''
+                ,t43 real not null default 0
+                ,t44 text not null default ''
+                ,t45 text not null default ''
+                ,t46 real not null default 0
+                ,t47 text not null default ''
+                ,t48 text not null default ''
+                ,t49 real not null default 0
+                ,t50 text not null default ''
+                ,t51 text not null default ''
+                ,t52 real not null default 0
+                ,t53 text not null default ''
+                ,t54 text not null default ''
+                ,t55 real not null default 0
+                ,t56 text not null default ''
+                ,t57 text not null default ''
+                ,t58 real not null default 0
+                ,t59 text not null default ''
+                ,t60 text not null default ''
+                ,t61 real not null default 0
+                ,t62 text not null default ''
+                ,t63 text not null default ''
+                ,t64 real not null default 0
+                ,t65 text not null default ''
+                ,t66 text not null default '');");
             var tsql = string.Join(Environment.NewLine, tsqlCreate);
             if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
         }

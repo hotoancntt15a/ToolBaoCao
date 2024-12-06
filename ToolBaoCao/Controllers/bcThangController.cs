@@ -1337,7 +1337,262 @@ namespace ToolBaoCao.Controllers
             bcThang["timecreate"] = DateTime.Now.toTimestamp().ToString();
             bcThang["userid"] = idUser;
             bcThang["ma_tinh"] = maTinh;
+            var bcThangPL = createPLBCThangDocx(dbConnect, idBaoCao, maTinh, mavung);
+            bcThangPL["id"] = idBaoCao;
             return bcThang;
+        }
+
+        private Dictionary<string, string> createPLBCThangDocx(dbSQLite dbConnect, string idBaoCao, string maTinh, string maVung)
+        {
+            var bctuan = new Dictionary<string, string>() { { "id", idBaoCao } };
+
+            double so1 = 0; double so2 = 0;
+            var tmpD = new Dictionary<string, string>();
+            string tsql = string.Empty;
+            string tmp = string.Empty;
+
+            /* Bỏ qua các vùng */
+            tsql = $@"SELECT ma_tinh
+                ,ten_tinh
+                ,ma_vung
+                ,tong_luot
+                ,tong_luot_ngoai
+                ,tong_luot_noi
+                ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
+                ,ROUND(chi_bq_chung) AS chi_bq_chung
+                ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai
+                ,ROUND(chi_bq_noi) AS chi_bq_noi
+                ,ROUND(tong_chi) AS tong_chi
+                ,ROUND(ty_trong, 2) AS ty_trong
+                ,ROUND(tong_chi_ngoai) AS tong_chi_ngoai
+                ,ROUND(ty_trong_kham, 2) AS ty_trong_kham
+                ,ROUND(tong_chi_noi) AS tong_chi_noi
+                ,ROUND(ty_trong_giuong, 2) AS ty_trong_giuong
+                ,ROUND(t_bhtt) AS t_bhtt
+                ,ROUND(t_bhtt_noi) AS t_bhtt_noi
+                ,ROUND(t_bhtt_ngoai) AS t_bhtt_ngoai
+                FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
+            var b02TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
+            if (b02TQ.Count() == 0) { throw new Exception("B02 Toàn Quốc không có dữ liệu phù hợp truy vấn"); }
+            var dataTinhB02 = b02TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault() ?? throw new Exception("B02 không có dữ liệu tỉnh phù hợp truy vấn");
+            var dataTQB02 = b02TQ.Where(r => r.Field<string>("ma_tinh") == "00").FirstOrDefault() ?? throw new Exception("B02 không có dữ liệu toàn quốc phù hợp truy vấn");
+            b02TQ = b02TQ.Where(p => p.Field<string>("ma_tinh") != "00").ToList(); /* Bỏ Toàn quốc ra khỏi danh sách */
+
+            /* Bỏ qua các vùng */
+            tsql = $@"SELECT ma_tinh
+                ,ten_tinh
+                ,vitri_chibq
+                ,vitri_tyle_noitru
+                ,vitri_tlxn
+                ,vitri_tlcdha
+                ,ROUND(tytrong, 2) AS tytrong
+                ,ROUND(chi_bq_chung) AS chi_bq_chung
+                ,ROUND(chi_bq_chung_tang, 2) AS chi_bq_chung_tang
+                ,ROUND(tyle_noitru, 2) AS tyle_noitru
+                ,ROUND(tyle_noitru_tang, 2) AS tyle_noitru_tang
+                ,ROUND(lan_kham_bq, 2) AS lan_kham_bq
+                ,ROUND(lan_kham_bq_tang, 2) AS lan_kham_bq_tang
+                ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
+                ,ROUND(ngay_dtri_bq_tang, 2) AS ngay_dtri_bq_tang
+                ,ROUND(bq_xn) AS bq_xn
+                ,ROUND(bq_xn_tang, 2) AS bq_xn_tang
+                ,ROUND(bq_cdha) AS bq_cdha
+                ,ROUND(bq_cdha_tang, 2) AS bq_cdha_tang
+                ,ROUND(bq_thuoc) AS bq_thuoc
+                ,ROUND(bq_thuoc_tang, 2) AS bq_thuoc_tang
+                ,ROUND(bq_pt) AS bq_pt
+                ,ROUND(bq_pt_tang, 2) AS bq_pt_tang
+                ,ROUND(bq_tt) AS bq_tt
+                ,ROUND(bq_tt_tang, 2) AS bq_tt_tang
+                ,ROUND(bq_vtyt) AS bq_vtyt
+                ,ROUND(bq_vtyt_tang, 2) AS bq_vtyt_tang
+                ,ROUND(bq_giuong) AS bq_giuong
+                ,ROUND(bq_giuong_tang, 2) AS bq_giuong_tang
+                ,ROUND(chi_dinh_xn, 2) AS chi_dinh_xn
+                ,ROUND(chi_dinh_xn_tang, 2) AS chi_dinh_xn_tang
+                ,ROUND(chi_dinh_cdha, 2) AS chi_dinh_cdha
+                ,ROUND(chi_dinh_cdha_tang, 2) AS chi_dinh_cdha_tang
+                ,ma_vung
+                FROM thangb26chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')";
+            var b26TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
+            if (b26TQ.Count() == 0) { throw new Exception("B26 Toàn quốc không có dữ liệu phù hợp truy vấn"); }
+            var dataTinhB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault() ?? throw new Exception("B26 không có dữ liệu tỉnh phù hợp truy vấn");
+            var dataTQB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == "00").FirstOrDefault() ?? throw new Exception("B26 không có dữ liệu toàn quốc phù hợp truy vấn");
+            b26TQ = b26TQ.Where(p => p.Field<string>("ma_tinh") != "00").ToList(); /* Bỏ Toàn quốc ra khỏi danh sách */
+
+            var data = dbConnect.getDataTable($"SELECT thoigian, timeup FROM b26 WHERE id_bc='{idBaoCao}'");
+            string timeCreate = $"{data.Rows[0]["timeup"]}";
+            tmp = $"{data.Rows[0]["thoigian"]}";
+            var ngayTime = new DateTime(int.Parse(tmp.Substring(0, 4)), int.Parse(tmp.Substring(4, 2)), int.Parse(tmp.Substring(6)));
+
+            /* t5 = {Cột tyle_noitru, dòng MA_TINH=10} bảng B02_TOANQUOC */
+            bctuan.Add("{t5}", dataTinhB02["tyle_noitru"].ToString());
+            /* t6 = {Cột tyle_noitru, dòng MA_TINH=00} bảng B02_TOANQUOC */
+            bctuan.Add("{t6}", dataTQB02["tyle_noitru"].ToString());
+            /* t7 = {đoạn văn tùy thuộc t5> hay < t6. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
+            bctuan.Add("{t7}", "bằng");
+            so1 = (double)dataTinhB02["tyle_noitru"];
+            so2 = (double)dataTQB02["tyle_noitru"];
+            if (so1 > so2) { bctuan["{t7}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+            else { if (so1 < so2) { bctuan["{t7}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
+            /* t8={Sort cột G (TYLE_NOITRU) cao xuống thấp và lấy thứ tự}; */
+            var sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
+            int position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == maTinh) + 1;
+            bctuan.Add("X8", position.ToString());
+            /* t9 ={tính toán: total cột F (TONG_LUOT_NOI) chia cho Total cột D (TONG_LUOT) của các tỉnh có MA_VUNG=mã vùng của tỉnh báo cáo}; */
+            bctuan.Add("{t9}", "0");
+            so2 = b02TQ.Where(row => row.Field<string>("ma_vung") == maVung).Sum(row => row.Field<long>("tong_luot"));
+            if (so2 != 0)
+            {
+                so1 = b02TQ.Where(row => row.Field<string>("ma_vung") == maVung).Sum(row => row.Field<long>("tong_luot_noi"));
+                bctuan["{X9}"] = ((so1 / so2) * 100).ToString();
+            }
+            /* t10 ={đoạn văn tùy thuộc t5> hay < t9. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
+            bctuan.Add("{t10}", "bằng");
+            so1 = (double)dataTinhB02["tyle_noitru"];
+            so2 = double.Parse(bctuan["{t9}"]); bctuan["{t9}"] = bctuan["{t9}"].ToString();
+            if (so1 > so2) { bctuan["{t10}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+            else { if (so1 < so2) { bctuan["{t10}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
+            /* X11= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort cột G (TYLE_NOITRU ) cao –thấp và lấy thứ tự} */
+            sortedRows = b02TQ.Where(r => r.Field<string>("ma_vung") == maVung)
+                .OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
+            position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == maTinh) + 1;
+            bctuan.Add("{t11}", position.ToString());
+
+            /* t12 = Ngày điều trị bình quân t12={Cột H NGAY_DTRI_BQ , dòng MA_TINH=10}; */
+            bctuan.Add("{X12}", dataTinhB02["ngay_dtri_bq"].ToString());
+            /* t13 = Nbình quân toàn quốc t13={cột H NGAY_DTRI_BQ, dòng MA_TINH=00}; */
+            bctuan.Add("{X13}", dataTQB02["ngay_dtri_bq"].ToString());
+            /* t14 = Số chênh lệch t14={đoạn văn tùy thuộc t12> hay < t13. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
+            bctuan.Add("{t14}", "bằng");
+            so1 = (double)dataTinhB02["ngay_dtri_bq"];
+            so2 = (double)dataTQB02["ngay_dtri_bq"];
+            if (so1 > so2) { bctuan["{t14}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+            else { if (so1 < so2) { bctuan["{t14}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
+            /* t15 = xếp thứ so toàn quốc X15={Sort cột H (NGAY_DTRI_BQ) cao xuống thấp và lấy thứ tự}; */
+            sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("ngay_dtri_bq")).ToList();
+            position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == maTinh) + 1;
+            bctuan.Add("{t15}", position.ToString());
+            /* t16 = Bình quân vùng X16 ={tính toán: A-Tổng ngày điều trị nội trú các tỉnh cùng mã vùng / B- Tổng lượt kcb nội trú của cá tỉnh cùng mã vùng. A=Total(cột H (NGAY_DTRI_BQ) * cột F (TONG_LUOT_NOI)) của tất cả các tỉnh cùng MA_VUNG với tỉnh báo cáo. B= Total cột F (TONG_LUOT_NOI) của các tỉnh có MA_VUNG cùng mã vùng của tỉnh báo cáo}; */
+            bctuan.Add("{t16}", "0");
+            so2 = b02TQ.Where(r => r.Field<string>("ma_vung") == maVung).Sum(r => r.Field<long>("tong_luot_noi"));
+            if (so2 != 0)
+            {
+                so1 = b02TQ.Where(r => r.Field<string>("ma_vung") == maVung).Sum(r => (r.Field<double>("ngay_dtri_bq") * r.Field<long>("tong_luot_noi")));
+                bctuan["{t16}"] = (so1 / so2).ToString();
+            }
+            /* t17 = Số chênh lệch t17 ={đoạn văn tùy thuộc t12> hay < t16. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
+            bctuan.Add("{t17}", "bằng");
+            so1 = (double)dataTinhB02["ngay_dtri_bq"];
+            so2 = double.Parse(bctuan["{t16}"]); bctuan["{t16}"] = bctuan["{t16}"].ToString();
+            if (so1 > so2) { bctuan["{t17}"] = $"cao hơn {(so1 - so2).FormatCultureVN()}"; }
+            else { if (so1 < so2) { bctuan["{t17}"] = $"thấp hơn {(so2 - so1).FormatCultureVN()}"; } }
+            /* t18 = đứng thứ so với vùng t18 = {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột H (NGAY_DTRI_BQ) cao –thấp và lấy thứ tự} */
+            sortedRows = b02TQ.Where(r => r.Field<string>("ma_vung") == maVung)
+                .OrderByDescending(row => row.Field<double>("ngay_dtri_bq")).ToList();
+            position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == maTinh) + 1;
+            bctuan.Add("{t18}", position.ToString());
+
+            /* t19 = Chi bình quân chung t19={Cột I (CHI_BQ_CHUNG), dòng MA_TINH=10}; */
+            tmpD = buildBCThangB02(19, "chi_bq_chung", "chi_bq_chung", "tong_luot", "tong_chi", maVung, maTinh, dataTinhB02, dataTQB02, b02TQ);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t26 = Chi bình quân ngoại trú t26={Cột J (CHI_BQ_NGOAI), dòng MA_TINH=10}; */
+            tmpD = buildBCThangB02(26, "chi_bq_ngoai", "chi_bq_chung", "tong_luot_ngoai", "tong_chi_ngoai", maVung, maTinh, dataTinhB02, dataTQB02, b02TQ);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t33 = Chi bình quân nội trú t33={Cột K (CHI_BQ_NOI), dòng MA_TINH=10}; */
+            tmpD = buildBCThangB02(33, "chi_bq_noi", "chi_bq_chung", "tong_luot_noi", "tong_chi_noi", maVung, maTinh, dataTinhB02, dataTQB02, b02TQ);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+
+            /* ----- Dữ liệu t40 trở lên lọc dữ liệu tù B26 ------- */
+            /* t40 = Bình quân xét nghiệm t40= {cột P (bq_xn) dòng có mã tỉnh = 10}; B26 */
+            tmpD = buildBCThangB26(40, "bq_xn", "bq_xn_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t43 Bình quân CĐHA t43= {cột R(bq_cdha) dòng có mã tỉnh =10}; */
+            tmpD = buildBCThangB26(43, "bq_cdha", "bq_cdha_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t46 Bình quân thuốc t46= {cột T(bq_thuoc) dòng có mã tỉnh =10}; */
+            tmpD = buildBCThangB26(46, "bq_thuoc", "bq_thuoc_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t49 Bình quân chi phẫu thuật t49= {cột V(bq_pt) dòng có mã tỉnh =10}; */
+            tmpD = buildBCThangB26(49, "bq_pt", "bq_pt_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t52 Bình quân chi thủ thuật t52= {cột X(bq_tt) dòng có mã tỉnh =10}; */
+            tmpD = buildBCThangB26(52, "bq_tt", "bq_tt_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t55 Bình quân chi vật tư y tế t55= {cột Z(bq_vtyt) dòng có mã tỉnh =10}; */
+            tmpD = buildBCThangB26(55, "bq_vtyt", "bq_vtyt_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t58 Bình quân chi tiền giường t58= {cột AB(bq_giuong) dòng có mã tỉnh =10}; */
+            tmpD = buildBCThangB26(58, "bq_giuong", "bq_giuong_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+
+            /* t61 Chỉ định xét nghiệm t61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
+            tmpD = buildBCThangB26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+            /* t64 =  Chỉ định CĐHA t64={cột AF, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
+            tmpD = buildBCThangB26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26);
+            foreach (var d in tmpD) { bctuan.Add(d.Key, d.Value); }
+
+            return bctuan;
+        }
+
+        private Dictionary<string, string> buildBCThangB26(int iKey, string field1, string field2, DataRow row)
+        {
+            var d = new Dictionary<string, string>();
+            string key1 = "{t" + iKey.ToString() + "}", key2 = "{t" + (iKey + 1).ToString() + "}", key3 = "{t" + (iKey + 2).ToString() + "}";
+            /* t46 Bình quân cột [x] dòng có mã tỉnh = 10}; */
+            var x = (double)row[field1];
+            d.Add(key1, row[field1].ToString());
+            /* t47 số tương đối t47={nếu cột [x+1] dòng có mã tỉnh=10 là số dương, “tăng “ & cột [x+1] & “%”, không thì “giảm “ & cột [x+1] %}; */
+            d.Add(key2, "bằng");
+            var x1 = (double)row[field2]; /* s */
+            if (x1 > 0) { d[key2] = $"tăng {x1.FormatCultureVN()}%"; }
+            else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).FormatCultureVN()}%"; } }
+            /* t48 số tuyệt đối t48={nếu cột [x+1] là dương, “tăng “ & [cột [x] - (cột [x] / (cột [x+1] +100) *100 )] & “ đồng”, không thì “giảm “ & [cột [x]- (cột [x] / (cột [x+1]+100) *100 )] & “ đồng”} */
+            d.Add(key3, "bằng");
+            if (x1 > 0) { d[key3] = "tăng " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " đồng"; }
+            else { if (x1 < 0) { d[key3] = "giảm " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " đồng"; } }
+            return d;
+        }
+
+        private Dictionary<string, string> buildBCThangB02(int iKey, string fieldChiBQ, string fieldChiBQChung, string fieldTongLuotVung, string fieldTongChiVung, string mavung, string matinh, DataRow rowTinh, DataRow rowTQ, List<DataRow> data)
+        {
+            var d = new Dictionary<string, string>();
+            var keys = new List<string>();
+            for (int i = iKey; i <= (iKey + 6); i++) { keys.Add("{t" + i.ToString() + "}"); }
+            /* t33 = Chi bình quân nội trú t33={Cột K (CHI_BQ_NOI), dòng MA_TINH=10}; */
+            d.Add(keys[0], rowTinh[fieldChiBQ].ToString()); /* "chi_bq_noi" */
+            /* t34 = bình quân toàn quốc t34={cột K (CHI_BQ_NOI), dòng MA_TINH=00}; */
+            d.Add(keys[1], rowTQ[fieldChiBQ].ToString());
+            /* t35 = Số chênh lệch t35={đoạn văn tùy thuộc X33> hay < X34. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
+            d.Add(keys[2], "bằng");
+            var so1 = double.Parse(d[keys[0]]);
+            var so2 = double.Parse(d[keys[1]]);
+            if (so1 > so2) { d[keys[2]] = $"cao hơn {Math.Round(so1 - so2, 0).FormatCultureVN()}"; }
+            else { if (so1 < so2) { d[keys[2]] = $"thấp hơn {Math.Round(so2 - so1, 0).FormatCultureVN()}"; } }
+            /* t36= xếp thứ so toàn quốc t36={Sort cột K CHI_BQ_NOI cao xuống thấp và lấy thứ tự}; */
+            d.Add(keys[3], getPosition("", matinh, fieldChiBQ, data));
+            /*** Vùng
+             = SUM(tong_chi)/SUM(tong_luot)
+             */
+            /* t37 = Bình quân vùng X37={tính toán: A-Tổng chi nội trú các tỉnh cùng mã vùng / B- Tổng lượt kcb nội trú của các tỉnh cùng mã vùng. A=Total  (cột K (CHI_BQ_NOI) * cột F (TONG_LUOT_NOI)) của tất cả các tỉnh cùng MA_VUNG với tỉnh báo cáo. B= Total cột F (TONG_LUOT_NOI) của các tỉnh có MA_VUNG cùng mã vùng của tỉnh báo cáo}; */
+            d.Add(keys[4], "0");
+            so2 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => r.Field<long>(fieldTongLuotVung));
+            if (so2 != 0)
+            {
+                so1 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => r.Field<double>(fieldTongChiVung));
+                d[keys[4]] = (so1 / so2).ToString();
+            }
+            /* t38 = số chênh lệch t38 ={đoạn văn tùy thuộc t33 > hay < t37. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
+            d.Add(keys[5], "bằng");
+            so1 = double.Parse(d[keys[0]]);
+            so2 = double.Parse(d[keys[4]]);
+            if (so1 > so2) { d[keys[5]] = $"cao hơn {Math.Round(so1 - so2, 0).FormatCultureVN()}"; }
+            else { if (so1 < so2) { d[keys[5]] = $"thấp hơn {Math.Round(so2 - so1, 0).FormatCultureVN()}"; } }
+            /* t39 đứng thứ so với vùng t39= {lọc các dòng tỉnh có mã vùng trùng với mã vùng của tỉnh, sort Cột K (CHI_BQ_NOI) cao –thấp và lấy thứ tự} */
+            d.Add(keys[6], getPosition(mavung, matinh, fieldChiBQ, data));
+            return d;
         }
 
         private string createFileBcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
