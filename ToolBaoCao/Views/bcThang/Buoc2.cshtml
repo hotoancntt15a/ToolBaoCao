@@ -12,6 +12,15 @@
     return;
 }
 @{
+    if (ViewBag.mode != null)
+    {
+        if (ViewBag.mode == "update")
+        {
+            var msg = "Đã cập nhật Dự toán tạm giao CSYT";
+            if (ViewBag.Message != null) { msg = ViewBag.Message; }
+            <div class="alert alert-info">@msg</div>
+        }
+    }
     var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id as string;
 }

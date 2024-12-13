@@ -922,24 +922,19 @@ namespace ToolBaoCao
         {
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
-            if (tables.Contains("bcthang_dtgiao") == false)
+            if (tables.Contains("thangdtgiao") == false)
             {
                 /** Yêu cầu nhập excel từ người dùng */
                 /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
-                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthang_dtgiao (id INTEGER primary key AUTOINCREMENT
-                ,thang text not null /* Tháng báo cáo tháng. */
-                ,nam text not null /* Tháng báo cáo tháng. */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangdtgiao (id text primary key
                 ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,nam text not null /* Tháng báo cáo tháng. */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB */
                 ,ten_cskcb text not null default '' /* Tên cskcb*/
                 ,dutoangiao real not null default 0 /* Dự toán tạm giao */
-                ,tien_bhtt real not null default 0 /* Tiền T- BHTT cột R-B02-10 */
-                ,tl_sudungdt real not null default 0 /* Tỷ lệ sử dụng dự toán = (tien_bhtt/dutoangiao)*100  */
                 ,userid text not null default ''
-                ,timeup integer not null default 0
-                ,id_bc text not null default '');
-                CREATE INDEX IF NOT EXISTS index_bcthang_dtgiao_id_bc ON bcthang_dtgiao (id_bc);
-                CREATE INDEX IF NOT EXISTS index_bcthang_dtgiao_namthang ON bcthang_dtgiao (nam, thang);");
+                ,timeup integer not null default 0);
+                CREATE INDEX IF NOT EXISTS index_thangdtgiao_idtinh_nam_ma_cskcb ON thangdtgiao (idtinh, nam, ma_cskcb);");
             }
 
             /* B01. Sử dụng dự toán chi KCB tại các tỉnh, TP */

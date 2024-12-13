@@ -56,11 +56,66 @@ namespace ToolBaoCao.Controllers
                 /* Xoá hết các File có trong thư mục */
                 var d = new System.IO.DirectoryInfo(folderTemp);
                 foreach (var item in d.GetFiles()) { try { item.Delete(); } catch { } }
+                if (Request.Files.Count == 0) { throw new Exception("Không có tập tin nào được đẩy lên"); }
+                if (Request.Files.Count == 1)
+                {
+                    if (Path.GetExtension(Request.Files[0].FileName).ToLower() == ".xlsx")
+                    {
+                        /* Cập nhật dự toán được giao trong năm của csyt */
+                        ViewBag.mode = "update";
+                        string file = Path.Combine(folderTemp, $"{id}_pl01.xlsx");
+                        Request.Files[0].SaveAs(file);
+                        var dtgiaocsyt = zModules.NPOIExcel.XLSX.getDataFromExcel(new FileInfo(file));
+
+                        /* Tìm năm */
+                        string nam = ""; int indexRow = -1;
+                        for (int i = 0; i < (dtgiaocsyt.Rows.Count > 10 ? 10 : dtgiaocsyt.Rows.Count); i++)
+                        {
+                            indexRow++;
+                            if (nam != "") { break; }
+                            if (Regex.IsMatch(dtgiaocsyt.Rows[0][0].ToString().Trim(), @"^[']?\d+$")) { break; }
+                            for (int j = 0; j < dtgiaocsyt.Columns.Count; j++)
+                            {
+                                Match match = Regex.Match(dtgiaocsyt.Rows[i][j].ToString(), @"\b(\d{4})\b");
+                                if (match.Success) { nam = match.Value; break; }
+                            }
+                        }
+                        var items = new DataTable("dtgiaocsyt");
+                        items.Columns.Add("id");
+                        items.Columns.Add("idtinh");
+                        items.Columns.Add("nam");
+                        items.Columns.Add("ma_cskcb");
+                        items.Columns.Add("ten_cskcb");
+                        items.Columns.Add("dutoangiao");
+                        items.Columns.Add("userid");
+                        items.Columns.Add("timeup");
+                        var timeup = DateTime.Now.toTimestamp();
+                        var listMaCSKCB = new List<string>();
+                        var sotien = "";
+                        indexRow++;
+                        for (int i = indexRow; i < dtgiaocsyt.Rows.Count; i++)
+                        {
+                            tmp = dtgiaocsyt.Rows[0][0].ToString().Trim().Replace("'", "");
+                            if (!Regex.IsMatch(tmp, @"^\d+$")) { break; }
+                            sotien = dtgiaocsyt.Rows[i][2].ToString().Trim().Replace("'", "");
+                            if (!Regex.IsMatch(sotien, @"^\d+(.\d+)?$")) { break; }
+                            items.Rows.Add($"{matinh}.{nam}.{tmp}", matinh, nam, tmp, dtgiaocsyt.Rows[i][1].ToString().Trim(), sotien, idUser, timeup);
+                            listMaCSKCB.Add(tmp);
+                        }
+                        if (items.Rows.Count == 0) { throw new Exception("Không có dữ liệu Dự Toán tạm giao CSYT"); }
+                        var db = new dbSQLite(Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db"));
+                        db.CreateImportBcThang();
+                        db.Insert("thangdtgiao", items, "replace");
+                        ViewBag.Message = $"Đã cập nhật Dự toán tạm giao CSYT: {string.Join(",", listMaCSKCB)}";
+                    }
+                    return View();
+                }
                 /* Khai báo dữ liệu tạm */
                 var dbTemp = new dbSQLite(Path.Combine(folderTemp, "import.db"));
                 dbTemp.CreateImportBcThang();
                 dbTemp.CreatePhucLucBcThang();
                 dbTemp.CreateBcThang();
+                /* Trường hợp cập nhật dữ liệu dự toán giao tại CSYT */
                 /* Đọc và kiểm tra các tập tin */
                 var list = new List<string>();
                 var bieus = new List<string>();
