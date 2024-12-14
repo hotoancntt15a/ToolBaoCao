@@ -740,6 +740,20 @@ namespace ToolBaoCao
                 ,t64 real not null default 0
                 ,t65 text not null default ''
                 ,t66 text not null default '');");
+            if (tables.Contains("thangdtgiao") == false)
+            {
+                /** Yêu cầu nhập excel từ người dùng */
+                /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangdtgiao (id text primary key
+                ,idtinh text not null /* Mã tỉnh của người dùng, để chia dữ liệu riêng từng tỉnh cho các nhóm người dùng từng tỉnh. */
+                ,nam text not null /* Tháng báo cáo tháng. */
+                ,ma_cskcb text not null /* Mã cơ sơ KCB */
+                ,ten_cskcb text not null default '' /* Tên cskcb*/
+                ,dtgiao real not null default 0 /* Dự toán tạm giao */
+                ,userid text not null default ''
+                ,timeup integer not null default 0);
+                CREATE INDEX IF NOT EXISTS index_thangdtgiao_idtinh_nam_ma_cskcb ON thangdtgiao (idtinh, nam, ma_cskcb);");
+            }
             var tsql = string.Join(Environment.NewLine, tsqlCreate);
             if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
         }
@@ -931,7 +945,7 @@ namespace ToolBaoCao
                 ,nam text not null /* Tháng báo cáo tháng. */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB */
                 ,ten_cskcb text not null default '' /* Tên cskcb*/
-                ,dutoangiao real not null default 0 /* Dự toán tạm giao */
+                ,dtgiao real not null default 0 /* Dự toán tạm giao */
                 ,userid text not null default ''
                 ,timeup integer not null default 0);
                 CREATE INDEX IF NOT EXISTS index_thangdtgiao_idtinh_nam_ma_cskcb ON thangdtgiao (idtinh, nam, ma_cskcb);");

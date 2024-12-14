@@ -99,7 +99,7 @@ namespace ToolBaoCao.Controllers
                         }
                         if (items.Rows.Count == 0) { throw new Exception("Không có dữ liệu Dự Toán tạm giao CSYT"); }
                         var db = new dbSQLite(Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db"));
-                        db.CreateImportBcThang();
+                        db.CreateBcThang();
                         db.Insert("thangdtgiao", items, "replace");
                         ViewBag.Message = $"Đã cập nhật Dự toán tạm giao CSYT: {string.Join(",", listMaCSKCB)}";
                     }
@@ -275,16 +275,16 @@ namespace ToolBaoCao.Controllers
             var nam = dbBCThang.getValue($"SELECT IFNULL(nam1, 0) AS nam FROM bcthangdocx WHERE id='{idBC}' LIMIT 1");
             var tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
             /* Cập nhật dữ liệu */
-            if (dbBCThang.getPathDataFile() == tmp)
+            var dbDTGiao = dbBCThang;
+            if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
+            data = dbDTGiao.getDataTable($"SELECT ma_cskcb, dtgiao FROM thangdtgiao WHERE nam={nam} AND idtinh='{matinh}' AND ma_cskcb IN ('{string.Join("','", listCSKCB)}')");
+            var tsql = new List<string>();
+            foreach (DataRow r in data.Rows)
             {
-
+                tmp = $"{r[1]}"; if (tmp == "0") { continue; }
+                tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}', tl_sudungdt = ROUND(tien_bhtt/'{r[1]}', 2) WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}';");
             }
-            else
-            {
-                var db = new dbSQLite(tmp);
-                db.CreateBcThang();
-            }
-            dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = ROUND(tien_bhtt/dtgiao, 2) WHERE id_bc='{idBC}' AND dtgiao > 0;");
+            if (tsql.Count > 0) { dbBCThang.Execute(string.Join(Environment.NewLine, tsql)); }
             var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
