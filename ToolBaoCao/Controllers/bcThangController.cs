@@ -260,6 +260,7 @@ namespace ToolBaoCao.Controllers
         private string createFilePhuLucBcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null)
         {
             if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
+            var dbImport = BuildDatabase.getDataImportBCThang(matinh);
             var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
             var idBC = idBaoCao.sqliteGetValueField();
             var dmVung = new Dictionary<string, string>();
@@ -272,7 +273,8 @@ namespace ToolBaoCao.Controllers
             data = dbBCThang.getDataTable($"SELECT ma_cskcb FROM thangpl01 WHERE id_bc='{idBC}'");
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
             /* Cập nhật dự toán giao CSKCB */
-            var nam = dbBCThang.getValue($"SELECT IFNULL(nam1, 0) AS nam FROM bcthangdocx WHERE id='{idBC}' LIMIT 1");
+            var nam = (long)dbBCThang.getValue($"SELECT IFNULL(nam1, 0) AS nam FROM bcthangdocx WHERE id='{idBC}' LIMIT 1");
+            var thang = (long)dbBCThang.getValue($"SELECT IFNULL(thang, 0) AS thang FROM bcthangdocx WHERE id='{idBC}' LIMIT 1");
             var tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
             /* Cập nhật dữ liệu */
             var dbDTGiao = dbBCThang;
@@ -289,11 +291,12 @@ namespace ToolBaoCao.Controllers
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
+            var PL02c = createPL02c(dbImport, idBaoCao, matinh, nam, thang);
             var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a", PL02a);
             var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
-            var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL03a, PL03b, PL04a, PL04b);
+            var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL04a, PL04b);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
@@ -327,6 +330,11 @@ namespace ToolBaoCao.Controllers
                     case "PL02b":
                         listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
                         listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+                        break;
+
+                    case "PL02c":
+                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
+                        listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
                         break;
 
                     case "PL03a":
@@ -704,9 +712,9 @@ namespace ToolBaoCao.Controllers
                 foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 
                 /* Báo cáo tháng chuyển */
-                data = dbTemp.getDataTable($"SELECT * bcthangdocx FROM WHERE id='{idBaoCao}'");
+                data = dbTemp.getDataTable($"SELECT * FROM bcthangdocx WHERE id='{idBaoCao}'");
                 dbBcThang.Insert("bcthangdocx", data, "repalce");
-                data = dbTemp.getDataTable($"SELECT * bcthangpldocx FROM WHERE id='{idBaoCao}'");
+                data = dbTemp.getDataTable($"SELECT * FROM bcthangpldocx WHERE id='{idBaoCao}'");
                 dbBcThang.Insert("bcthangpldocx", data, "repalce");
                 dbBcThang.Close();
 
@@ -742,6 +750,53 @@ namespace ToolBaoCao.Controllers
                 DeleteBcThang(idtinh);
             }
             return View();
+        }
+
+        private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long thangBC)
+        {
+            /* So sánh lượt KCB và chi KCB năm nay với năm trước */
+            /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
+            var pl = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang=1 AND den_thang={thangBC});");
+            var dicCSKCB = new Dictionary<string, int>();
+            for (int i = 0; i < pl.Rows.Count; i++)
+            {
+                dicCSKCB.Add($"{pl.Rows[i]["ma_cskcb"]}", i);
+                pl.Rows[i]["chi2"] = 0;
+                pl.Rows[i]["chi3"] = 0;
+            }
+            var dt = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang=1 AND den_thang={thangBC});");
+            string tmp = ""; int index = 0;
+            long luot1 = 0, luot2 = 0;
+            double chi1 = 0, chi2 = 0;
+            foreach (DataRow dr in dt.Rows)
+            {
+                tmp = $"{dr["ma_cskcb"]}";
+                if (dicCSKCB.Keys.Contains(tmp))
+                {
+                    /* Tính toán */
+                    index = dicCSKCB[tmp];
+                    dicCSKCB.Remove(tmp);
+                    /* Lượt */
+                    luot1 = (long)pl.Rows[index]["luot1"];
+                    luot2 = (long)dr["tong_luot"];
+                    pl.Rows[index]["luot2"] = luot2;
+                    pl.Rows[index]["luot3"] = luot1 - luot2;
+                    /* Chi */
+                    chi1 = (double)pl.Rows[index]["chi1"];
+                    chi2 = (double)dr["tong_chi"];
+                    pl.Rows[index]["chi2"] = chi2;
+                    pl.Rows[index]["chi3"] = chi1 - chi2;
+                }
+                else
+                {
+                    /* Thêm vào phục lục */
+                    luot2 = (long)dr["tong_luot"];
+                    chi2 = (double)dr["tong_chi"];
+                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, (0 - chi2));
+                }
+            }
+            pl.TableName = "PL02c";
+            return pl;
         }
 
         private DataTable createPL02(dbSQLite db, string idBaoCao, string idTinh, string nameSheet, Dictionary<string, string> dmVung)
@@ -1430,17 +1485,13 @@ namespace ToolBaoCao.Controllers
                 ,ROUND(t_bhtt) AS t_bhtt
                 ,ROUND(t_bhtt_noi) AS t_bhtt_noi
                 ,ROUND(t_bhtt_ngoai) AS t_bhtt_ngoai
-                FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%') AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{maTinh}' AND tu_thang=1 AND nam='{namBaoCao}' LIMIT 1);";
+                FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%')
+                    AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND tu_thang=1 AND nam={namBaoCao} LIMIT 1);";
             var b02TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
-            if (b02TQ.Count() == 0) { throw new Exception("B02 Toàn Quốc không có dữ liệu phù hợp truy vấn"); }
+            if (b02TQ.Count() == 0) { throw new Exception("B02 Toàn Quốc không có dữ liệu phù hợp truy vấn; " + tsql); }
             var dataTinhB02 = b02TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault() ?? throw new Exception("B02 không có dữ liệu tỉnh phù hợp truy vấn");
             var dataTQB02 = b02TQ.Where(r => r.Field<string>("ma_tinh") == "00").FirstOrDefault() ?? throw new Exception("B02 không có dữ liệu toàn quốc phù hợp truy vấn");
             b02TQ = b02TQ.Where(p => p.Field<string>("ma_tinh") != "00").ToList(); /* Bỏ Toàn quốc ra khỏi danh sách */
-
-            var data = dbConnect.getDataTable($"SELECT thoigian, timeup FROM b26 WHERE id_bc='{idBaoCao}'");
-            string timeCreate = $"{data.Rows[0]["timeup"]}";
-            tmp = $"{data.Rows[0]["thoigian"]}";
-            var ngayTime = new DateTime(int.Parse(tmp.Substring(0, 4)), int.Parse(tmp.Substring(4, 2)), int.Parse(tmp.Substring(6)));
 
             /* t5 = {Cột tyle_noitru, dòng MA_TINH=10} bảng B02_TOANQUOC */
             bcThangPL.Add("{t5}", dataTinhB02["tyle_noitru"].ToString());
@@ -1455,14 +1506,14 @@ namespace ToolBaoCao.Controllers
             /* t8={Sort cột G (TYLE_NOITRU) cao xuống thấp và lấy thứ tự}; */
             var sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
             int position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == maTinh) + 1;
-            bcThangPL.Add("X8", position.ToString());
+            bcThangPL.Add("t8", position.ToString());
             /* t9 ={tính toán: total cột F (TONG_LUOT_NOI) chia cho Total cột D (TONG_LUOT) của các tỉnh có MA_VUNG=mã vùng của tỉnh báo cáo}; */
             bcThangPL.Add("{t9}", "0");
             so2 = b02TQ.Where(row => row.Field<string>("ma_vung") == maVung).Sum(row => row.Field<long>("tong_luot"));
             if (so2 != 0)
             {
                 so1 = b02TQ.Where(row => row.Field<string>("ma_vung") == maVung).Sum(row => row.Field<long>("tong_luot_noi"));
-                bcThangPL["{X9}"] = ((so1 / so2) * 100).ToString();
+                bcThangPL["{t9}"] = ((so1 / so2) * 100).ToString();
             }
             /* t10 ={đoạn văn tùy thuộc t5> hay < t9. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             bcThangPL.Add("{t10}", "bằng");
@@ -1477,9 +1528,9 @@ namespace ToolBaoCao.Controllers
             bcThangPL.Add("{t11}", position.ToString());
 
             /* t12 = Ngày điều trị bình quân t12={Cột H NGAY_DTRI_BQ , dòng MA_TINH=10}; */
-            bcThangPL.Add("{X12}", dataTinhB02["ngay_dtri_bq"].ToString());
+            bcThangPL.Add("{t12}", dataTinhB02["ngay_dtri_bq"].ToString());
             /* t13 = Nbình quân toàn quốc t13={cột H NGAY_DTRI_BQ, dòng MA_TINH=00}; */
-            bcThangPL.Add("{X13}", dataTQB02["ngay_dtri_bq"].ToString());
+            bcThangPL.Add("{t13}", dataTQB02["ngay_dtri_bq"].ToString());
             /* t14 = Số chênh lệch t14={đoạn văn tùy thuộc t12> hay < t13. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             bcThangPL.Add("{t14}", "bằng");
             so1 = (double)dataTinhB02["ngay_dtri_bq"];
@@ -1556,43 +1607,45 @@ namespace ToolBaoCao.Controllers
                 ,ROUND(chi_dinh_cdha, 2) AS chi_dinh_cdha
                 ,ROUND(chi_dinh_cdha_tang, 2) AS chi_dinh_cdha_tang
                 ,ma_vung
-                FROM thangb26chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%') AND id2 IN (SELECT id FROM thangb26 WHERE id_bc='{idBaoCao}' AND ma_tinh='{maTinh}' AND tu_thang=1 AND nam='{namBaoCao}' LIMIT 1)";
+                FROM thangb26chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%') AND id2 IN (SELECT id FROM thangb26 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND thoigian={namBaoCao} LIMIT 1)";
             var b26TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
-            if (b26TQ.Count() == 0) { throw new Exception("B26 Toàn quốc không có dữ liệu phù hợp truy vấn"); }
-            var dataTinhB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault();
-            if (dataTinhB26 == null) { return bcThangPL; }
-            var dataTQB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == "00").FirstOrDefault();
-            if (dataTQB26 == null) { return bcThangPL; }
-            b26TQ = b26TQ.Where(p => p.Field<string>("ma_tinh") != "00").ToList(); /* Bỏ Toàn quốc ra khỏi danh sách */
+            if (b26TQ.Count() > 0)
+            {
+                var dataTinhB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault();
+                if (dataTinhB26 == null) { return bcThangPL; }
+                var dataTQB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == "00").FirstOrDefault();
+                if (dataTQB26 == null) { return bcThangPL; }
+                b26TQ = b26TQ.Where(p => p.Field<string>("ma_tinh") != "00").ToList(); /* Bỏ Toàn quốc ra khỏi danh sách */
 
-            /* t40 = Bình quân xét nghiệm t40= {cột P (bq_xn) dòng có mã tỉnh = 10}; B26 */
-            tmpD = buildBCThangB26(40, "bq_xn", "bq_xn_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t43 Bình quân CĐHA t43= {cột R(bq_cdha) dòng có mã tỉnh =10}; */
-            tmpD = buildBCThangB26(43, "bq_cdha", "bq_cdha_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t46 Bình quân thuốc t46= {cột T(bq_thuoc) dòng có mã tỉnh =10}; */
-            tmpD = buildBCThangB26(46, "bq_thuoc", "bq_thuoc_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t49 Bình quân chi phẫu thuật t49= {cột V(bq_pt) dòng có mã tỉnh =10}; */
-            tmpD = buildBCThangB26(49, "bq_pt", "bq_pt_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t52 Bình quân chi thủ thuật t52= {cột X(bq_tt) dòng có mã tỉnh =10}; */
-            tmpD = buildBCThangB26(52, "bq_tt", "bq_tt_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t55 Bình quân chi vật tư y tế t55= {cột Z(bq_vtyt) dòng có mã tỉnh =10}; */
-            tmpD = buildBCThangB26(55, "bq_vtyt", "bq_vtyt_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t58 Bình quân chi tiền giường t58= {cột AB(bq_giuong) dòng có mã tỉnh =10}; */
-            tmpD = buildBCThangB26(58, "bq_giuong", "bq_giuong_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t40 = Bình quân xét nghiệm t40= {cột P (bq_xn) dòng có mã tỉnh = 10}; B26 */
+                tmpD = buildBCThangB26(40, "bq_xn", "bq_xn_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t43 Bình quân CĐHA t43= {cột R(bq_cdha) dòng có mã tỉnh =10}; */
+                tmpD = buildBCThangB26(43, "bq_cdha", "bq_cdha_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t46 Bình quân thuốc t46= {cột T(bq_thuoc) dòng có mã tỉnh =10}; */
+                tmpD = buildBCThangB26(46, "bq_thuoc", "bq_thuoc_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t49 Bình quân chi phẫu thuật t49= {cột V(bq_pt) dòng có mã tỉnh =10}; */
+                tmpD = buildBCThangB26(49, "bq_pt", "bq_pt_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t52 Bình quân chi thủ thuật t52= {cột X(bq_tt) dòng có mã tỉnh =10}; */
+                tmpD = buildBCThangB26(52, "bq_tt", "bq_tt_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t55 Bình quân chi vật tư y tế t55= {cột Z(bq_vtyt) dòng có mã tỉnh =10}; */
+                tmpD = buildBCThangB26(55, "bq_vtyt", "bq_vtyt_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t58 Bình quân chi tiền giường t58= {cột AB(bq_giuong) dòng có mã tỉnh =10}; */
+                tmpD = buildBCThangB26(58, "bq_giuong", "bq_giuong_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
 
-            /* t61 Chỉ định xét nghiệm t61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-            tmpD = buildBCThangB26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
-            /* t64 =  Chỉ định CĐHA t64={cột AF, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-            tmpD = buildBCThangB26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26);
-            foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t61 Chỉ định xét nghiệm t61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
+                tmpD = buildBCThangB26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+                /* t64 =  Chỉ định CĐHA t64={cột AF, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
+                tmpD = buildBCThangB26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26);
+                foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
+            }
             return bcThangPL;
         }
 
