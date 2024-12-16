@@ -1,13 +1,12 @@
 ﻿@{
     Layout = null;
-    string mode = Request.getValue("mode");
     if (ViewBag.Error != null)
     {
-        <div class="alert alert-warning">
-            @Html.Raw(ViewBag.Error)
-        </div>
+        <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
         return;
     }
+    string mode = Request.getValue("mode");
+    if (mode != "view") { return; }
     var dt = ViewBag.data as DataTable;
     if (dt.Rows.Count == 0)
     {
@@ -15,13 +14,19 @@
     }
     else
     {
-        <table class="table table-sm table-hover">
+        <table class="table table-hover table-bordered">
             <tbody>
                 @foreach (DataRow r in dt.Rows)
                 {
-
-                    <tr>
-                        <td>Cập nhật lúc @r["timeup"].ToString().toDateTime() <br />@r["noidung"]</td>
+                    <tr data-id="@r["id"]">
+                        <td>
+                            <div><b>Tạo lúc @r["timeup"].ToString().showDateTimeVN() tạo bởi @r["iduser"]; Ý nghĩa:</b> @r["ynghia"]</div>
+                            @if ($"{r["ghichu"]}" != "")
+                            {
+                                <div><b>Ghi chú:</b> @r["ghichu"]</div>
+                            }
+                            @r["noidung"]
+                        </td>
                     </tr>
                 }
             </tbody>

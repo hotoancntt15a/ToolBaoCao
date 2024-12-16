@@ -3,6 +3,8 @@
     if (Request.getValue("layout") == "null") { Layout = null; }
     if (ViewBag.data != null)
     {
+        var idFrmTsqlSave = "idstoretsql" + DateTime.Now.toTimestamp();
+        var divFrmTsqSave = "div" + idFrmTsqlSave;
         <div class="alert alert-info">@ViewBag.content</div>
         var data = ViewBag.data as DataTable;
         if (data.Rows.Count == 0)
@@ -10,6 +12,16 @@
             <div class="alert alert-danger">Không có dữ liệu truy vấn phù hợp</div>
             return;
         }
+        <div id="@divFrmTsqSave">
+            <form id="@idFrmTsqlSave" action="/XML/StoreTSQL?layout=null&mode=update" method="post">
+                <input type="hidden" name="noidung" value="@ViewBag.tsql" />
+                <table class="table table-sm table-hover">
+                    <tr> <td style="width: 70px;"> Ý nghĩa:</td> <td> <input type="text" name="ynghia" value="" style="width: 100%" /> </td> </tr>
+                    <tr> <td> Ghi chú:</td> <td> <input type="text" name="ghichu" value="" style="width: 100%" /></td></tr>
+                </table>
+            </form>
+            <button type="button" onclick="postform('@idFrmTsqlSave', '', '', function () { $('#' + '@divFrmTsqSave').remove(); });" class="btn btn-sm btn-primary"><i class="fa fa-save"></i> Lưu truy vấn</button>
+        </div>
         <table class="table table-hover table-bordered">
             <thead>
                 <tr>
@@ -100,10 +112,23 @@
         <div id="view_@idform" class="scroll-div"></div>
     </div>
     <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
+    @{
+        var idfrmvstoretsql = $"idv{DateTime.Now.toTimestamp()}";
+    }
     <div id="tabImport" class="tab-pane fade">
         <table class="table table-sm table-hover">
             <tbody>
-                <tr><td><button type="button" class="btn btn-primary btn-sm" onclick="showgeturl('/XML/StoreTSQL?mode=view&layout=null', 'dsstoretsql');"><i class="fa fa-play"></i> Tải lại</button></td></tr>
+                <tr>
+                    <td>
+                        <form id="@idfrmvstoretsql" method="post" action="/XML/StoreTSQL?mode=view&layout=null">
+                            <table class="table table-sm table-hover">
+                                <tr> <td style="width: 70px;"> Ý nghĩa:</td> <td> <input type="text" name="ynghia" value="" style="width: 100%" /> </td> </tr>
+                                <tr> <td> Ghi chú:</td> <td> <input type="text" name="ghichu" value="" style="width: 100%" /></td></tr>
+                            </table>
+                        </form>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idfrmvstoretsql', '', 'dsstoretsql');"><i class="fa fa-play"></i> Truy vấn</button> (<i>* thay cho tìm nhiều ký tự; % hoặc ? tìm kiếm 1 ký tự; sử dụng bảng mã Uncicode</i>)
+                    </td>
+                </tr>
                 <tr><td id="dsstoretsql">Không có danh sách nào được cập nhật</td></tr>
             </tbody>
         </table>

@@ -706,7 +706,7 @@ namespace ToolBaoCao
                 ,t30 real not null default 0
                 ,t31 text not null default ''
                 ,t32 integer not null default 0
-                ,t33 real not null default 0 
+                ,t33 real not null default 0
                 ,t34 real not null default 0
                 ,t35 text not null default ''
                 ,t36 integer not null default 0
@@ -800,10 +800,11 @@ namespace ToolBaoCao
                 ,tong_chi_ngoai real not null default 0
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl02a_id_bc ON thangpl02a (id_bc);");
-            } else
+            }
+            else
             {
                 var cols = dbConnect.getColumns("thangpl02a");
-                if(cols.Any(p=>p.ColumnName == "tong_luot") == false)
+                if (cols.Any(p => p.ColumnName == "tong_luot") == false)
                 {
                     tsqlCreate.Add($@"ALTER TABLE thangpl02a ADD COLUMN tong_luot INTEGER NOT NULL DEFAULT 0;
                     ALTER TABLE thangpl02a ADD COLUMN tong_luot_noi INTEGER NOT NULL DEFAULT 0;
@@ -836,7 +837,8 @@ namespace ToolBaoCao
                 ,tong_chi_ngoai real not null default 0
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl02b_id_bc ON thangpl02b (id_bc);");
-            } else
+            }
+            else
             {
                 var cols = dbConnect.getColumns("thangpl02b");
                 if (cols.Any(p => p.ColumnName == "tong_luot") == false)
@@ -1232,7 +1234,12 @@ namespace ToolBaoCao
         {
             string path = Path.Combine(AppHelper.pathAppData, "storetsql.db");
             var db = new dbSQLite(path);
-            db.Execute("CREATE TABLE IF NOT EXISTS storetsql (id INTEGER PRIMARY KEY AUTOINCREMENT, iduser TEXT NOT NULL, timeup INTEGER NOT NULL, actionname TEXT NOT NULL default '', noidung TEXT NOT NULL, ghichu TEXT NOT NULL default '')");
+            db.Execute("CREATE TABLE IF NOT EXISTS storetsql (id INTEGER PRIMARY KEY AUTOINCREMENT, iduser TEXT NOT NULL, timeup INTEGER NOT NULL, actionname TEXT NOT NULL default '', noidung TEXT NOT NULL, ynghia TEXT NOT NULL DEFAULT '', ghichu TEXT NOT NULL default '');");
+            /* Thêm trường ý nghĩa vào */
+            if (db.getColumns("storetsql").Any(p => p.ColumnName == "ynghia") == false)
+            {
+                db.Execute("ALTER TABLE storetsql ADD COLUMN ynghia TEXT NOT NULL DEFAULT '';");
+            }
             return db;
         }
     }

@@ -150,10 +150,10 @@ namespace ToolBaoCao.Controllers
                 if (System.IO.File.Exists(pathDB) == false) { throw new Exception($"Không tìm thấy XMLThread có ID '{id}'"); }
                 if (mode == "tsql")
                 {
-                    string dataName = Request.getValue("data");
                     string tsql = Request.getValue("tsql").Trim();
                     if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
                     if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
+                    ViewBag.tsql = tsql;
                     db = new dbSQLite(pathDB);
                     if (Regex.IsMatch(tsql, "^pragma ", RegexOptions.IgnoreCase) == false)
                     {
@@ -161,14 +161,13 @@ namespace ToolBaoCao.Controllers
                     }
                     var data = db.getDataTable(tsql);
                     data = data.RemoveColumns(lsFieldRemove, false);
-                    ViewBag.content = $"Data {dataName}; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
+                    ViewBag.content = $"Data xml{id}.db; Thao tác thành công ({timeStart.getTimeRun()}); TSQL: {tsql}";
                     ViewBag.data = data;
                     db.Close();
                     return View();
                 }
                 if (mode == "xlsx")
                 {
-                    string dataName = Request.getValue("data");
                     string tsql = Request.getValue("tsql").Trim();
                     if (tsql == "") { throw new Exception($"<div class=\"alert alert-warning\">TSQL bỏ trống</div>"); }
                     if (AppHelper.IsUpdateData(tsql)) { throw new Exception($"<div class=\"alert alert-warning\">Hệ thống chặn cập nhật dữ liệu: {tsql}</div>"); }
@@ -220,7 +219,12 @@ namespace ToolBaoCao.Controllers
                 if (mode == "view")
                 {
                     var db = BuildDatabase.getDataStoreTSQL();
-                    var dt = db.getDataTable("SELECT * FROM storetsql WHERE actionname='xml' ORDER BY timeup LIMIT 1000");
+                    var tsql = "SELECT * FROM storetsql WHERE actionname='xml'";
+                    var tmp = Request.getValue("ynghia").Trim();
+                    if (tmp != "") { tsql += " AND " + db.like("ynghia", tmp); }
+                    tmp = Request.getValue("ghichu").Trim();
+                    if (tmp != "") { tsql += " AND " + db.like("ghichu", tmp); }
+                    var dt = db.getDataTable(tsql + "ORDER BY timeup LIMIT 500;");
                     db.Dispose();
                     ViewBag.data = dt;
                     return View();
@@ -252,6 +256,37 @@ namespace ToolBaoCao.Controllers
                     db.Update("storetsql", item);
                     db.Close();
                     return Content("<div class=\"alert alert-info\">Thao tác thành công</div>");
+                }
+                if (mode == "update")
+                {
+                    var id = Request.getValue("id");
+                    if (id.isNumberUSInt() == false) { id = ""; }
+                    var item = new Dictionary<string, string>
+                    {
+                        { "iduser", iduser },
+                        { "timeup", DateTime.Now.toTimestamp().ToString() },
+                        { "actionname", "xml" },
+                        { "noidung", Request.getValue("noidung").Trim() },
+                        { "ynghia", Request.getValue("ynghia").Trim() },
+                        { "ghichu", Request.getValue("ghichu").Trim() }
+                    };
+                    if (item["noidung"] == "") { throw new Exception("Câu lệnh không tồn tại"); }
+                    var db = BuildDatabase.getDataStoreTSQL();
+                    db.Update("storetsql", item, id);
+                    db.Close();
+                    return Content($"<div class=\"alert alert-info\">Cập nhật thành công lúc {DateTime.Now:dd/MM/yyyy HH:mm:ss}</div>");
+                }
+                if (mode == "del")
+                {
+                    /* Trừ nhóm Admin ra, nhóm khác chỉ xoá Truy vấn do mình lưu lại */
+                    var id = Request.getValue("id");
+                    if (id.isNumberUSInt() == false) { throw new Exception($"Tham số truyền không đúng {id}"); }
+                    var db = BuildDatabase.getDataStoreTSQL();
+                    var tsql = $"DELETE FROM storetsql WHERE id={id}";
+                    if ($"{Session["nhom"]}" != "0") { tsql += $" AND iduser='{iduser.sqliteGetValueField()}'"; }
+                    db.Execute(tsql);
+                    db.Close();
+                    return Content($"<div class=\"alert alert-info\">Xoá thành công lúc {DateTime.Now:dd/MM/yyyy HH:mm:ss}</div>");
                 }
             }
             catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }

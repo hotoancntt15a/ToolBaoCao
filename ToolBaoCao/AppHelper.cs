@@ -52,7 +52,7 @@ namespace ToolBaoCao
         public static bool zipExtract(string zipFilePath, string extractFolderPath, string ext = "", int allFileExt = 0)
         {
             bool dbFileFound = false;
-            if(System.IO.File.Exists(zipFilePath) == false) { return dbFileFound; }
+            if (System.IO.File.Exists(zipFilePath) == false) { return dbFileFound; }
             using (ZipArchive archive = ZipFile.OpenRead(zipFilePath))
             {
                 if (ext == "") { archive.ExtractToDirectory(extractFolderPath); dbFileFound = true; }
@@ -324,6 +324,12 @@ namespace ToolBaoCao
         {
             if (Regex.IsMatch(timestamp, "^[0-9]+$")) { return (long.Parse(timestamp).toDateTime(7)); }
             return new DateTime(1970, 1, 1);
+        }
+
+        public static string showDateTimeVN(this string timestamp, int GMT = 7)
+        {
+            if (Regex.IsMatch(timestamp, "^[0-9]+$")) { return long.Parse(timestamp).toDateTime(7).ToString("dd/MM/yyyy HH:mm:ss"); }
+            return "01/01/1970";
         }
 
         public static string getTimeRun(this DateTime timeStart)
