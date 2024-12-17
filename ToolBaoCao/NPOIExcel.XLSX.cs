@@ -33,6 +33,7 @@ namespace zModules.NPOIExcel
                     cs.Alignment = HorizontalAlignment.Center;
                     cs.VerticalAlignment = VerticalAlignment.Center;
                 }
+                else { cs.Alignment = HorizontalAlignment.Left; }
                 IFont font = hw.CreateFont();
                 font.FontName = "Times New Roman";
                 font.IsBold = fontBold;
@@ -53,6 +54,7 @@ namespace zModules.NPOIExcel
                     cell.Alignment = HorizontalAlignment.Center;
                     cell.VerticalAlignment = VerticalAlignment.Center;
                 }
+                else { cell.Alignment = HorizontalAlignment.Left; }
                 IFont font = hw.CreateFont();
                 font.FontName = "Times New Roman";
                 font.IsBold = fontBold;

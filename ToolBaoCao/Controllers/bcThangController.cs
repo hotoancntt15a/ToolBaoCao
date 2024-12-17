@@ -339,8 +339,8 @@ namespace ToolBaoCao.Controllers
                         break;
 
                     case "PL03a":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6 };
-                        listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14 };
+                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+                        listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                         break;
 
                     case "PL03b":
@@ -380,32 +380,34 @@ namespace ToolBaoCao.Controllers
                 }
                 /* Đổ dữ liệu */
                 var csContext = workbook.CreateCellStyleThin(getCache: false);
-                var csContextBold = workbook.CreateCellStyleThin(true, getCache: false);
+                var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
+                int indexColumn = -1;
                 foreach (DataRow r in dt.Rows)
                 {
                     rowIndex++;
                     row = sheet.CreateRow(rowIndex);
-                    i = -1;
+                    indexColumn = -1;
                     if ($"{r[0]}{r[1]}" == "")
                     {
                         foreach (DataColumn col in dt.Columns)
                         {
-                            i++;
-                            var cell = row.CreateCell(i, CellType.String);
+                            indexColumn++;
+                            var cell = row.CreateCell(indexColumn, CellType.String);
                             cell.CellStyle = csContext;
                             cell.SetCellValue("");
+                            if (listColRight.Contains(indexColumn)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
                         }
                     }
                     else
                     {
                         foreach (DataColumn col in dt.Columns)
                         {
-                            i++;
-                            var cell = row.CreateCell(i, CellType.String);
-                            tmp = $"{r[i]}";
+                            indexColumn++;
+                            var cell = row.CreateCell(indexColumn, CellType.String);
+                            tmp = $"{r[indexColumn]}";
                             if (tmp.StartsWith("<b>"))
                             {
-                                cell.CellStyle = csContextBold;
+                                cell.CellStyle = csContextB;
                                 cell.SetCellValue(tmp.Substring(3));
                             }
                             else
@@ -413,7 +415,7 @@ namespace ToolBaoCao.Controllers
                                 cell.CellStyle = csContext;
                                 cell.SetCellValue(tmp);
                             }
-                            if (listColRight.Contains(i)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
+                            if (listColRight.Contains(indexColumn)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
                         }
                     }
                 }
@@ -883,11 +885,11 @@ namespace ToolBaoCao.Controllers
             else
             {
                 phuLuc.Rows.Add(itemVung.Key,
-                    itemVung.Value, (((double)vung.luotNoi / (double)vung.luot) * 100).ToString("0.##"), /* Tỷ lệ nội */
-                    itemVung.Value, ((vung.ngaydtr / (double)vung.luotNoi) * 100).ToString("0.##"), /* ngày điều trị*/
-                    itemVung.Value, ((vung.chi / (double)vung.luot) * 100).ToString("0.##"), /* chi bình quân */
-                    itemVung.Value, ((vung.chiNoi / (double)vung.luotNoi) * 100).ToString("0.##"), /* chi bình quân nội */
-                    itemVung.Value, ((vung.chiNgoai / (double)vung.luotNgoai) * 100).ToString("0.##")); /* chi bình quân ngoại */
+                    itemVung.Value, ((((double)vung.luotNoi / (double)vung.luot) * 100) / indexRow).ToString("0.##"), /* Tỷ lệ nội */
+                    itemVung.Value, (((vung.ngaydtr / (double)vung.luotNoi) * 100) / indexRow).ToString("0.##"), /* ngày điều trị*/
+                    itemVung.Value, (((vung.chi / (double)vung.luot) * 100) / indexRow).ToString("0.##"), /* chi bình quân */
+                    itemVung.Value, (((vung.chiNoi / (double)vung.luotNoi) * 100) / indexRow).ToString("0.##"), /* chi bình quân nội */
+                    itemVung.Value, (((vung.chiNgoai / (double)vung.luotNgoai) * 100) / indexRow).ToString("0.##")); /* chi bình quân ngoại */
             }
             DataRow rowVung = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Tỉnh */
