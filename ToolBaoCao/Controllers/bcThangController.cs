@@ -291,12 +291,13 @@ namespace ToolBaoCao.Controllers
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
-            var PL02c = createPL02c(dbImport, idBaoCao, matinh, nam, thang);
+            var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, 1, thang, "PL02c");
             var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a", PL02a);
             var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
+            var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, thang, thang, "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
-            var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL04a, PL04b);
+            var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
@@ -345,6 +346,11 @@ namespace ToolBaoCao.Controllers
                     case "PL03b":
                         listColRight = new List<int>() { 0, 2, 3, 4, 5, 6 };
                         listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14 };
+                        break;
+
+                    case "PL03c":
+                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
+                        listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
                         break;
 
                     case "PL04a":
@@ -752,11 +758,11 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long thangBC)
+        private DataTable createPL02c_03c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang, string sheetName)
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
             /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
-            var pl = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang=1 AND den_thang={thangBC});");
+            var pl = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
             var dicCSKCB = new Dictionary<string, int>();
             for (int i = 0; i < pl.Rows.Count; i++)
             {
@@ -764,7 +770,7 @@ namespace ToolBaoCao.Controllers
                 pl.Rows[i]["chi2"] = 0;
                 pl.Rows[i]["chi3"] = 0;
             }
-            var dt = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang=1 AND den_thang={thangBC});");
+            var dt = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
             string tmp = ""; int index = 0;
             long luot1 = 0, luot2 = 0;
             double chi1 = 0, chi2 = 0;
@@ -795,7 +801,7 @@ namespace ToolBaoCao.Controllers
                     pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, (0 - chi2));
                 }
             }
-            pl.TableName = "PL02c";
+            pl.TableName = sheetName;
             return pl;
         }
 
