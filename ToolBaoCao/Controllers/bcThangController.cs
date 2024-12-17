@@ -885,11 +885,11 @@ namespace ToolBaoCao.Controllers
             else
             {
                 phuLuc.Rows.Add(itemVung.Key,
-                    itemVung.Value, ((((double)vung.luotNoi / (double)vung.luot) * 100) / indexRow).ToString("0.##"), /* Tỷ lệ nội */
-                    itemVung.Value, (((vung.ngaydtr / (double)vung.luotNoi) * 100) / indexRow).ToString("0.##"), /* ngày điều trị*/
-                    itemVung.Value, (((vung.chi / (double)vung.luot) * 100) / indexRow).ToString("0.##"), /* chi bình quân */
-                    itemVung.Value, (((vung.chiNoi / (double)vung.luotNoi) * 100) / indexRow).ToString("0.##"), /* chi bình quân nội */
-                    itemVung.Value, (((vung.chiNgoai / (double)vung.luotNgoai) * 100) / indexRow).ToString("0.##")); /* chi bình quân ngoại */
+                    itemVung.Value, ((double)vung.luotNoi / (double)vung.luot).ToString("0.##"), /* Tỷ lệ nội */
+                    itemVung.Value, (vung.ngaydtr / (double)vung.luotNoi).ToString("0.##"), /* ngày điều trị*/
+                    itemVung.Value, (vung.chi / (double)vung.luot).ToString("0"), /* chi bình quân */
+                    itemVung.Value, (vung.chiNoi / (double)vung.luotNoi).ToString("0"), /* chi bình quân nội */
+                    itemVung.Value, (vung.chiNgoai / (double)vung.luotNgoai).ToString("0")); /* chi bình quân ngoại */
             }
             DataRow rowVung = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Tỉnh */
