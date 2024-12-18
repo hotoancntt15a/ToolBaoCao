@@ -54,7 +54,8 @@ namespace ToolBaoCao.Controllers
                 if (Request.Files.Count == 0) { throw new Exception("Không có tập tin nào được đẩy lên"); }
                 if (Request.Files.Count == 1)
                 {
-                    if (Path.GetExtension(Request.Files[0].FileName).ToLower() == ".xlsx")
+                    var ext = Path.GetExtension(Request.Files[0].FileName).ToLower();
+                    if (ext == ".xlsx")
                     {
                         /* Cập nhật dự toán được giao trong năm của csyt */
                         ViewBag.mode = "update";
@@ -102,8 +103,12 @@ namespace ToolBaoCao.Controllers
                         db.CreateBcThang();
                         db.Insert("thangdtgiao", items, "replace");
                         ViewBag.Message = $"Đã cập nhật Dự toán tạm giao CSYT: {string.Join(",", listMaCSKCB)}";
+                        return View();
                     }
-                    return View();
+                    if(ext == ".zip")
+                    {
+                        /* Giải nén tập tin */
+                    }
                 }
                 /* Khai báo dữ liệu tạm */
                 var dbTemp = new dbSQLite(Path.Combine(folderTemp, "import.db"));
@@ -408,12 +413,12 @@ namespace ToolBaoCao.Controllers
                             tmp = $"{r[indexColumn]}";
                             if (tmp.StartsWith("<b>"))
                             {
-                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextBR : csContextB; ;
+                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextBR : csContextB;
                                 cell.SetCellValue(tmp.Substring(3));
                             }
                             else
                             {
-                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext; ;
+                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext;
                                 cell.SetCellValue(tmp);
                             }
                         }
