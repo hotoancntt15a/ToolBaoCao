@@ -18,7 +18,7 @@ namespace zModules.NPOIExcel
         private static List<System.Type> typeDateTime = new List<System.Type>() { Type.GetType("System.DateTime") };
         private static Dictionary<string, ICellStyle> cellStyleCache = new Dictionary<string, ICellStyle>();
 
-        public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false, bool getCache = true)
+        public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false, bool getCache = true, HorizontalAlignment alignment = HorizontalAlignment.Left)
         {
             if (getCache == false)
             {
@@ -28,12 +28,12 @@ namespace zModules.NPOIExcel
                 cs.BorderTop = BorderStyle.Thin;
                 cs.BorderBottom = BorderStyle.Thin;
                 cs.WrapText = wrapText;
+                cs.Alignment = alignment;
                 if (title)
                 {
                     cs.Alignment = HorizontalAlignment.Center;
                     cs.VerticalAlignment = VerticalAlignment.Center;
                 }
-                else { cs.Alignment = HorizontalAlignment.Left; }
                 IFont font = hw.CreateFont();
                 font.FontName = "Times New Roman";
                 font.IsBold = fontBold;

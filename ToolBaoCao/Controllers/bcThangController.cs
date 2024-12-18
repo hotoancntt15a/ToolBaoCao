@@ -380,7 +380,9 @@ namespace ToolBaoCao.Controllers
                 }
                 /* Đổ dữ liệu */
                 var csContext = workbook.CreateCellStyleThin(getCache: false);
+                var csContextR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
                 var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
+                var csContextBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
                 int indexColumn = -1;
                 foreach (DataRow r in dt.Rows)
                 {
@@ -393,9 +395,8 @@ namespace ToolBaoCao.Controllers
                         {
                             indexColumn++;
                             var cell = row.CreateCell(indexColumn, CellType.String);
-                            cell.CellStyle = csContext;
+                            cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext;
                             cell.SetCellValue("");
-                            if (listColRight.Contains(indexColumn)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
                         }
                     }
                     else
@@ -407,15 +408,14 @@ namespace ToolBaoCao.Controllers
                             tmp = $"{r[indexColumn]}";
                             if (tmp.StartsWith("<b>"))
                             {
-                                cell.CellStyle = csContextB;
+                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextBR : csContextB; ;
                                 cell.SetCellValue(tmp.Substring(3));
                             }
                             else
                             {
-                                cell.CellStyle = csContext;
+                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext; ;
                                 cell.SetCellValue(tmp);
                             }
-                            if (listColRight.Contains(indexColumn)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
                         }
                     }
                 }

@@ -245,7 +245,9 @@ namespace ToolBaoCao.Controllers
                     cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
                 }
                 var csContent = workbook.CreateCellStyleThin(getCache: false);
-                var csContentBold = workbook.CreateCellStyleThin(true, getCache: false);
+                var csContentR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
+                var csContentB = workbook.CreateCellStyleThin(true, getCache: false);
+                var csContentBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
                 /* Đổ dữ liệu */
                 foreach (DataRow r in dt.Rows)
                 {
@@ -258,7 +260,7 @@ namespace ToolBaoCao.Controllers
                         {
                             i++;
                             var cell = row.CreateCell(i, CellType.String);
-                            cell.CellStyle = csContent;
+                            cell.CellStyle = listColRight.Contains(i) ? csContentR : csContent;
                             cell.SetCellValue("");
                         }
                     }
@@ -271,15 +273,14 @@ namespace ToolBaoCao.Controllers
                             tmp = $"{r[i]}";
                             if (tmp.StartsWith("<b>"))
                             {
-                                cell.CellStyle = csContentBold;
+                                cell.CellStyle = listColRight.Contains(i) ? csContentBR : csContentB;
                                 cell.SetCellValue(tmp.Substring(3));
                             }
                             else
                             {
-                                cell.CellStyle = csContent;
+                                cell.CellStyle = listColRight.Contains(i) ? csContentR : csContent;
                                 cell.SetCellValue(tmp);
                             }
-                            if (listColRight.Contains(i)) { cell.CellStyle.Alignment = HorizontalAlignment.Right; }
                         }
                     }
                 }
