@@ -1,5 +1,8 @@
 ﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using SharpCompress.Archives;
+using SharpCompress.Archives.Rar;
+using SharpCompress.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -111,7 +114,7 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Message = $"Đã cập nhật Dự toán tạm giao CSYT: {string.Join(",", listMaCSKCB)}";
                         return View();
                     }
-                    if (ext == ".zip")
+                    else if (ext == ".zip")
                     {
                         /* Giải nén tập tin */
                         string fileName = Path.Combine(folderTemp, $"{id}.zip");
@@ -126,8 +129,32 @@ namespace ToolBaoCao.Controllers
                                 fileName = $"{id}_{indexDBZip}zip.xlsx";
                                 entry.ExtractToFile(Path.Combine(folderTemp, fileName), overwrite: true);
                                 lsFile.Add(fileName);
-                                lsFileTarget.Add(entry.Name);
-                                list.Add($"{entry.Name} ({entry.Length.getFileSize()})");
+                                fileName = Path.GetFileName(entry.Name);
+                                lsFileTarget.Add(fileName);
+                                list.Add($"{fileName} ({entry.Length.getFileSize()})");
+                            }
+                        }
+                    }
+                    else if (ext == ".rar")
+                    {
+                        /* Giải nén tập tin */
+                        string fileName = Path.Combine(folderTemp, $"{id}{ext}");
+                        Request.Files[0].SaveAs(fileName);
+                        using (var archive = RarArchive.Open(fileName))
+                        {
+                            int indexDBZip = 0;
+                            foreach (var entry in archive.Entries)
+                            {
+                                if (entry.IsDirectory) { continue; }
+                                if (entry.Key.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) == false) { continue; }
+                                indexDBZip++;
+                                fileName = $"{id}_{indexDBZip}zip.xlsx";
+                                entry.WriteToFile(Path.Combine(folderTemp, fileName), new ExtractionOptions { ExtractFullPath = true, Overwrite = true });
+
+                                lsFile.Add(fileName);
+                                fileName = Path.GetFileName(entry.Key);
+                                lsFileTarget.Add(fileName);
+                                list.Add($"{fileName} ({entry.Size.getFileSize()})");
                             }
                         }
                     }
@@ -160,9 +187,9 @@ namespace ToolBaoCao.Controllers
                 ViewBag.files = list;
                 list = new List<string>();
                 bieus = bieus.Distinct().ToList();
-                if (bieus.Where(p => p.StartsWith("b01")).Count() != 3) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B01. {string.Join(", ", bieus)}"); }
-                if (bieus.Where(p => p.StartsWith("b02")).Count() != 6) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B02. {string.Join(", ", bieus)}"); }
-                if (bieus.Where(p => p.StartsWith("b04")).Count() != 2) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
+                if (bieus.Where(p => p.StartsWith("b01")).Count() == 0) { throw new Exception($"Thiếu biểu đầu vào B01. {string.Join(", ", bieus)}"); }
+                if (bieus.Where(p => p.StartsWith("b02")).Count() == 0) { throw new Exception($"Thiếu biểu đầu vào B02. {string.Join(", ", bieus)}"); }
+                if (bieus.Where(p => p.StartsWith("b04")).Count() == 0) { throw new Exception($"Thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
                 /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
                 tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=1 ORDER BY nam DESC LIMIT 1")}";

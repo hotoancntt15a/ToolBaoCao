@@ -15,7 +15,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="upload-area" id="uploadfile" data-urlpost="@Url.Action("Buoc2", "XML", new { area = "", layout = "null", idtarget=idtarget })" data-target="@idtarget">
-                    <p class="text-center">Kéo và thả tập tin nén zip, .db chứa dữ liệu. vào khu vực này hoặc nhấp để chọn file</p>
+                    <p class="text-center">Kéo và thả tập dữ liệu .db <i>(hỗ trợ dữ liệu đã nén .rar, .zip)</i>. vào khu vực này hoặc nhấp để chọn file</p>
                 </div>
                 <div id="fileDetails" class="mt-4">
                     <h5>Danh sách tập tin đã chọn:</h5>
@@ -28,5 +28,5 @@
 </div>
 <div class="alert alert-danger">Dữ liệu đẩy lên sẽ mã hoá cột mã thẻ, họ tên, ngày sinh trong xml123 và xml7980a</div>
 <script>
-    $(document).ready(function () { drapDropFiles(".zip,.db"); });
+    $(document).ready(function () { drapDropFiles(".zip,.db,.rar"); });
 </script>

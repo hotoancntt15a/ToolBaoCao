@@ -59,7 +59,7 @@ namespace ToolBaoCao.Controllers
                 var d = new DirectoryInfo(folderTemp);
                 if (d.Exists == false) { d.Create(); }
                 /* Đọc và kiểm tra các tập tin */
-                var list = new List<string>() { ".db", ".zip" };
+                var list = new List<string>() { ".db", ".zip", ".rar" };
                 for (int i = 0; i < Request.Files.Count; i++)
                 {
                     tmp = Path.GetExtension(Request.Files[i].FileName).ToLower();

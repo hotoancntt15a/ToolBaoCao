@@ -1,4 +1,7 @@
-﻿using System;
+﻿using SharpCompress.Archives;
+using SharpCompress.Archives.Rar;
+using SharpCompress.Common;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -60,7 +63,9 @@ namespace ToolBaoCao
             }));
             t.Start();
         }
-        public Dictionary<string, ItemTask> GetData() => _threads.ToDictionary(v => v.Key, v =>v.Value);
+
+        public Dictionary<string, ItemTask> GetData() => _threads.ToDictionary(v => v.Key, v => v.Value);
+
         private void findThread()
         {
             /* XML */
@@ -221,7 +226,7 @@ namespace ToolBaoCao
                                 var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip_{indexFileTarget}_{indexDBZip}.db");
                                 bool extract = true;
                                 var fi = new FileInfo(fdbForm);
-                                if (fi.Exists) { if(fi.Length == entry.Length) { extract = false; } }
+                                if (fi.Exists) { if (fi.Length == entry.Length) { extract = false; } }
                                 if (extract) { entry.ExtractToFile(fdbForm, overwrite: true); }
                                 var dbFrom = new dbSQLite(fdbForm);
                                 /* Chuyển dữ liệu */
@@ -232,7 +237,31 @@ namespace ToolBaoCao
                             }
                         }
                     }
-                    if (ext == ".db")
+                    else if (ext == ".rar")
+                    {
+                        using (var archive = RarArchive.Open(fileName))
+                        {
+                            int indexDBZip = 0;
+                            foreach (var entry in archive.Entries)
+                            {
+                                if (entry.Key.EndsWith(".db", StringComparison.OrdinalIgnoreCase) == false) { continue; }
+                                ij++; indexDBZip++;
+                                dbXML.Execute($"UPDATE xmlthread SET title = 'Đang giải nén {entry.Key} ({DateTime.Now:HH:mm:ss})' WHERE id='{id}'");
+                                var fdbForm = Path.Combine(folderTemp, $"xml{id}_zip_{indexFileTarget}_{indexDBZip}.db");
+                                bool extract = true;
+                                var fi = new FileInfo(fdbForm);
+                                if (fi.Exists) { if (fi.Length == entry.Size) { extract = false; } }
+                                if (extract) { entry.WriteToFile(fdbForm, new ExtractionOptions { ExtractFullPath = true, Overwrite = true }); }
+                                var dbFrom = new dbSQLite(fdbForm);
+                                /* Chuyển dữ liệu */
+                                XMLCopyTable(dbTo, dbFrom, dbXML, id, lfileTarget[indexFileTarget] + $"[{indexDBZip}]");
+                                dbFrom.Close();
+                                /* Xoá đi sau khi sao chép song */
+                                try { System.IO.File.Delete(fdbForm); } catch { }
+                            }
+                        }
+                    }
+                    else if (ext == ".db")
                     {
                         var dbFrom = new dbSQLite(fileName);
                         XMLCopyTable(dbTo, dbFrom, dbXML, id, lfileTarget[indexFileTarget]);
