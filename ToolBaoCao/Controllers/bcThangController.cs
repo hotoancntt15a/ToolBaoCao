@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.UI.WebControls;
 using zModules.NPOIExcel;
 
 namespace ToolBaoCao.Controllers
@@ -52,11 +54,15 @@ namespace ToolBaoCao.Controllers
                 var d = new System.IO.DirectoryInfo(folderTemp);
                 foreach (var item in d.GetFiles()) { try { item.Delete(); } catch { } }
                 if (Request.Files.Count == 0) { throw new Exception("Không có tập tin nào được đẩy lên"); }
+                var lsFile = new List<string>();
+                var lsFileTarget = new List<string>();
+                var list = new List<string>();
                 if (Request.Files.Count == 1)
                 {
                     var ext = Path.GetExtension(Request.Files[0].FileName).ToLower();
                     if (ext == ".xlsx")
                     {
+                        list.Add($"{Request.Files[0].FileName} ({Request.Files[0].ContentLength.getFileSize()})");
                         /* Cập nhật dự toán được giao trong năm của csyt */
                         ViewBag.mode = "update";
                         string file = Path.Combine(folderTemp, $"{id}_pl01.xlsx");
@@ -105,9 +111,38 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Message = $"Đã cập nhật Dự toán tạm giao CSYT: {string.Join(",", listMaCSKCB)}";
                         return View();
                     }
-                    if(ext == ".zip")
+                    if (ext == ".zip")
                     {
                         /* Giải nén tập tin */
+                        string fileName = Path.Combine(folderTemp, $"{id}.zip");
+                        Request.Files[0].SaveAs(fileName);
+                        using (ZipArchive archive = ZipFile.OpenRead(fileName))
+                        {
+                            int indexDBZip = 0;
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                indexDBZip++;
+                                if (entry.FullName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) == false) { continue; }
+                                fileName = $"{id}_{indexDBZip}zip.xlsx";
+                                entry.ExtractToFile(Path.Combine(folderTemp, fileName), overwrite: true);
+                                lsFile.Add(fileName);
+                                lsFileTarget.Add(entry.Name);
+                                list.Add($"{entry.Name} ({entry.Length.getFileSize()})");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    string fileName = "";
+                    for (int i = 0; i < Request.Files.Count; i++)
+                    {
+                        if (Path.GetExtension(Request.Files[i].FileName).ToLower() != ".xlsx") { continue; }
+                        tmp = $"{id}_{i}.xlsx"; fileName = Request.Files[i].FileName;
+                        list.Add($"{Request.Files[i].FileName} ({Request.Files[i].ContentLength.getFileSize()})");
+                        Request.Files[i].SaveAs(Path.Combine(folderTemp, tmp));
+                        lsFile.Add(tmp);
+                        lsFileTarget.Add(fileName);
                     }
                 }
                 /* Khai báo dữ liệu tạm */
@@ -117,18 +152,14 @@ namespace ToolBaoCao.Controllers
                 dbTemp.CreateBcThang();
                 /* Trường hợp cập nhật dữ liệu dự toán giao tại CSYT */
                 /* Đọc và kiểm tra các tập tin */
-                var list = new List<string>();
                 var bieus = new List<string>();
-                for (int i = 0; i < Request.Files.Count; i++)
+                for (int i = 0; i < lsFile.Count; i++)
                 {
-                    if (Path.GetExtension(Request.Files[i].FileName).ToLower() != ".xlsx") { continue; }
-                    list.Add($"{Request.Files[i].FileName} ({Request.Files[i].ContentLength.getFileSize()})");
-                    bieus.Add(readExcelbcThang(dbTemp, Request.Files[i], Session, id, folderTemp, timeStart));
+                    bieus.Add(readExcelbcThang(dbTemp, lsFile[i], Session, id, folderTemp, timeStart, lsFileTarget[i]));
                 }
                 ViewBag.files = list;
                 list = new List<string>();
                 bieus = bieus.Distinct().ToList();
-                if (bieus.Count != 11) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b01")).Count() != 3) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B01. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b02")).Count() != 6) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B02. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b04")).Count() != 2) { throw new Exception($"Dư biểu hoặc thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
@@ -428,7 +459,7 @@ namespace ToolBaoCao.Controllers
             return workbook;
         }
 
-        private string readExcelbcThang(dbSQLite dbConnect, HttpPostedFileBase inputFile, HttpSessionStateBase Session, string idBaoCao, string folderTemp, DateTime timeStart)
+        private string readExcelbcThang(dbSQLite dbConnect, string inputFile, HttpSessionStateBase Session, string idBaoCao, string folderTemp, DateTime timeStart, string fileName)
         {
             string messageError = "";
             var timeUp = timeStart.toTimestamp().ToString();
@@ -436,7 +467,7 @@ namespace ToolBaoCao.Controllers
             var matinh = $"{Session["idtinh"]}".Trim();
             var listBieu = new List<string>();
             string bieu = "";
-            string fileExtension = Path.GetExtension(inputFile.FileName);
+            string fileExtension = Path.GetExtension(inputFile);
             int sheetIndex = 0; int packetSize = 1000;
             int indexRow = 0; int indexColumn = 0; int maxRow = 0; int jIndex = 0;
             int fieldCount = 50; var tsql = new List<string>();
@@ -444,8 +475,8 @@ namespace ToolBaoCao.Controllers
             IWorkbook workbook = null;
             try
             {
-                try { workbook = new XSSFWorkbook(inputFile.InputStream); }
-                catch (Exception ex) { throw new Exception($"Lỗi tập tin '{inputFile.FileName}' sai định dạng : {ex.Message}"); }
+                try { workbook = new XSSFWorkbook(Path.Combine(folderTemp, inputFile)); }
+                catch (Exception ex) { throw new Exception($"Lỗi tập tin '{fileName}' sai định dạng : {ex.Message}"); }
                 var sheet = workbook.GetSheetAt(sheetIndex);
                 var tsqlv = new List<string>(); maxRow = sheet.LastRowNum;
                 var cs = true;
@@ -461,6 +492,7 @@ namespace ToolBaoCao.Controllers
                         if (tmp.StartsWith("b01")) { bieu = "b01"; /* 3 b01; b0100_nam1 b0100_nam2 b01cs_nam1 */ }
                         if (tmp.StartsWith("b02")) { bieu = "b02"; /* 6 b02: b0200_nam1 b0200_nam2 b0200_thang1 b0200_thang2 b02cs_nam1 b02cs_thang1 */ }
                         if (tmp.StartsWith("b04")) { bieu = "b04"; /* 2 b04: b0400_nam1 b04cs_thang1 */ }
+                        if (tmp.StartsWith("b26")) { bieu = "b26"; /* 2 b26: b26_nam1 b26cs_thang1 */ }
                         if (tmp == "ma_tinh") { indexColumn = c.ColumnIndex; break; }
                     }
                     if (tmp == "ma_tinh") { break; }
@@ -475,6 +507,7 @@ namespace ToolBaoCao.Controllers
                  * Biểu b01: ma_tinh    tu_thang    den_thang   nam         cs
                  * Biểu b02: ma_tinh	ma_loai_kcb	tu_thang	den_thang	nam	loai_bv	kieubv	loaick	hang_bv	tuyen   cs
                  * Biểu b04: ma_tinh	tu_thang	den_thang	nam	ma_loai_kcb	loai_bv	hang_bv	tuyen	kieubv	loaick	cs
+                 * Biểu b26: ma_tinh	loai_kcb	thoi_gian	loai_bv	kieubv	loaick	hang_bv	tuyen	loai_so_sanh    cs
                  */
                 switch (bieu)
                 {
@@ -484,6 +517,8 @@ namespace ToolBaoCao.Controllers
                     case "b02": fieldCount = 11; indexRegex = 4; pattern = "^20[0-9][0-9]$"; break;
                     /* Kiểm tra thoigian */
                     case "b04": fieldCount = 11; indexRegex = 3; pattern = "^20[0-9][0-9]$"; break;
+                    /* Kiểm tra thoigian */
+                    case "b26": fieldCount = 10; indexRegex = 2; pattern = "^20[0-9][0-9][0-1][0-9][0-3][0-9]$"; break;
                     default: fieldCount = 11; break;
                 }
                 indexRow++; /* Lấy dòng có dữ liệu */
@@ -525,6 +560,13 @@ namespace ToolBaoCao.Controllers
                         {
                             if (listValue[1] != "1") { throw new Exception($"Biểu {bieu} yêu cầu từ tháng 1; Tháng từ của biểu là '{listValue[1]}'"); }
                         }
+                        break;
+
+                    case "b26":
+                        /* Kiểm tra BQ chung trong kỳ */
+                        /* Biểu b26: ma_tinh	loai_kcb	thoi_gian	loai_bv	kieubv	loaick	hang_bv	tuyen	loai_so_sanh     cs */
+                        idChiTiet = $"{listValue[0]}-{listValue[2]}";
+                        listBieu.Add($"b26{idChiTiet}");
                         break;
 
                     default: fieldCount = 11; break;
@@ -577,6 +619,11 @@ namespace ToolBaoCao.Controllers
                         fieldCount = 11; indexRegex = 2 + 1; pattern = @"^\d+([.]\d+)?$";
                         fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
                         break;
+                    /* Kiểm tra BQ chung trong kỳ */
+                    case "thangb26":
+                        fieldCount = 34; indexRegex = 7 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                        fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
+                        break;
 
                     default: fieldCount = 11; break;
                 }
@@ -628,7 +675,7 @@ namespace ToolBaoCao.Controllers
             }
             catch (Exception ex2)
             {
-                messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{inputFile.FileName}': {ex2.getLineHTML()}";
+                messageError = $"Lỗi trong quá trình đọc, nhập dữ liệu từ Excel '{fileName}': {ex2.getLineHTML()}";
                 AppHelper.saveError(tmp);
             }
             finally
@@ -722,7 +769,7 @@ namespace ToolBaoCao.Controllers
                 /* dmCSKCB */
                 var dmCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten, macaptren FROM dmcskcb WHERE ma_tinh='{idtinh}'").AsEnumerable();
                 /* Di chuyển tập tin Excel */
-                foreach (var f in dirTemp.GetFiles("*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
+                foreach (var f in dirTemp.GetFiles($"id{idBaoCao}*.xls*")) { f.MoveTo(Path.Combine(folderSave, f.Name)); }
 
                 /* Báo cáo tháng chuyển */
                 data = dbTemp.getDataTable($"SELECT * FROM bcthangdocx WHERE id='{idBaoCao}'");
@@ -738,13 +785,13 @@ namespace ToolBaoCao.Controllers
                     data.Columns.RemoveAt(0);
                     dbBcThang.Insert(v, data);
                 }
-                list = new List<string>() { "thangb01", "thangb02", "thangb04" };
+                list = new List<string>() { "thangb01", "thangb02", "thangb04", "thangb26" };
                 foreach (var v in list)
                 {
                     data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
                     dbImport.Insert(v, data);
                 }
-                list = new List<string>() { "thangb01chitiet", "thangb02chitiet", "thangb04chitiet" };
+                list = new List<string>() { "thangb01chitiet", "thangb02chitiet", "thangb04chitiet", "thangb26chitiet" };
                 foreach (var v in list)
                 {
                     data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
@@ -756,6 +803,8 @@ namespace ToolBaoCao.Controllers
                 var tmp = createFileBcThangDocx(idBaoCao, idtinh, bcThang);
                 var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang) };
                 AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
+                /* Xoá tập tin ở thư mục tạm đi */
+                foreach (var f in dirTemp.GetFiles($"*{idBaoCao}*.*")) { try { f.Delete(); } catch { } }
             }
             catch (Exception ex)
             {
