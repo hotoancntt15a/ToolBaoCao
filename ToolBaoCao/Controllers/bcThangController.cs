@@ -353,29 +353,37 @@ namespace ToolBaoCao.Controllers
             var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
-            var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
+            /* var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung); */
             var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, 1, thang, "PL02c");
             var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a", PL02a);
-            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
+            /* var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b); */
             var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, thang, thang, "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
-            var xlsx = exportPhuLucbcThang(PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
+            var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02c, PL03a, PL03c, PL04a, PL04b);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
             return outFile;
         }
 
-        private XSSFWorkbook exportPhuLucbcThang(params DataTable[] par)
+        private XSSFWorkbook exportPhuLucbcThang(string idBC, params DataTable[] par)
         {
-            XSSFWorkbook workbook = new XSSFWorkbook();
+            string fileName = Path.Combine(AppHelper.pathTemp, "bcThang", $"bcthang{idBC}.xlsx");
+            System.IO.File.Copy(Path.Combine(AppHelper.pathAppData, "bcThangPL.xlsx"), fileName);
+            XSSFWorkbook workbook = new XSSFWorkbook(fileName);
             int i = 0; int rowIndex = 0;
             var names = new List<string>();
-            string tmp = "";
+            string tmp = ""; bool isCreateSheet = false;
             foreach (DataTable dt in par)
             {
-                var sheet = names.Contains(dt.TableName) ? workbook.CreateSheet() : workbook.CreateSheet(dt.TableName);
+                isCreateSheet = false;
+                var sheet = workbook.GetSheet(dt.TableName);
+                if (sheet == null)
+                {
+                    sheet = names.Contains(dt.TableName) ? workbook.CreateSheet() : workbook.CreateSheet(dt.TableName);
+                    isCreateSheet = true;
+                }
                 names.Add(dt.TableName);
                 var listColRight = new List<int>();
                 var listColWith = new List<int>();
@@ -429,28 +437,42 @@ namespace ToolBaoCao.Controllers
                     default: break;
                 }
                 for (int colIndex = 0; colIndex < listColWith.Count; colIndex++) { sheet.SetColumnWidth(colIndex, (listColWith[colIndex] * 256)); }
-                /* Tạo tiêu đề */
-                rowIndex = 0;
-                var row = sheet.CreateRow(rowIndex);
-                i = -1;
-                var csHeader = workbook.CreateCellStyleThin(true, true, true, getCache: false);
-                foreach (DataColumn col in dt.Columns)
+                if (isCreateSheet)
                 {
-                    i++;
-                    var cell = row.CreateCell(i, CellType.String);
-                    cell.CellStyle = csHeader;
-                    cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
+                    /* Tạo tiêu đề */
+                    rowIndex = 0;
+                    var row = sheet.CreateRow(rowIndex);
+                    i = -1;
+                    var csHeader = workbook.CreateCellStyleThin(true, true, true, getCache: false);
+                    foreach (DataColumn col in dt.Columns)
+                    {
+                        i++;
+                        var cell = row.CreateCell(i, CellType.String);
+                        cell.CellStyle = csHeader;
+                        cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
+                    }
+                }
+                else
+                {
+                    /* Tìm việc trí bắt đầu đổ dữ liệu */
+                    for (rowIndex = 0; rowIndex <= 10; rowIndex++)
+                    {
+                        var row = sheet.GetRow(rowIndex); if (row == null) { continue; }
+                        var cell = row.GetCell(0); if (cell == null) { continue; }
+                        tmp = $"{cell.GetValueAsString()}".Trim();
+                        if (tmp == "{filldata}") { break; }
+                    }
                 }
                 /* Đổ dữ liệu */
                 var csContext = workbook.CreateCellStyleThin(getCache: false);
                 var csContextR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
                 var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
                 var csContextBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
-                int indexColumn = -1;
+                int indexColumn = -1; rowIndex--;
                 foreach (DataRow r in dt.Rows)
                 {
                     rowIndex++;
-                    row = sheet.CreateRow(rowIndex);
+                    var row = sheet.CreateRow(rowIndex);
                     indexColumn = -1;
                     if ($"{r[0]}{r[1]}" == "")
                     {
@@ -1001,6 +1023,61 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02)
+        {
+            var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
+            if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
+            var phuLuc = new DataTable(nameSheet);
+            phuLuc.Columns.Add("Mã"); /* 0 */
+            phuLuc.Columns.Add("Hạng BV/ Tên CSKCB"); /* 1 */
+            phuLuc.Columns.Add("Tỷ lệ nội trú (%)"); /* 2 */
+            phuLuc.Columns.Add("Ngày điều trị BQ (ngày)"); /* 3 */
+            phuLuc.Columns.Add("Chi BQ chung (Đồng)"); /* 4 */
+            phuLuc.Columns.Add("Chi BQ nội trú (Đồng)"); /* 5 */
+            phuLuc.Columns.Add("Chi BQ ngoại trú"); /* 6 */
+            /* 4 Dòng đầu copy của PL02a, PL02b phần chênh lệnh */
+            if (PL02.Rows.Count > 5)
+            {
+                int pl02Count = PL02.Rows.Count; int IndexPL02 = 0;
+                for (int i = 5; i > 2; i--)
+                {
+                    IndexPL02 = pl02Count - i;
+                    phuLuc.Rows.Add(PL02.Rows[IndexPL02][0], PL02.Rows[IndexPL02][1]
+                        , PL02.Rows[IndexPL02][2] /* tyle_noitru */
+                        , PL02.Rows[IndexPL02][4] /* ngay_dtri_bq */
+                        , PL02.Rows[IndexPL02][6] /* chi_bq_chung */
+                        , PL02.Rows[IndexPL02][8] /* chi_bq_noi */
+                        , PL02.Rows[IndexPL02][10] /* chi_bq_ngoai */);
+                }
+            }
+
+            phuLuc.Rows.Add("", "", "", "", "", "", "");
+            var listTuyen = new List<string>() { "*", "T", "H", "X" };
+            string hang = "";
+            foreach (string tuyen in listTuyen)
+            {
+                var view = new List<DataRow>();
+                if (tuyen == "*") { view = data.Where(x => x.Field<string>("tuyen_bv") == "").OrderBy(x => x.Field<string>("hang_bv")).ToList(); }
+                else { view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen)).OrderBy(x => x.Field<string>("hang_bv")).ToList(); }
+                if (view.Count() == 0) { continue; }
+                string tenTuyen = "(*)";
+                switch (tuyen)
+                {
+                    case "T": tenTuyen = "Tỉnh"; break;
+                    case "H": tenTuyen = "Huyện"; break;
+                    case "X": tenTuyen = "Xã"; break;
+                    default: break;
+                }
+                phuLuc.Rows.Add("T" + (tuyen == "" ? "0" : tuyen), $"Tuyến {tenTuyen}", "", "", "", "", "");
+                foreach (DataRow row in view)
+                {
+                    hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
+                    phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}", $"{row["tyle_noitru"]}", $"{row["ngay_dtri_bq"]}", $"{row["chi_bq_chung"]}", $"{row["chi_bq_noi"]}", $"{row["chi_bq_ngoai"]}");
+                }
+            }
+            return phuLuc;
+        }
+
         private DataTable createPL03(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02)
         {
             var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
@@ -1399,8 +1476,8 @@ namespace ToolBaoCao.Controllers
             if (item == null) { throw new Exception($"[creatbcThang] Biểu 01 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam1"]} không có dữ liệu của tỉnh {maTinh}"); }
 
             mavung = $"{item["ma_vung"]}";
-            bcThang.Add("x2", $"{item["dtcsyt_trongnam"]}");
-            bcThang.Add("x3", $"{item["dtcsyt_chikcb"]}");
+            bcThang.Add("x2", $"{item["dtcsyt_trongnam"]}".lamTronTrieuDong());
+            bcThang.Add("x3", $"{item["dtcsyt_chikcb"]}".lamTronTrieuDong());
             bcThang.Add("x4", $"{item["dtcsyt_tlsudungnam"]}");
 
             /* x5 integer not null default 0 /* xếp bn toàn quốc */
