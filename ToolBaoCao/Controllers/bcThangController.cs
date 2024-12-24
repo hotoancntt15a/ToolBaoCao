@@ -72,13 +72,13 @@ namespace ToolBaoCao.Controllers
                         Request.Files[0].SaveAs(file);
                         var dtgiaocsyt = zModules.NPOIExcel.XLSX.getDataFromExcel(new FileInfo(file));
 
-                        /* Tìm năm */
+                        /* Tìm năm trong 10 dòng đầu tiên */
                         string nam = ""; int indexRow = -1;
                         for (int i = 0; i < (dtgiaocsyt.Rows.Count > 10 ? 10 : dtgiaocsyt.Rows.Count); i++)
                         {
                             indexRow++;
-                            if (nam != "") { break; }
-                            if (Regex.IsMatch(dtgiaocsyt.Rows[0][0].ToString().Trim(), @"^[']?\d+$")) { break; }
+                            if (nam != "") { break; } /* Đã xác định được Năm */
+                            if (Regex.IsMatch(dtgiaocsyt.Rows[0][0].ToString().Trim(), @"^[']?\d+$")) { break; } /* Đọc đến vùng dữ liệu */
                             for (int j = 0; j < dtgiaocsyt.Columns.Count; j++)
                             {
                                 Match match = Regex.Match(dtgiaocsyt.Rows[i][j].ToString(), @"\b(\d{4})\b");
@@ -1455,6 +1455,7 @@ namespace ToolBaoCao.Controllers
             var bcThang = new Dictionary<string, string>() { { "id", idBaoCao }, { "x1", x1 }, { "x33", x33 }, { "x34", x34 }, { "x35", x35 }, { "x36", x36 }, { "x37", x37 }, { "x38", x38 } };
             string tmp = AppHelper.dbSqliteMain.getValue($"SELECT ten FROM dmtinh WHERE id='{maTinh}';").ToString();
             string mavung = "";
+            double number = 0;
             bcThang.Add("tentinh", tmp);
             var data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' LIMIT 1;");
             if (data.Rows.Count == 0) { throw new Exception("[creatbcThang] Biểu 04 không có dữ liệu"); }
@@ -1505,8 +1506,11 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x10", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x11", $"{item["tong_luot_noi"]}");
             bcThang.Add("x21", $"{item["tong_chi"]}".lamTronTrieuDong());
+            if (bcThang["x21"] != "0") { number = double.Parse(bcThang["x21"]); if (number < 1000000) { bcThang["x21"] = "0"; } else { bcThang["x21"] = (number / 1000000).ToString(); } }
             bcThang.Add("x22", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            if (bcThang["x22"] != "0") { number = double.Parse(bcThang["x22"]); if (number < 1000000) { bcThang["x22"] = "0"; } else { bcThang["x22"] = (number / 1000000).ToString(); } }
             bcThang.Add("x23", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
+            if (bcThang["x23"] != "0") { number = double.Parse(bcThang["x23"]); if (number < 1000000) { bcThang["x23"] = "0"; } else { bcThang["x23"] = (number / 1000000).ToString(); } }
             /* ,x12 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x13 real not null default 0 /* Lượt ngoại {nam1} luỹ kế
                 ,x14 real not null default 0 /* Lượt nội {nam1} luỹ kế
@@ -1520,8 +1524,11 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x13", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x14", $"{item["tong_luot_noi"]}");
             bcThang.Add("x24", $"{item["tong_chi"]}".lamTronTrieuDong());
+            if (bcThang["x24"] != "0") { number = double.Parse(bcThang["x24"]); if (number < 1000000) { bcThang["x24"] = "0"; } else { bcThang["x24"] = (number / 1000000).ToString(); } }
             bcThang.Add("x25", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            if (bcThang["x25"] != "0") { number = double.Parse(bcThang["x25"]); if (number < 1000000) { bcThang["x25"] = "0"; } else { bcThang["x25"] = (number / 1000000).ToString(); } }
             bcThang.Add("x26", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
+            if (bcThang["x26"] != "0") { number = double.Parse(bcThang["x26"]); if (number < 1000000) { bcThang["x26"] = "0"; } else { bcThang["x26"] = (number / 1000000).ToString(); } }
 
             /* ,x15 real not null default 0 /* Tổng lượt = 2+3 (x10+x11)
                 ,x16 real not null default 0 /* Lượt ngoại {nam2}
@@ -1536,8 +1543,11 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x16", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x17", $"{item["tong_luot_noi"]}");
             bcThang.Add("x27", $"{item["tong_chi"]}".lamTronTrieuDong());
+            if (bcThang["x27"] != "0") { number = double.Parse(bcThang["x27"]); if (number < 1000000) { bcThang["x27"] = "0"; } else { bcThang["x27"] = (number / 1000000).ToString(); } }
             bcThang.Add("x28", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            if (bcThang["x28"] != "0") { number = double.Parse(bcThang["x28"]); if (number < 1000000) { bcThang["x28"] = "0"; } else { bcThang["x28"] = (number / 1000000).ToString(); } }
             bcThang.Add("x29", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
+            if (bcThang["x29"] != "0") { number = double.Parse(bcThang["x29"]); if (number < 1000000) { bcThang["x29"] = "0"; } else { bcThang["x29"] = (number / 1000000).ToString(); } }
 
             /* ,x18 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x19 real not null default 0 /* Lượt ngoại {nam2} luỹ kế
@@ -1552,8 +1562,11 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x19", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x20", $"{item["tong_luot_noi"]}");
             bcThang.Add("x30", $"{item["tong_chi"]}".lamTronTrieuDong());
+            if (bcThang["x30"] != "0") { number = double.Parse(bcThang["x30"]); if (number < 1000000) { bcThang["x30"] = "0"; } else { bcThang["x30"] = (number / 1000000).ToString(); } }
             bcThang.Add("x31", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
+            if (bcThang["x31"] != "0") { number = double.Parse(bcThang["x31"]); if (number < 1000000) { bcThang["x31"] = "0"; } else { bcThang["x31"] = (number / 1000000).ToString(); } }
             bcThang.Add("x32", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
+            if (bcThang["x32"] != "0") { number = double.Parse(bcThang["x32"]); if (number < 1000000) { bcThang["x32"] = "0"; } else { bcThang["x32"] = (number / 1000000).ToString(); } }
 
             /* Tăng giảm so với cùng kỳ năm trước
              * ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 (x15-x9)
@@ -1882,6 +1895,7 @@ namespace ToolBaoCao.Controllers
             var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
             if (!Directory.Exists(outputPath)) { Directory.CreateDirectory(outputPath); }
             var outputFile = Path.Combine(outputPath, $"bcThang_{idBaoCao}.docx");
+            string valReplace = "";
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
                 var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
@@ -1893,7 +1907,12 @@ namespace ToolBaoCao.Controllers
                         MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
                         foreach (Match match in matches)
                         {
-                            tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, ""));
+                            valReplace = bcThangExport.getValue(match.Value, "");
+                            if (match.Value.StartsWith("{t") || match.Value.StartsWith("{x"))
+                            {
+                                if (valReplace.isNumberUS()) { valReplace = valReplace.FormatCultureVN(); }
+                            }
+                            tmp = tmp.Replace(match.Value, valReplace);
                         }
                         run.SetText(tmp, 0);
                     }
@@ -1913,7 +1932,9 @@ namespace ToolBaoCao.Controllers
                                     MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
                                     foreach (Match match in matches)
                                     {
-                                        tmp = tmp.Replace(match.Value, bcThangExport.getValue(match.Value, ""));
+                                        valReplace = bcThangExport.getValue(match.Value, "");
+                                        if (valReplace.isNumberUS()) { valReplace = valReplace.FormatCultureVN(); }
+                                        tmp = tmp.Replace(match.Value, valReplace);
                                     }
                                     run.SetText(tmp, 0);
                                 }
