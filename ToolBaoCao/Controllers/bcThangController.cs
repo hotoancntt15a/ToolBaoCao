@@ -2093,7 +2093,7 @@ namespace ToolBaoCao.Controllers
             {
                 var idBaoCao = id.sqliteGetValueField();
                 var listTablePL = new List<string>() { "thangpl01", "thangpl02a", "thangpl02b", "thangpl03a", "thangpl03b", "thangpl04a", "thangpl04b" };
-                var tsql = new List<string>() { $"DELETE FROM bcThangdocx WHERE id='{idBaoCao}';" };
+                var tsql = new List<string>() { $"DELETE FROM bcThangdocx WHERE id='{idBaoCao}';", $"DELETE FROM bcThangpldocx WHERE id='{idBaoCao}';" };
                 foreach (var t in listTablePL) { tsql.Add($"DELETE FROM {t} WHERE id_bc='{idBaoCao}';"); }
                 db.Execute(string.Join(" ", tsql));
                 db.Close();
