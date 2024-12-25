@@ -856,6 +856,7 @@ namespace ToolBaoCao
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03a (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
+                ,nam integer not null default 0 /* Năm dữ liệu */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB */
                 ,ten_cskcb text not null default '' /* Tên cskcb */
                 ,ma_vung text not null default '' /* Mã vùng */
@@ -869,12 +870,19 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl03a_id_bc ON thangpl03a (id_bc);");
             }
+            else
+            {
+                /* Kiểm tra cột năm có tồn tại không?*/
+                var cols = dbConnect.getColumns("thangpl03a").Any(p => p.ColumnName == "nam");
+                if (cols == false) { tsqlCreate.Add("ALTER TABLE thangpl03a ADD COLUMN nam integer not null default 0;"); }
+            }
             if (tables.Contains("thangpl03b") == false)
             {
                 /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
+                ,nam integer not null default 0 /* Năm dữ liệu */
                 ,ma_cskcb text not null /* Mã cơ sơ KCB */
                 ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB */
                 ,ma_vung text not null default '' /* Mã vùng */
@@ -887,6 +895,12 @@ namespace ToolBaoCao
                 ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                 CREATE INDEX IF NOT EXISTS index_thangpl03b_id_bc ON thangpl03b (id_bc);");
+            }
+            else
+            {
+                /* Kiểm tra cột năm có tồn tại không?*/
+                var cols = dbConnect.getColumns("thangpl03b").Any(p => p.ColumnName == "nam");
+                if (cols == false) { tsqlCreate.Add("ALTER TABLE thangpl03b ADD COLUMN nam integer not null default 0;"); }
             }
             if (tables.Contains("thangpl04a") == false)
             {

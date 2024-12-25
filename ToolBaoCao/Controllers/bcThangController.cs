@@ -237,11 +237,12 @@ namespace ToolBaoCao.Controllers
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
                 /* Tạo Phục Lục 3a */
                 /* Lấy dữ liệu từ biểu b02 csyt trong tháng */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
-                var data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
-                    ,'' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
+
+                var data = dbTemp.getDataTable($@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
+                    ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
+                    ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
+                    ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p2.tu_thang=p2.den_thang;");
                 /* Lấy danh sách Ma_CSKCB */
                 var dsCSYT = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}'");
                 var dsCSKCB = dsCSYT.AsEnumerable().Select(x => new
@@ -264,11 +265,11 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Insert("thangpl03a", data);
                 /* Tạo phục lục 03b */
                 /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND tu_thang=den_thang ORDER BY nam DESC LIMIT 1")}";
-                data = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
-                    ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
+                data = dbTemp.getDataTable($@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
+                    ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
+                    ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
+                    ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p2.tu_thang=1;");
                 foreach (DataRow row in data.Rows)
                 {
                     tmp = $"{row["ma_cskcb"]}";
@@ -355,7 +356,7 @@ namespace ToolBaoCao.Controllers
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, 1, thang, "PL02c");
-            var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a", PL02a);
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a);
             var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
             var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, thang, thang, "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
@@ -1022,11 +1023,22 @@ namespace ToolBaoCao.Controllers
             var phuLuc = new DataTable(nameSheet);
             phuLuc.Columns.Add("Mã"); /* 0 */
             phuLuc.Columns.Add("Hạng BV/ Tên CSKCB"); /* 1 */
-            phuLuc.Columns.Add("Tỷ lệ nội trú (%)"); /* 2 */
-            phuLuc.Columns.Add("Ngày điều trị BQ (ngày)"); /* 3 */
-            phuLuc.Columns.Add("Chi BQ chung (Đồng)"); /* 4 */
-            phuLuc.Columns.Add("Chi BQ nội trú (Đồng)"); /* 5 */
-            phuLuc.Columns.Add("Chi BQ ngoại trú"); /* 6 */
+            phuLuc.Columns.Add("Tỷ lệ nội trú tháng này(%)"); /* 2 */
+            phuLuc.Columns.Add("Tỷ lệ nội trú tháng năm trước (%)"); /* 3 */
+            phuLuc.Columns.Add("Tỷ lệ nội trú tăng-giảm (%)"); /* 4 */
+            phuLuc.Columns.Add("Ngày điều trị BQ (ngày) tháng này"); /* 5 */
+            phuLuc.Columns.Add("Ngày điều trị BQ (ngày) tháng năm trước"); /* 6 */
+            phuLuc.Columns.Add("Ngày điều trị BQ (ngày) tăng-giảm"); /* 7 */
+            phuLuc.Columns.Add("Chi BQ chung (Đồng) tháng này"); /* 8 */
+            phuLuc.Columns.Add("Chi BQ chung (Đồng) tháng năm trước"); /* 9 */
+            phuLuc.Columns.Add("Chi BQ chung (Đồng) tăng-giảm"); /* 10 */
+            phuLuc.Columns.Add("Chi BQ nội trú (Đồng) tháng này"); /* 11 */
+            phuLuc.Columns.Add("Chi BQ nội trú (Đồng) tháng năm trước"); /* 12 */
+            phuLuc.Columns.Add("Chi BQ nội trú (Đồng) tăng-giảm"); /* 13 */
+            phuLuc.Columns.Add("Chi BQ ngoại trú tháng này"); /* 14 */
+            phuLuc.Columns.Add("Chi BQ ngoại trú tháng năm trước"); /* 15 */
+            phuLuc.Columns.Add("Chi BQ ngoại trú tăng-giảm"); /* 16 */
+
             /* 4 Dòng đầu copy của PL02a, PL02b phần chênh lệnh */
             if (PL02.Rows.Count > 5)
             {
@@ -1035,15 +1047,15 @@ namespace ToolBaoCao.Controllers
                 {
                     IndexPL02 = pl02Count - i;
                     phuLuc.Rows.Add(PL02.Rows[IndexPL02][0], PL02.Rows[IndexPL02][1]
-                        , PL02.Rows[IndexPL02][2] /* tyle_noitru */
-                        , PL02.Rows[IndexPL02][4] /* ngay_dtri_bq */
-                        , PL02.Rows[IndexPL02][6] /* chi_bq_chung */
-                        , PL02.Rows[IndexPL02][8] /* chi_bq_noi */
-                        , PL02.Rows[IndexPL02][10] /* chi_bq_ngoai */);
+                        , PL02.Rows[IndexPL02][2], "0", "0" /* tyle_noitru */
+                        , PL02.Rows[IndexPL02][4], "0", "0" /* ngay_dtri_bq */
+                        , PL02.Rows[IndexPL02][6], "0", "0" /* chi_bq_chung */
+                        , PL02.Rows[IndexPL02][8], "0", "0" /* chi_bq_noi */
+                        , PL02.Rows[IndexPL02][10], "0", "0" /* chi_bq_ngoai */);
                 }
             }
 
-            phuLuc.Rows.Add("", "", "", "", "", "", "");
+            phuLuc.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
             string hang = "";
             foreach (string tuyen in listTuyen)
@@ -1064,7 +1076,12 @@ namespace ToolBaoCao.Controllers
                 foreach (DataRow row in view)
                 {
                     hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
-                    phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}", $"{row["tyle_noitru"]}", $"{row["ngay_dtri_bq"]}", $"{row["chi_bq_chung"]}", $"{row["chi_bq_noi"]}", $"{row["chi_bq_ngoai"]}");
+                    phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
+                        , $"{row["tyle_noitru"]}", "0", "0"
+                        , $"{row["ngay_dtri_bq"]}", "0", "0"
+                        , $"{row["chi_bq_chung"]}", "0", "0"
+                        , $"{row["chi_bq_noi"]}", "0", "0"
+                        , $"{row["chi_bq_ngoai"]}", "0", "0");
                 }
             }
             return phuLuc;
