@@ -353,14 +353,14 @@ namespace ToolBaoCao.Controllers
             var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
-            /* var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung); */
+            var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, 1, thang, "PL02c");
             var PL03a = createPL03(dbBCThang, idBaoCao, "PL03a", PL02a);
-            /* var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b); */
+            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
             var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, thang, thang, "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
-            var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02c, PL03a, PL03c, PL04a, PL04b);
+            var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
             xlsx.Close(); xlsx.Clear();
@@ -375,13 +375,17 @@ namespace ToolBaoCao.Controllers
             int i = 0; int rowIndex = 0;
             var names = new List<string>();
             string tmp = ""; bool isCreateSheet = false;
+            var csContext = workbook.CreateCellStyleThin(getCache: false);
+            var csContextR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
+            var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
+            var csContextBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
             foreach (DataTable dt in par)
             {
                 isCreateSheet = false;
-                var sheet = workbook.GetSheet(dt.TableName);
+                ISheet sheet = workbook.GetSheet(dt.TableName);
                 if (sheet == null)
                 {
-                    sheet = names.Contains(dt.TableName) ? workbook.CreateSheet() : workbook.CreateSheet(dt.TableName);
+                    sheet = workbook.CreateSheet(dt.TableName);
                     isCreateSheet = true;
                 }
                 names.Add(dt.TableName);
@@ -464,10 +468,6 @@ namespace ToolBaoCao.Controllers
                     }
                 }
                 /* Đổ dữ liệu */
-                var csContext = workbook.CreateCellStyleThin(getCache: false);
-                var csContextR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
-                var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
-                var csContextBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
                 int indexColumn = -1; rowIndex--;
                 foreach (DataRow r in dt.Rows)
                 {
@@ -762,20 +762,9 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{matinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
                         return View();
                     }
-                    var bcThang = new Dictionary<string, string>();
-                    foreach (DataColumn c in data.Columns) { bcThang.Add("{" + c.ColumnName + "}", $"{data.Rows[0][c.ColumnName]}"); }
-                    tsql = $"SELECT * FROM bcthangpldocx WHERE id='{id.sqliteGetValueField()}'";
-                    data = dbBaoCao.getDataTable(tsql);
-                    if (data.Rows.Count > 0)
-                    {
-                        foreach (DataColumn c in data.Columns)
-                        {
-                            if (bcThang.ContainsKey(c.ColumnName)) { continue; }
-                            bcThang.Add("{" + c.ColumnName + "}", $"{data.Rows[0][c.ColumnName]}");
-                        }
-                    }
-                    tmp = createFileBcThangDocx(id, matinh, bcThang);
+                    tmp = createFileBcThangDocx(id, matinh, dbBaoCao);
                     var listFile = new List<string> { tmp, createFilePhuLucBcThang(id, matinh, dbBaoCao) };
+                    dbBaoCao.Close();
                     AppHelper.zipAchive(fileZip, listFile);
                 }
                 if (System.IO.File.Exists(Path.Combine(d.FullName, $"bcThang_{id}.docx")) == false) { AppHelper.zipExtract(fileZip, d.FullName, ".docx"); }
@@ -847,10 +836,11 @@ namespace ToolBaoCao.Controllers
                     data.Columns.RemoveAt(0);
                     dbImport.Insert(v, data);
                 }
-                dbTemp.Close();
                 /* Tạo docx */
-                var tmp = createFileBcThangDocx(idBaoCao, idtinh, bcThang);
+                var tmp = createFileBcThangDocx(idBaoCao, idtinh, dbTemp);
                 var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang) };
+
+                dbTemp.Close();
                 AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
                 /* Xoá tập tin ở thư mục tạm đi */
                 foreach (var f in dirTemp.GetFiles($"*{idBaoCao}*.*")) { try { f.Delete(); } catch { } }
@@ -1008,18 +998,20 @@ namespace ToolBaoCao.Controllers
             }
             DataRow rowTinh = phuLuc.Rows[phuLuc.Rows.Count - 1];
             /* Chênh so toàn quốc */
-            phuLuc.Rows.Add("", "Chênh so toàn quốc", $"{(double.Parse($"{rowTinh[2]}") - double.Parse($"{row00[2]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[4]}") - double.Parse($"{row00[4]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{row00[6]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[8]}") - double.Parse($"{row00[8]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{row00[10]}")).ToString("0.##")}");
+            string title = "Chênh so toàn quốc";
+            phuLuc.Rows.Add("", title, $"{(double.Parse($"{rowTinh[2]}") - double.Parse($"{row00[2]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[4]}") - double.Parse($"{row00[4]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{row00[6]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[8]}") - double.Parse($"{row00[8]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{row00[10]}")).ToString("0.##")}");
 
             /* Chênh với Vùng */
-            phuLuc.Rows.Add("", "Chênh so vùng", $"{(double.Parse($"{rowTinh[2]}") - double.Parse($"{rowVung[2]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[4]}") - double.Parse($"{rowVung[4]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{rowVung[6]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[8]}") - double.Parse($"{rowVung[8]}")).ToString("0.##")}",
-                "", $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{rowVung[10]}")).ToString("0.##")}");
+            title = "Chênh so vùng";
+            phuLuc.Rows.Add("", title, $"{(double.Parse($"{rowTinh[2]}") - double.Parse($"{rowVung[2]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[4]}") - double.Parse($"{rowVung[4]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[6]}") - double.Parse($"{rowVung[6]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[8]}") - double.Parse($"{rowVung[8]}")).ToString("0.##")}",
+                title, $"{(double.Parse($"{rowTinh[10]}") - double.Parse($"{rowVung[10]}")).ToString("0.##")}");
             return phuLuc;
         }
 
@@ -1886,16 +1878,32 @@ namespace ToolBaoCao.Controllers
             return d;
         }
 
-        private string createFileBcThangDocx(string idBaoCao, string idtinh, Dictionary<string, string> bcThang)
+        private string createFileBcThangDocx(string idBaoCao, string idtinh, dbSQLite db)
         {
             string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcThang.docx");
             if (!System.IO.File.Exists(pathFileTemplate)) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
             var bcThangExport = new Dictionary<string, string>();
-            foreach (var v in bcThang) { bcThangExport.Add("{" + v.Key + "}", v.Value); }
             var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
             if (!Directory.Exists(outputPath)) { Directory.CreateDirectory(outputPath); }
             var outputFile = Path.Combine(outputPath, $"bcThang_{idBaoCao}.docx");
+
             string valReplace = "";
+            var data = db.getDataTable($"SELECT * FROM bcthangdocx WHERE id='{idBaoCao}'");
+            if (data.Rows.Count > 0)
+            {
+                DataRow r = data.Rows[0];
+                foreach (DataColumn c in data.Columns) { bcThangExport.Add("{" + c.ColumnName + "}", $"{r[c.ColumnName]}"); }
+            }
+            data = db.getDataTable($"SELECT * FROM bcthangpldocx WHERE id='{idBaoCao}';");
+            if (data.Rows.Count > 0)
+            {
+                DataRow r = data.Rows[0];
+                foreach (DataColumn c in data.Columns)
+                {
+                    valReplace = "{" + c.ColumnName + "}";
+                    if (bcThangExport.ContainsKey(valReplace) == false) { bcThangExport.Add(valReplace, $"{r[c.ColumnName]}"); }
+                }
+            }
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
                 var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
@@ -1980,19 +1988,7 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{idtinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
                         return View();
                     }
-                    var bcThang = new Dictionary<string, string>();
-                    foreach (DataColumn c in data.Columns) { bcThang.Add(c.ColumnName, $"{data.Rows[0][c.ColumnName]}"); }
-                    tsql = $"SELECT * FROM bcthangpldocx WHERE id='{id.sqliteGetValueField()}'";
-                    data = dbBaoCao.getDataTable(tsql);
-                    if (data.Rows.Count > 0)
-                    {
-                        foreach (DataColumn c in data.Columns)
-                        {
-                            if (bcThang.ContainsKey(c.ColumnName)) { continue; }
-                            bcThang.Add("{" + c.ColumnName + "}", $"{data.Rows[0][c.ColumnName]}");
-                        }
-                    }
-                    var tmp = createFileBcThangDocx(id, idtinh, bcThang);
+                    var tmp = createFileBcThangDocx(id, idtinh, dbBaoCao);
                     var listFile = new List<string> { tmp, createFilePhuLucBcThang(id, idtinh, dbBaoCao) };
                     string fileZip = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip");
                     if (System.IO.File.Exists(fileZip)) { System.IO.File.Delete(fileZip); }
