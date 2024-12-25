@@ -356,8 +356,8 @@ namespace ToolBaoCao.Controllers
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, 1, thang, "PL02c");
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a);
-            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b);
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, nam);
+            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, nam);
             var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, thang, thang, "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
@@ -1016,9 +1016,9 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02)
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long nam)
         {
-            var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
+            var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, tuyen_bv, hang_bv").AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
             var phuLuc = new DataTable(nameSheet);
             phuLuc.Columns.Add("Mã"); /* 0 */
@@ -1039,7 +1039,7 @@ namespace ToolBaoCao.Controllers
             phuLuc.Columns.Add("Chi BQ ngoại trú tháng năm trước"); /* 15 */
             phuLuc.Columns.Add("Chi BQ ngoại trú tăng-giảm"); /* 16 */
 
-            /* 4 Dòng đầu copy của PL02a, PL02b phần chênh lệnh */
+            /* 4 Dòng đầu copy của PL02a phần chênh lệnh */
             if (PL02.Rows.Count > 5)
             {
                 int pl02Count = PL02.Rows.Count; int IndexPL02 = 0;
@@ -1054,15 +1054,30 @@ namespace ToolBaoCao.Controllers
                         , PL02.Rows[IndexPL02][10], "0", "0" /* chi_bq_ngoai */);
                 }
             }
-
             phuLuc.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
             string hang = "";
+            var listNam = data.Select(x => x.Field<long>("nam")).Distinct().OrderByDescending(x => x).ToList();
+            string namBC = nam.ToString(); string macsyt = ""; int lastRow = -1;
             foreach (string tuyen in listTuyen)
             {
                 var view = new List<DataRow>();
-                if (tuyen == "*") { view = data.Where(x => x.Field<string>("tuyen_bv") == "").OrderBy(x => x.Field<string>("hang_bv")).ToList(); }
-                else { view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen)).OrderBy(x => x.Field<string>("hang_bv")).ToList(); }
+                if (tuyen == "*")
+                {
+                    view = data.Where(x => x.Field<string>("tuyen_bv") == "")
+                        .OrderByDescending(x => x.Field<long>("nam"))
+                        .ThenBy(x => x.Field<string>("hang_bv"))
+                        .ThenBy(x => x.Field<string>("ma_cskcb"))
+                        .ToList();
+                }
+                else
+                {
+                    view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
+                        .OrderByDescending(x => x.Field<long>("nam"))
+                        .ThenBy(x => x.Field<string>("hang_bv"))
+                        .ThenBy(x => x.Field<string>("ma_cskcb"))
+                        .ToList();
+                }
                 if (view.Count() == 0) { continue; }
                 string tenTuyen = "(*)";
                 switch (tuyen)
@@ -1073,23 +1088,50 @@ namespace ToolBaoCao.Controllers
                     default: break;
                 }
                 phuLuc.Rows.Add("T" + (tuyen == "" ? "0" : tuyen), $"Tuyến {tenTuyen}", "", "", "", "", "");
+                macsyt = "";
                 foreach (DataRow row in view)
                 {
-                    hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
-                    phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
-                        , $"{row["tyle_noitru"]}", "0", "0"
-                        , $"{row["ngay_dtri_bq"]}", "0", "0"
-                        , $"{row["chi_bq_chung"]}", "0", "0"
-                        , $"{row["chi_bq_noi"]}", "0", "0"
-                        , $"{row["chi_bq_ngoai"]}", "0", "0");
+                    if (namBC != $"{row["nam"]}")
+                    {
+                        if (macsyt != $"{row["ma_cskcb"]}")
+                        {
+                            hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
+                            phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
+                                , "0", $"{row["tyle_noitru"]}", "0"
+                                , "0", $"{row["ngay_dtri_bq"]}", "0"
+                                , "0", $"{row["chi_bq_chung"]}", "0"
+                                , "0", $"{row["chi_bq_noi"]}", "0"
+                                , "0", $"{row["chi_bq_ngoai"]}", "0");
+                        }
+                        else
+                        {
+                            lastRow = phuLuc.Rows.Count - 1;
+                            phuLuc.Rows[lastRow][3] = $"{row["tyle_noitru"]}"; phuLuc.Rows[lastRow][4] = (double.Parse($"{phuLuc.Rows[lastRow][2]}") - double.Parse($"{phuLuc.Rows[lastRow][3]}"));
+                            phuLuc.Rows[lastRow][6] = $"{row["ngay_dtri_bq"]}"; phuLuc.Rows[lastRow][7] = (double.Parse($"{phuLuc.Rows[lastRow][5]}") - double.Parse($"{phuLuc.Rows[lastRow][6]}"));
+                            phuLuc.Rows[lastRow][9] = $"{row["chi_bq_chung"]}"; phuLuc.Rows[lastRow][10] = (double.Parse($"{phuLuc.Rows[lastRow][8]}") - double.Parse($"{phuLuc.Rows[lastRow][9]}"));
+                            phuLuc.Rows[lastRow][12] = $"{row["chi_bq_noi"]}"; phuLuc.Rows[lastRow][13] = (double.Parse($"{phuLuc.Rows[lastRow][11]}") - double.Parse($"{phuLuc.Rows[lastRow][12]}"));
+                            phuLuc.Rows[lastRow][15] = $"{row["chi_bq_ngoai"]}"; phuLuc.Rows[lastRow][16] = (double.Parse($"{phuLuc.Rows[lastRow][14]}") - double.Parse($"{phuLuc.Rows[lastRow][15]}"));
+                        }
+                    }
+                    else
+                    {
+                        macsyt = $"{row["ma_cskcb"]}";
+                        hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
+                        phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
+                            , $"{row["tyle_noitru"]}", "0", "0"
+                            , $"{row["ngay_dtri_bq"]}", "0", "0"
+                            , $"{row["chi_bq_chung"]}", "0", "0"
+                            , $"{row["chi_bq_noi"]}", "0", "0"
+                            , $"{row["chi_bq_ngoai"]}", "0", "0");
+                    }
                 }
             }
             return phuLuc;
         }
 
-        private DataTable createPL03(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02)
+        private DataTable createPL03(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long namBC)
         {
-            var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv").AsEnumerable();
+            var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' AND nam={namBC} ORDER BY tuyen_bv, hang_bv").AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
             var phuLuc = new DataTable(nameSheet);
             phuLuc.Columns.Add("Mã"); /* 0 */
