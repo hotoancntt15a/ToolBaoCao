@@ -191,7 +191,7 @@ namespace ToolBaoCao.Controllers
                 if (bieus.Where(p => p.StartsWith("b02")).Count() == 0) { throw new Exception($"Thiếu biểu đầu vào B02. {string.Join(", ", bieus)}"); }
                 if (bieus.Where(p => p.StartsWith("b04")).Count() == 0) { throw new Exception($"Thiếu biểu đầu vào B04. {string.Join(", ", bieus)}"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
-                /* Lấy năm tháng báo cáo */
+                /* Lấy năm, tháng báo cáo */
                 nam = ""; string thang = "";
                 var data = dbTemp.getDataTable($"SELECT den_thang, nam FROM thangb02 WHERE id_bc='{id}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
                 if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
@@ -205,20 +205,19 @@ namespace ToolBaoCao.Controllers
                     data = dbTemp.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{id}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
                     if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
                 }
+                if (nam == "") { throw new Exception("Không xác định được Năm, Tháng báo cáo"); }
 
                 /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1")}";
                 var tsql = $@"INSERT INTO thangpl01 (id_bc
                     ,idtinh
                     ,ma_cskcb
                     ,ten_cskcb
                     ,dtgiao ,tien_bhtt ,tl_sudungdt
                     ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2='{tmp}';";
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);";
                 dbTemp.Execute(tsql);
                 /* Tạo Phục Lục 2a */
                 /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang={thang} LIMIT 1")}";
                 dbTemp.Execute($@"INSERT INTO thangpl02a (id_bc, idtinh
                 ,ma_tinh
                 ,ten_tinh
@@ -232,10 +231,9 @@ namespace ToolBaoCao.Controllers
                     ,tong_luot, tong_luot_noi, tong_luot_ngoai
                     ,tong_chi, tong_chi_noi, tong_chi_ngoai
                     ,'{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang={thang} LIMIT 1);");
                 /* Tạo Phục Lục 2b */
                 /* Lấy dữ liệu từ biểu b02 dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1")}";
                 dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh
                 ,ma_tinh
                 ,ten_tinh
@@ -249,14 +247,14 @@ namespace ToolBaoCao.Controllers
                     ,tong_luot, tong_luot_noi, tong_luot_ngoai
                     ,tong_chi, tong_chi_noi, tong_chi_ngoai
                     ,'{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 = '{tmp}';");
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);");
                 /* Tạo Phục Lục 3a */
                 /* Lấy dữ liệu từ biểu b02 csyt trong tháng */
                 data = dbTemp.getDataTable($@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
                     ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p2.tu_thang={thang};");
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};");
                 /* Lấy danh sách Ma_CSKCB */
                 var dsCSYT = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}'");
                 var dsCSKCB = dsCSYT.AsEnumerable().Select(x => new
@@ -283,7 +281,7 @@ namespace ToolBaoCao.Controllers
                     ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, p2.thang, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p2.tu_thang=1 AND p2.den_thang={thang};");
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang=1 AND p2.den_thang={thang};");
                 foreach (DataRow row in data.Rows)
                 {
                     tmp = $"{row["ma_cskcb"]}";
@@ -298,19 +296,19 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Insert("thangpl03b", data);
                 /* Tạo thangpl04a */
                 /* Nguồn dữ liệu B04_00 từ tháng 1 đến tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần. */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb04 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1")}";
                 dbTemp.Execute($@"INSERT INTO thangpl04a (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
                     SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
                     ,ROUND(bq_xn) AS chi_bq_xn ,ROUND(bq_cdha) AS chi_bq_cdha ,ROUND(bq_thuoc) AS chi_bq_thuoc ,ROUND(bq_ptt) AS chi_bq_pttt ,ROUND(bq_vtyt) AS chi_bq_vtyt ,ROUND(bq_giuong) AS chi_bq_giuong ,ROUND(ngay_ttbq, 2) AS ngay_ttbq
                     ,'{idUser}' AS userid
-                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';");
+                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb04 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);");
                 /* Tạo thangpl04b */
                 /* Nguồn dữ liệu B04_10 của tháng báo cáo. Giống như Phụ lục 2 của báo cáo tuần, nhưng chi tiết từng CSKCB và phân nhóm theo tuyến tỉnh huyện xã */
-                tmp = $"{dbTemp.getValue($"SELECT id FROM thangb04 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND tu_thang={thang} LIMIT 1")}";
-                tsql = $@"SELECT id_bc, '{matinh}' as idtinh, ma_cskcb, ten_cskcb, ma_vung
-                    ,ROUND(bq_xn) AS chi_bq_xn ,ROUND(bq_cdha) AS chi_bq_cdha ,ROUND(bq_thuoc) AS chi_bq_thuoc ,ROUND(bq_ptt) AS chi_bq_pttt ,ROUND(bq_vtyt) AS chi_bq_vtyt ,ROUND(bq_giuong) AS chi_bq_giuong ,ROUND(ngay_ttbq, 2) AS ngay_ttbq
-                    ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid
-                    FROM thangb04chitiet WHERE id_bc='{id}' AND id2='{tmp}';";
+                tsql = $@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
+                    , ROUND(p1.bq_xn) AS chi_bq_xn, ROUND(p1.bq_cdha) AS chi_bq_cdha, ROUND(p1.bq_thuoc) AS chi_bq_thuoc
+                    , ROUND(p1.bq_ptt) AS chi_bq_pttt, ROUND(p1.bq_vtyt) AS chi_bq_vtyt, ROUND(p1.bq_giuong) AS chi_bq_giuong, ROUND(p1.ngay_ttbq, 2) AS ngay_ttbq
+                    ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid, p2.nam
+                    FROM thangb04chitiet p1 INNER JOIN thangb04 p2 ON p1.id2=p2.id
+                    WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_tinh='{matinh}' AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};";
                 data = dbTemp.getDataTable(tsql);
                 foreach (DataRow row in data.Rows)
                 {
