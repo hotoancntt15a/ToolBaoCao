@@ -1109,11 +1109,11 @@ namespace ToolBaoCao.Controllers
                         {
                             hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
                             phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
-                                , "0", $"{row["tyle_noitru"]}", "0"
-                                , "0", $"{row["ngay_dtri_bq"]}", "0"
-                                , "0", $"{row["chi_bq_chung"]}", "0"
-                                , "0", $"{row["chi_bq_noi"]}", "0"
-                                , "0", $"{row["chi_bq_ngoai"]}", "0");
+                                , "0", $"{row["tyle_noitru"]}", $"-{row["tyle_noitru"]}"
+                                , "0", $"{row["ngay_dtri_bq"]}", $"-{row["ngay_dtri_bq"]}"
+                                , "0", $"{row["chi_bq_chung"]}", $"-{row["chi_bq_chung"]}"
+                                , "0", $"{row["chi_bq_noi"]}", $"-{row["chi_bq_noi"]}"
+                                , "0", $"{row["chi_bq_ngoai"]}", $"-{row["chi_bq_ngoai"]}");
                         }
                         else
                         {
@@ -1130,11 +1130,11 @@ namespace ToolBaoCao.Controllers
                         macsyt = $"{row["ma_cskcb"]}";
                         hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
                         phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
-                            , $"{row["tyle_noitru"]}", "0", "0"
-                            , $"{row["ngay_dtri_bq"]}", "0", "0"
-                            , $"{row["chi_bq_chung"]}", "0", "0"
-                            , $"{row["chi_bq_noi"]}", "0", "0"
-                            , $"{row["chi_bq_ngoai"]}", "0", "0");
+                            , $"{row["tyle_noitru"]}", "0", $"{row["tyle_noitru"]}"
+                            , $"{row["ngay_dtri_bq"]}", "0", $"{row["ngay_dtri_bq"]}"
+                            , $"{row["chi_bq_chung"]}", "0", $"{row["chi_bq_chung"]}"
+                            , $"{row["chi_bq_noi"]}", "0", $"{row["chi_bq_noi"]}"
+                            , $"{row["chi_bq_ngoai"]}", "0", $"{row["chi_bq_ngoai"]}");
                     }
                 }
             }
@@ -1400,13 +1400,13 @@ namespace ToolBaoCao.Controllers
                         macsyt = $"{row["ma_cskcb"]}";
                         hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
                         phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
-                            , $"{row["chi_bq_xn"]}", "0", "0"
-                            , $"{row["chi_bq_cdha"]}", "0", "0"
-                            , $"{row["chi_bq_thuoc"]}", "0", "0"
-                            , $"{row["chi_bq_pttt"]}", "0", "0"
-                            , $"{row["chi_bq_vtyt"]}", "0", "0"
-                            , $"{row["chi_bq_giuong"]}", "0", "0"
-                            , $"{row["ngay_ttbq"]}", "0", "0");
+                            , $"{row["chi_bq_xn"]}", "0", $"{row["chi_bq_xn"]}"
+                            , $"{row["chi_bq_cdha"]}", "0", $"{row["chi_bq_cdha"]}"
+                            , $"{row["chi_bq_thuoc"]}", "0", $"{row["chi_bq_thuoc"]}"
+                            , $"{row["chi_bq_pttt"]}", "0", $"{row["chi_bq_pttt"]}"
+                            , $"{row["chi_bq_vtyt"]}", "0", $"{row["chi_bq_vtyt"]}"
+                            , $"{row["chi_bq_giuong"]}", "0", $"{row["chi_bq_giuong"]}"
+                            , $"{row["ngay_ttbq"]}", "0", $"{row["ngay_ttbq"]}");
                     }
                     else
                     {
