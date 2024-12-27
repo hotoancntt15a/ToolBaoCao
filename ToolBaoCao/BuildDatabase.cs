@@ -927,7 +927,7 @@ namespace ToolBaoCao
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl04b (id INTEGER primary key AUTOINCREMENT
                 ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
                 ,idtinh text not null /* Mã tỉnh của người dùng */
-                ,nam integer not null default 0 /* Năm lấy dữ liệu */
+                ,thang integer not null default 0 /* Năm lấy dữ liệu */
                 ,ma_cskcb text not null default '' /* Mã cskcb  */
                 ,ten_cskcb text not null default '' /* tuyến/Hạng/Tên CSKCB */
                 ,ma_vung text not null default '' /* Mã vùng */
@@ -947,7 +947,7 @@ namespace ToolBaoCao
             {
                 /* Kiểm tra cột năm có tồn tại không?*/
                 var cols = dbConnect.getColumns("thangpl04b");
-                if (cols.Any(p => p.ColumnName == "nam") == false) { tsqlCreate.Add("ALTER TABLE thangpl04b ADD COLUMN nam integer not null default 0;"); }
+                if (cols.Any(p => p.ColumnName == "thang") == false) { tsqlCreate.Add("ALTER TABLE thangpl04b ADD COLUMN thang integer not null default 0;"); }
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }

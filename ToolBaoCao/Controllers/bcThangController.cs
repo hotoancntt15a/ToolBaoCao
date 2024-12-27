@@ -207,10 +207,9 @@ namespace ToolBaoCao.Controllers
                 }
                 if (nam == "") { throw new Exception("Không xác định được Năm, Tháng báo cáo"); }
 
-                /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
-                var tsql = $@"INSERT INTO thangpl01 (id_bc ,idtinh ,ma_cskcb ,ten_cskcb
-                    ,dtgiao ,tien_bhtt ,tl_sudungdt
-                    ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
+                /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế - Chỉ lấy mã cấp trên */
+                var tsql = $@"INSERT INTO thangpl01 (id_bc, idtinh, ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt, userid)
+                    SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);";
                 dbTemp.Execute(tsql);
                 /* Tạo Phục Lục 2a */
@@ -297,9 +296,11 @@ namespace ToolBaoCao.Controllers
                 tsql = $@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
                     , ROUND(p1.bq_xn) AS chi_bq_xn, ROUND(p1.bq_cdha) AS chi_bq_cdha, ROUND(p1.bq_thuoc) AS chi_bq_thuoc
                     , ROUND(p1.bq_ptt) AS chi_bq_pttt, ROUND(p1.bq_vtyt) AS chi_bq_vtyt, ROUND(p1.bq_giuong) AS chi_bq_giuong, ROUND(p1.ngay_ttbq, 2) AS ngay_ttbq
-                    ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid, p2.nam
+                    ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid, p2.den_thang as thang
                     FROM thangb04chitiet p1 INNER JOIN thangb04 p2 ON p1.id2=p2.id
-                    WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_tinh='{matinh}' AND p1.ma_cskcb <> '' AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};";
+                    WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p2.ma_tinh='{matinh}' AND p1.ma_cskcb <> ''";
+                if (thang == "1") { tsql += $" AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.den_thang IN (1, 12);"; }
+                else { tsql += $" AND p2.nam = {nam} AND p2.tu_thang = p2.den_thang AND p2.den_thang IN ({thang}, {(int.Parse(thang) - 1)});"; }
                 data = dbTemp.getDataTable(tsql);
                 foreach (DataRow row in data.Rows)
                 {
@@ -372,7 +373,7 @@ namespace ToolBaoCao.Controllers
             var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
             var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), long.Parse(thang), long.Parse(thang), "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
-            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, nam);
+            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
             var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
@@ -518,6 +519,7 @@ namespace ToolBaoCao.Controllers
                     }
                 }
             }
+            try { System.IO.File.Delete(fileName); } catch { }
             return workbook;
         }
 
@@ -1327,7 +1329,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL04b(dbSQLite db, string idBaoCao, string idTinh, string nam)
+        private DataTable createPL04b(dbSQLite db, string idBaoCao, string idTinh, string thang)
         {
             var data = db.getDataTable($"SELECT * FROM thangpl04b WHERE id_bc='{idBaoCao}';").AsEnumerable();
             var phuLuc = new DataTable("PL04b");
@@ -1369,19 +1371,41 @@ namespace ToolBaoCao.Controllers
                 var view = new List<DataRow>();
                 if (tuyen == "*")
                 {
-                    view = data.Where(x => x.Field<string>("tuyen_bv") == "")
-                        .OrderByDescending(x => x.Field<string>("hang_bv"))
-                        .ThenBy(x => x.Field<string>("ma_cskcb"))
-                        .ThenBy(x => x.Field<long>("nam"))
-                        .ToList();
+                    if (thang == "1")
+                    {
+                        view = data.Where(x => x.Field<string>("tuyen_bv") == "")
+                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
+                                    .ThenBy(x => x.Field<long>("thang"))
+                                    .ToList();
+                    }
+                    else
+                    {
+                        view = data.Where(x => x.Field<string>("tuyen_bv") == "")
+                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
+                                    .ThenByDescending(x => x.Field<long>("thang"))
+                                    .ToList();
+                    }
                 }
                 else
                 {
-                    view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
-                        .OrderByDescending(x => x.Field<string>("hang_bv"))
-                        .ThenBy(x => x.Field<string>("ma_cskcb"))
-                        .ThenBy(x => x.Field<long>("nam"))
-                        .ToList();
+                    if (thang == "1")
+                    {
+                        view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
+                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
+                                    .ThenBy(x => x.Field<long>("thang"))
+                                    .ToList();
+                    }
+                    else
+                    {
+                        view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
+                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
+                                    .ThenByDescending(x => x.Field<long>("thang"))
+                                    .ToList();
+                    }
                 }
                 if (view.Count() == 0) { continue; }
                 string tenTuyen = "(*)";
@@ -1395,7 +1419,7 @@ namespace ToolBaoCao.Controllers
                 phuLuc.Rows.Add("T" + (tuyen == "" ? "0" : tuyen), $"Tuyến {tenTuyen}", "", "", "", "", "", "", "");
                 foreach (DataRow row in view)
                 {
-                    if (nam == $"{row["nam"]}")
+                    if (thang == $"{row["thang"]}")
                     {
                         macsyt = $"{row["ma_cskcb"]}";
                         hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
@@ -1419,7 +1443,7 @@ namespace ToolBaoCao.Controllers
                             phuLuc.Rows[lr][12] = $"{row["chi_bq_pttt"]}"; phuLuc.Rows[lr][13] = $"{(double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}"))}";
                             phuLuc.Rows[lr][15] = $"{row["chi_bq_vtyt"]}"; phuLuc.Rows[lr][16] = $"{(double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}"))}";
                             phuLuc.Rows[lr][18] = $"{row["chi_bq_giuong"]}"; phuLuc.Rows[lr][19] = $"{(double.Parse($"{phuLuc.Rows[lr][17]}") - double.Parse($"{phuLuc.Rows[lr][18]}"))}";
-                            phuLuc.Rows[lr][21] = $"{row["ngay_ttbq"]}"; phuLuc.Rows[lr][22] = $"{(double.Parse($"{phuLuc.Rows[lr][20]}") - double.Parse($"{phuLuc.Rows[lr][21]}"))}";
+                            phuLuc.Rows[lr][21] = $"{row["ngay_ttbq"]}"; phuLuc.Rows[lr][22] = $"{Math.Round(double.Parse($"{phuLuc.Rows[lr][20]}") - double.Parse($"{phuLuc.Rows[lr][21]}"), 2)}";
                         }
                         else
                         {
