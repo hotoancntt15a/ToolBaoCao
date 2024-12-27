@@ -81,7 +81,7 @@ namespace ToolBaoCao.Controllers
                             if (Regex.IsMatch(dtgiaocsyt.Rows[0][0].ToString().Trim(), @"^[']?\d+$")) { break; } /* Đọc đến vùng dữ liệu */
                             for (int j = 0; j < dtgiaocsyt.Columns.Count; j++)
                             {
-                                Match match = Regex.Match(dtgiaocsyt.Rows[i][j].ToString(), @"\b(\d{4})\b");
+                                System.Text.RegularExpressions.Match match = Regex.Match(dtgiaocsyt.Rows[i][j].ToString(), @"\b(\d{4})\b");
                                 if (match.Success) { nam = match.Value; break; }
                             }
                         }
@@ -333,7 +333,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private string createFilePhuLucBcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null)
+        private string createFilePhuLucBcThang(string idBaoCao, string matinh, string nam = "", string thang = "", dbSQLite dbBCThang = null)
         {
             if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
             var dbImport = BuildDatabase.getDataImportBCThang(matinh);
@@ -342,6 +342,17 @@ namespace ToolBaoCao.Controllers
             var dmVung = new Dictionary<string, string>();
             var data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBC}' AND ma_tinh LIKE 'V%'");
             foreach (DataRow r in data.Rows) { dmVung.Add($"{r[0]}", $"{r[1]}"); }
+            /* Lấy năm tháng báo cáo */
+            if (nam == "")
+            {
+                data = dbBCThang.getDataTable($"SELECT nam1, thang FROM bcthangdocx WHERE id = '{idBaoCao}'");
+                if (data.Rows.Count > 0)
+                {
+                    nam = $"{data.Rows[0][0]}";
+                    thang = $"{data.Rows[0][1]}";
+                }
+                else { nam = "0", thang = "0"; }
+            }
             /* Tạo phụ lục báo cáo */
             dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = 0 WHERE id_bc='{idBC}' AND dtgiao = 0;");
             /* Lấy danh sách ID */
@@ -349,8 +360,6 @@ namespace ToolBaoCao.Controllers
             data = dbBCThang.getDataTable($"SELECT ma_cskcb FROM thangpl01 WHERE id_bc='{idBC}'");
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
             /* Cập nhật dự toán giao CSKCB */
-            var nam = (long)dbBCThang.getValue($"SELECT IFNULL(nam1, 0) AS nam FROM bcthangdocx WHERE id='{idBC}' LIMIT 1");
-            var thang = (long)dbBCThang.getValue($"SELECT IFNULL(thang, 0) AS thang FROM bcthangdocx WHERE id='{idBC}' LIMIT 1");
             var tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
             /* Cập nhật dữ liệu */
             var dbDTGiao = dbBCThang;
@@ -367,10 +376,10 @@ namespace ToolBaoCao.Controllers
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
-            var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, 1, thang, "PL02c");
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, nam);
-            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, nam);
-            var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, nam, thang, thang, "PL03c");
+            var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), "PL02c");
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, long.Parse(nam));
+            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
+            var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), long.Parse(thang), long.Parse(thang), "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
             var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
@@ -851,7 +860,7 @@ namespace ToolBaoCao.Controllers
                 }
                 /* Tạo docx */
                 var tmp = createFileBcThangDocx(idBaoCao, idtinh, dbTemp);
-                var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang) };
+                var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, bcThang["nam1"], bcThang["thang"], dbBcThang) };
 
                 dbTemp.Close();
                 AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
@@ -1520,11 +1529,25 @@ namespace ToolBaoCao.Controllers
             string mavung = "";
             double number = 0;
             bcThang.Add("tentinh", tmp);
-            var data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' LIMIT 1;");
-            if (data.Rows.Count == 0) { throw new Exception("[creatbcThang] Biểu 04 không có dữ liệu"); }
-            bcThang.Add("nam1", $"{data.Rows[0]["nam"]}");
-            bcThang.Add("nam2", (int.Parse($"{data.Rows[0]["nam"]}") - 1).ToString());
-            bcThang.Add("thang", $"{data.Rows[0]["den_thang"]}");
+            /* Lấy năm, tháng báo cáo */
+            string nam = ""; string thang = "";
+            var data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb02 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+            if (nam == "")
+            {
+                data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb01 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+            }
+            if (nam == "")
+            {
+                data = dbConnect.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+            }
+            if (nam == "") { throw new Exception("Không xác định được Năm, Tháng báo cáo"); }
+
+            bcThang.Add("nam1", nam);
+            bcThang.Add("nam2", (int.Parse(nam) - 1).ToString());
+            bcThang.Add("thang", thang);
             tmp = bcThang["thang"].Length < 2 ? "0" + bcThang["thang"] : bcThang["thang"];
             bcThang.Add("ngay2", $"01/{tmp}/{bcThang["nam1"]}");
             var time = new DateTime(int.Parse(bcThang["nam1"]), int.Parse(bcThang["thang"]), 1);
@@ -1984,7 +2007,7 @@ namespace ToolBaoCao.Controllers
                     {
                         var tmp = run.ToString();
                         MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
-                        foreach (Match match in matches)
+                        foreach (System.Text.RegularExpressions.Match match in matches)
                         {
                             valReplace = bcThangExport.getValue(match.Value, "");
                             if (match.Value.StartsWith("{t") || match.Value.StartsWith("{x"))
@@ -2009,7 +2032,7 @@ namespace ToolBaoCao.Controllers
                                 {
                                     var tmp = run.ToString();
                                     MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
-                                    foreach (Match match in matches)
+                                    foreach (System.Text.RegularExpressions.Match match in matches)
                                     {
                                         valReplace = bcThangExport.getValue(match.Value, "");
                                         if (valReplace.isNumberUS()) { valReplace = valReplace.FormatCultureVN(); }
