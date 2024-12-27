@@ -240,11 +240,14 @@ namespace ToolBaoCao.Controllers
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);");
                 /* Tạo Phục Lục 3a */
                 /* Lấy dữ liệu từ biểu b02 csyt trong tháng */
-                data = dbTemp.getDataTable($@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
+                tsql = $@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
                     ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
-                    ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_cskcb <> '' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};");
+                    ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.den_thang as thang, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_cskcb <> '';";
+                if (thang == "1") { tsql += $" AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND tu_thang=den_thang AND tu_thang IN (1, 12)"; }
+                else { tsql += $" AND nam = {nam} AND tu_thang=den_thang AND tu_thang IN ({thang}, {(int.Parse(thang) - 1)})"; }
+                data = dbTemp.getDataTable(tsql);
                 /* Lấy danh sách Ma_CSKCB */
                 var dsCSYT = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}'");
                 var dsCSKCB = dsCSYT.AsEnumerable().Select(x => new
@@ -299,7 +302,7 @@ namespace ToolBaoCao.Controllers
                     ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid, p2.den_thang as thang
                     FROM thangb04chitiet p1 INNER JOIN thangb04 p2 ON p1.id2=p2.id
                     WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p2.ma_tinh='{matinh}' AND p1.ma_cskcb <> ''";
-                if (thang == "1") { tsql += $" AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.den_thang IN (1, 12);"; }
+                if (thang == "1") { tsql += $" AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang = p2.den_thang AND p2.den_thang IN (1, 12);"; }
                 else { tsql += $" AND p2.nam = {nam} AND p2.tu_thang = p2.den_thang AND p2.den_thang IN ({thang}, {(int.Parse(thang) - 1)});"; }
                 data = dbTemp.getDataTable(tsql);
                 foreach (DataRow row in data.Rows)
@@ -314,6 +317,7 @@ namespace ToolBaoCao.Controllers
                     }
                 }
                 dbTemp.Insert("thangpl04b", data);
+                if (thang == "1") { dbTemp.Execute($"UPDATE thangpl04b thang = 0 WHERE id_bc='{id}' AND thang=12"); }
                 dbTemp.Close();
             }
             catch (Exception ex)
@@ -368,159 +372,163 @@ namespace ToolBaoCao.Controllers
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
-            var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), "PL02c");
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, nam);
+            var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang));
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, thang);
             var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
-            var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), long.Parse(thang), long.Parse(thang), "PL03c");
+            var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang);
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
-            var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
-            if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
-            using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
-            xlsx.Close(); xlsx.Clear();
+            exportPhuLucbcThang(idBaoCao, outFile, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             return outFile;
         }
 
-        private XSSFWorkbook exportPhuLucbcThang(string idBC, params DataTable[] par)
+        private void exportPhuLucbcThang(string idBC, string outFile, params DataTable[] par)
         {
+            if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             string fileName = Path.Combine(AppHelper.pathTemp, "bcThang", $"bcthang{idBC}.xlsx");
             System.IO.File.Copy(Path.Combine(AppHelper.pathAppData, "bcThangPL.xlsx"), fileName);
-            XSSFWorkbook workbook = new XSSFWorkbook(fileName);
-            int i = 0; int rowIndex = 0;
-            var names = new List<string>();
-            string tmp = ""; bool isCreateSheet = false;
-            var csContext = workbook.CreateCellStyleThin(getCache: false);
-            var csContextR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
-            var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
-            var csContextBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
-            foreach (DataTable dt in par)
+            try
             {
-                isCreateSheet = false;
-                ISheet sheet = workbook.GetSheet(dt.TableName);
-                if (sheet == null)
+                XSSFWorkbook workbook = new XSSFWorkbook(fileName);
+                int i = 0; int rowIndex = 0;
+                var names = new List<string>();
+                string tmp = ""; bool isCreateSheet = false;
+                var csContext = workbook.CreateCellStyleThin(getCache: false);
+                var csContextR = workbook.CreateCellStyleThin(getCache: false, alignment: HorizontalAlignment.Right);
+                var csContextB = workbook.CreateCellStyleThin(true, getCache: false);
+                var csContextBR = workbook.CreateCellStyleThin(true, getCache: false, alignment: HorizontalAlignment.Right);
+                foreach (DataTable dt in par)
                 {
-                    sheet = workbook.CreateSheet(dt.TableName);
-                    isCreateSheet = true;
-                }
-                names.Add(dt.TableName);
-                var listColRight = new List<int>();
-                var listColWith = new List<int>();
-                switch (dt.TableName)
-                {
-                    case "PL01":
-                        listColRight = new List<int>() { 2, 3, 4 };
-                        listColWith = new List<int>() { 11, 32, 25, 25, 13 };
-                        break;
-
-                    case "PL02a":
-                        listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
-                        listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
-                        break;
-
-                    case "PL02b":
-                        listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
-                        listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
-                        break;
-
-                    case "PL02c":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
-                        listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
-                        break;
-
-                    case "PL03a":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-                        listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
-                        break;
-
-                    case "PL03b":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6 };
-                        listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14 };
-                        break;
-
-                    case "PL03c":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
-                        listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
-                        break;
-
-                    case "PL04a":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
-                        listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14 };
-                        break;
-
-                    case "PL04b":
-                        listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
-                        listColWith = new List<int>() { 9, 57, 14, 14, 14, 14, 14, 14, 14 };
-                        break;
-
-                    default: break;
-                }
-                for (int colIndex = 0; colIndex < listColWith.Count; colIndex++) { sheet.SetColumnWidth(colIndex, (listColWith[colIndex] * 256)); }
-                if (isCreateSheet)
-                {
-                    /* Tạo tiêu đề */
-                    rowIndex = 0;
-                    var row = sheet.CreateRow(rowIndex);
-                    i = -1;
-                    var csHeader = workbook.CreateCellStyleThin(true, true, true, getCache: false);
-                    foreach (DataColumn col in dt.Columns)
+                    isCreateSheet = false;
+                    ISheet sheet = workbook.GetSheet(dt.TableName);
+                    if (sheet == null)
                     {
-                        i++;
-                        var cell = row.CreateCell(i, CellType.String);
-                        cell.CellStyle = csHeader;
-                        cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
+                        sheet = workbook.CreateSheet(dt.TableName);
+                        isCreateSheet = true;
                     }
-                }
-                else
-                {
-                    /* Tìm việc trí bắt đầu đổ dữ liệu */
-                    for (rowIndex = 0; rowIndex <= 10; rowIndex++)
+                    names.Add(dt.TableName);
+                    var listColRight = new List<int>();
+                    var listColWith = new List<int>();
+                    switch (dt.TableName)
                     {
-                        var row = sheet.GetRow(rowIndex); if (row == null) { continue; }
-                        var cell = row.GetCell(0); if (cell == null) { continue; }
-                        tmp = $"{cell.GetValueAsString()}".Trim();
-                        if (tmp == "{filldata}") { break; }
+                        case "PL01":
+                            listColRight = new List<int>() { 2, 3, 4 };
+                            listColWith = new List<int>() { 11, 32, 25, 25, 13 };
+                            break;
+
+                        case "PL02a":
+                            listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
+                            listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+                            break;
+
+                        case "PL02b":
+                            listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
+                            listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+                            break;
+
+                        case "PL02c":
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
+                            listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
+                            break;
+
+                        case "PL03a":
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+                            listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+                            break;
+
+                        case "PL03b":
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6 };
+                            listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14 };
+                            break;
+
+                        case "PL03c":
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
+                            listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
+                            break;
+
+                        case "PL04a":
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
+                            listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14 };
+                            break;
+
+                        case "PL04b":
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
+                            listColWith = new List<int>() { 9, 57, 14, 14, 14, 14, 14, 14, 14 };
+                            break;
+
+                        default: break;
                     }
-                }
-                /* Đổ dữ liệu */
-                int indexColumn = -1; rowIndex--;
-                foreach (DataRow r in dt.Rows)
-                {
-                    rowIndex++;
-                    var row = sheet.CreateRow(rowIndex);
-                    indexColumn = -1;
-                    if ($"{r[0]}{r[1]}" == "")
+                    for (int colIndex = 0; colIndex < listColWith.Count; colIndex++) { sheet.SetColumnWidth(colIndex, (listColWith[colIndex] * 256)); }
+                    if (isCreateSheet)
                     {
+                        /* Tạo tiêu đề */
+                        rowIndex = 0;
+                        var row = sheet.CreateRow(rowIndex);
+                        i = -1;
+                        var csHeader = workbook.CreateCellStyleThin(true, true, true, getCache: false);
                         foreach (DataColumn col in dt.Columns)
                         {
-                            indexColumn++;
-                            var cell = row.CreateCell(indexColumn, CellType.String);
-                            cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext;
-                            cell.SetCellValue("");
+                            i++;
+                            var cell = row.CreateCell(i, CellType.String);
+                            cell.CellStyle = csHeader;
+                            cell.SetCellValue(Regex.Replace(col.ColumnName, @"[ ][(]\d+[)]", ""));
                         }
                     }
                     else
                     {
-                        foreach (DataColumn col in dt.Columns)
+                        /* Tìm việc trí bắt đầu đổ dữ liệu */
+                        for (rowIndex = 0; rowIndex <= 10; rowIndex++)
                         {
-                            indexColumn++;
-                            var cell = row.CreateCell(indexColumn, CellType.String);
-                            tmp = $"{r[indexColumn]}";
-                            if (tmp.StartsWith("<b>"))
+                            var row = sheet.GetRow(rowIndex); if (row == null) { continue; }
+                            var cell = row.GetCell(0); if (cell == null) { continue; }
+                            tmp = $"{cell.GetValueAsString()}".Trim();
+                            if (tmp == "{filldata}") { break; }
+                        }
+                    }
+                    /* Đổ dữ liệu */
+                    int indexColumn = -1; rowIndex--;
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        rowIndex++;
+                        var row = sheet.CreateRow(rowIndex);
+                        indexColumn = -1;
+                        if ($"{r[0]}{r[1]}" == "")
+                        {
+                            foreach (DataColumn col in dt.Columns)
                             {
-                                cell.CellStyle = listColRight.Contains(indexColumn) ? csContextBR : csContextB;
-                                cell.SetCellValue(tmp.Substring(3));
-                            }
-                            else
-                            {
+                                indexColumn++;
+                                var cell = row.CreateCell(indexColumn, CellType.String);
                                 cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext;
-                                cell.SetCellValue(tmp);
+                                cell.SetCellValue("");
+                            }
+                        }
+                        else
+                        {
+                            foreach (DataColumn col in dt.Columns)
+                            {
+                                indexColumn++;
+                                var cell = row.CreateCell(indexColumn, CellType.String);
+                                tmp = $"{r[indexColumn]}";
+                                if (tmp.StartsWith("<b>"))
+                                {
+                                    cell.CellStyle = listColRight.Contains(indexColumn) ? csContextBR : csContextB;
+                                    cell.SetCellValue(tmp.Substring(3));
+                                }
+                                else
+                                {
+                                    cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext;
+                                    cell.SetCellValue(tmp);
+                                }
                             }
                         }
                     }
                 }
+                using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { workbook.Write(stream); }
+                workbook.Close(); workbook.Clear();
             }
-            try { System.IO.File.Delete(fileName); } catch { }
-            return workbook;
+            catch (Exception ex) { throw new Exception(ex.getLineHTML()); }
+            finally { try { System.IO.File.Delete(fileName); } catch { } }
+            return;
         }
 
         private string readExcelbcThang(dbSQLite dbConnect, string inputFile, HttpSessionStateBase Session, string idBaoCao, string folderTemp, DateTime timeStart, string fileName)
@@ -868,7 +876,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private DataTable createPL02c_03c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang, string sheetName)
+        private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang)
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
             /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
@@ -911,7 +919,55 @@ namespace ToolBaoCao.Controllers
                     pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, (0 - chi2));
                 }
             }
-            pl.TableName = sheetName;
+            pl.TableName = "PL02c";
+            return pl;
+        }
+
+        private DataTable createPL03c(dbSQLite db, string idBaoCao, string idTinh, string thang)
+        {
+            /* So sánh lượt KCB và chi KCB năm nay với năm trước */
+            /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
+            var pl = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' AND tu_thang=den_thang AND den_thang={thang});");
+            var dicCSKCB = new Dictionary<string, int>();
+            for (int i = 0; i < pl.Rows.Count; i++)
+            {
+                dicCSKCB.Add($"{pl.Rows[i]["ma_cskcb"]}", i);
+                pl.Rows[i]["chi2"] = 0;
+                pl.Rows[i]["chi3"] = 0;
+            }
+            string thangTruoc = thang == "1" ? "12" : $"{(int.Parse(thang) - 1)}";
+            var dt = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' AND tu_thang=den_thang AND den_thang={thangTruoc});");
+            string tmp = ""; int index = 0;
+            long luot1 = 0, luot2 = 0;
+            double chi1 = 0, chi2 = 0;
+            foreach (DataRow dr in dt.Rows)
+            {
+                tmp = $"{dr["ma_cskcb"]}";
+                if (dicCSKCB.Keys.Contains(tmp))
+                {
+                    /* Tính toán */
+                    index = dicCSKCB[tmp];
+                    dicCSKCB.Remove(tmp);
+                    /* Lượt */
+                    luot1 = (long)pl.Rows[index]["luot1"];
+                    luot2 = (long)dr["tong_luot"];
+                    pl.Rows[index]["luot2"] = luot2;
+                    pl.Rows[index]["luot3"] = luot1 - luot2;
+                    /* Chi */
+                    chi1 = (double)pl.Rows[index]["chi1"];
+                    chi2 = (double)dr["tong_chi"];
+                    pl.Rows[index]["chi2"] = chi2;
+                    pl.Rows[index]["chi3"] = chi1 - chi2;
+                }
+                else
+                {
+                    /* Thêm vào phục lục */
+                    luot2 = (long)dr["tong_luot"];
+                    chi2 = (double)dr["tong_chi"];
+                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, (0 - chi2));
+                }
+            }
+            pl.TableName = "PL03c";
             return pl;
         }
 
@@ -1030,7 +1086,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, string nam)
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, string thang)
         {
             var tsql = $"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv";
             var data = db.getDataTable(tsql).AsEnumerable();
@@ -1072,24 +1128,24 @@ namespace ToolBaoCao.Controllers
             phuLuc.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
             string hang = "";
-            string macsyt = ""; int lastRow = -1;
+            string macsyt = ""; int lr = -1;
             foreach (string tuyen in listTuyen)
             {
                 var view = new List<DataRow>();
                 if (tuyen == "*")
                 {
                     view = data.Where(x => x.Field<string>("tuyen_bv") == "")
-                        .OrderByDescending(x => x.Field<string>("hang_bv"))
+                        .OrderBy(x => x.Field<string>("hang_bv"))
                         .ThenBy(x => x.Field<string>("ma_cskcb"))
-                        .ThenBy(x => x.Field<long>("nam"))
+                        .ThenByDescending(x => x.Field<long>("thang"))
                         .ToList();
                 }
                 else
                 {
                     view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
-                        .OrderByDescending(x => x.Field<string>("hang_bv"))
+                        .OrderBy(x => x.Field<string>("hang_bv"))
                         .ThenBy(x => x.Field<string>("ma_cskcb"))
-                        .ThenBy(x => x.Field<long>("nam"))
+                        .ThenByDescending(x => x.Field<long>("thang"))
                         .ToList();
                 }
                 if (view.Count() == 0) { continue; }
@@ -1105,7 +1161,7 @@ namespace ToolBaoCao.Controllers
                 macsyt = "";
                 foreach (DataRow row in view)
                 {
-                    if (nam != $"{row["nam"]}")
+                    if (thang != $"{row["thang"]}")
                     {
                         if (macsyt != $"{row["ma_cskcb"]}")
                         {
@@ -1119,12 +1175,12 @@ namespace ToolBaoCao.Controllers
                         }
                         else
                         {
-                            lastRow = phuLuc.Rows.Count - 1;
-                            phuLuc.Rows[lastRow][3] = $"{row["tyle_noitru"]}"; phuLuc.Rows[lastRow][4] = (double.Parse($"{phuLuc.Rows[lastRow][2]}") - double.Parse($"{phuLuc.Rows[lastRow][3]}")).ToString();
-                            phuLuc.Rows[lastRow][6] = $"{row["ngay_dtri_bq"]}"; phuLuc.Rows[lastRow][7] = (double.Parse($"{phuLuc.Rows[lastRow][5]}") - double.Parse($"{phuLuc.Rows[lastRow][6]}")).ToString();
-                            phuLuc.Rows[lastRow][9] = $"{row["chi_bq_chung"]}"; phuLuc.Rows[lastRow][10] = (double.Parse($"{phuLuc.Rows[lastRow][8]}") - double.Parse($"{phuLuc.Rows[lastRow][9]}")).ToString();
-                            phuLuc.Rows[lastRow][12] = $"{row["chi_bq_noi"]}"; phuLuc.Rows[lastRow][13] = (double.Parse($"{phuLuc.Rows[lastRow][11]}") - double.Parse($"{phuLuc.Rows[lastRow][12]}")).ToString();
-                            phuLuc.Rows[lastRow][15] = $"{row["chi_bq_ngoai"]}"; phuLuc.Rows[lastRow][16] = (double.Parse($"{phuLuc.Rows[lastRow][14]}") - double.Parse($"{phuLuc.Rows[lastRow][15]}")).ToString();
+                            lr = phuLuc.Rows.Count - 1;
+                            phuLuc.Rows[lr][3] = $"{row["tyle_noitru"]}"; phuLuc.Rows[lr][4] = Math.Round(double.Parse($"{phuLuc.Rows[lr][2]}") - double.Parse($"{phuLuc.Rows[lr][3]}"), 2).ToString();
+                            phuLuc.Rows[lr][6] = $"{row["ngay_dtri_bq"]}"; phuLuc.Rows[lr][7] = Math.Round(double.Parse($"{phuLuc.Rows[lr][5]}") - double.Parse($"{phuLuc.Rows[lr][6]}"), 2).ToString();
+                            phuLuc.Rows[lr][9] = $"{row["chi_bq_chung"]}"; phuLuc.Rows[lr][10] = (double.Parse($"{phuLuc.Rows[lr][8]}") - double.Parse($"{phuLuc.Rows[lr][9]}")).ToString();
+                            phuLuc.Rows[lr][12] = $"{row["chi_bq_noi"]}"; phuLuc.Rows[lr][13] = (double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}")).ToString();
+                            phuLuc.Rows[lr][15] = $"{row["chi_bq_ngoai"]}"; phuLuc.Rows[lr][16] = (double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}")).ToString();
                         }
                     }
                     else
@@ -1371,41 +1427,19 @@ namespace ToolBaoCao.Controllers
                 var view = new List<DataRow>();
                 if (tuyen == "*")
                 {
-                    if (thang == "1")
-                    {
-                        view = data.Where(x => x.Field<string>("tuyen_bv") == "")
-                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
-                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
-                                    .ThenBy(x => x.Field<long>("thang"))
-                                    .ToList();
-                    }
-                    else
-                    {
-                        view = data.Where(x => x.Field<string>("tuyen_bv") == "")
-                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
-                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
-                                    .ThenByDescending(x => x.Field<long>("thang"))
-                                    .ToList();
-                    }
+                    view = data.Where(x => x.Field<string>("tuyen_bv") == "")
+                                .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                .ThenBy(x => x.Field<string>("ma_cskcb"))
+                                .ThenByDescending(x => x.Field<long>("thang"))
+                                .ToList();
                 }
                 else
                 {
-                    if (thang == "1")
-                    {
-                        view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
-                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
-                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
-                                    .ThenBy(x => x.Field<long>("thang"))
-                                    .ToList();
-                    }
-                    else
-                    {
-                        view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
-                                    .OrderByDescending(x => x.Field<string>("hang_bv"))
-                                    .ThenBy(x => x.Field<string>("ma_cskcb"))
-                                    .ThenByDescending(x => x.Field<long>("thang"))
-                                    .ToList();
-                    }
+                    view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
+                                .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                .ThenBy(x => x.Field<string>("ma_cskcb"))
+                                .ThenByDescending(x => x.Field<long>("thang"))
+                                .ToList();
                 }
                 if (view.Count() == 0) { continue; }
                 string tenTuyen = "(*)";
