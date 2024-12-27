@@ -208,20 +208,14 @@ namespace ToolBaoCao.Controllers
                 if (nam == "") { throw new Exception("Không xác định được Năm, Tháng báo cáo"); }
 
                 /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế */
-                var tsql = $@"INSERT INTO thangpl01 (id_bc
-                    ,idtinh
-                    ,ma_cskcb
-                    ,ten_cskcb
+                var tsql = $@"INSERT INTO thangpl01 (id_bc ,idtinh ,ma_cskcb ,ten_cskcb
                     ,dtgiao ,tien_bhtt ,tl_sudungdt
                     ,userid) SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);";
                 dbTemp.Execute(tsql);
                 /* Tạo Phục Lục 2a */
                 /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
-                dbTemp.Execute($@"INSERT INTO thangpl02a (id_bc, idtinh
-                ,ma_tinh
-                ,ten_tinh
-                ,ma_vung
+                dbTemp.Execute($@"INSERT INTO thangpl02a (id_bc, idtinh ,ma_tinh ,ten_tinh ,ma_vung
                 ,tyle_noitru ,ngay_dtri_bq ,chi_bq_chung ,chi_bq_ngoai ,chi_bq_noi
                 ,tong_luot, tong_luot_noi, tong_luot_ngoai
                 ,tong_chi, tong_chi_noi, tong_chi_ngoai
@@ -234,10 +228,7 @@ namespace ToolBaoCao.Controllers
                     FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang={thang} LIMIT 1);");
                 /* Tạo Phục Lục 2b */
                 /* Lấy dữ liệu từ biểu b02 dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
-                dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh
-                ,ma_tinh
-                ,ten_tinh
-                ,ma_vung
+                dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh ,ma_tinh ,ten_tinh ,ma_vung
                 ,tyle_noitru ,ngay_dtri_bq ,chi_bq_chung ,chi_bq_ngoai ,chi_bq_noi
                 ,tong_luot, tong_luot_noi, tong_luot_ngoai
                 ,tong_chi, tong_chi_noi, tong_chi_ngoai
@@ -254,7 +245,7 @@ namespace ToolBaoCao.Controllers
                     ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};");
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_cskcb <> '' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};");
                 /* Lấy danh sách Ma_CSKCB */
                 var dsCSYT = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}'");
                 var dsCSKCB = dsCSYT.AsEnumerable().Select(x => new
@@ -280,8 +271,8 @@ namespace ToolBaoCao.Controllers
                 data = dbTemp.getDataTable($@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
                     ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
-                    ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, p2.thang, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang=1 AND p2.den_thang={thang};");
+                    ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.nam, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_cskcb <> '' AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang=1 AND p2.den_thang={thang};");
                 foreach (DataRow row in data.Rows)
                 {
                     tmp = $"{row["ma_cskcb"]}";
@@ -308,7 +299,7 @@ namespace ToolBaoCao.Controllers
                     , ROUND(p1.bq_ptt) AS chi_bq_pttt, ROUND(p1.bq_vtyt) AS chi_bq_vtyt, ROUND(p1.bq_giuong) AS chi_bq_giuong, ROUND(p1.ngay_ttbq, 2) AS ngay_ttbq
                     ,'' as tuyen_bv, '' as hang_bv, '{idUser}' AS userid, p2.nam
                     FROM thangb04chitiet p1 INNER JOIN thangb04 p2 ON p1.id2=p2.id
-                    WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_tinh='{matinh}' AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};";
+                    WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_tinh='{matinh}' AND p1.ma_cskcb <> '' AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang={thang};";
                 data = dbTemp.getDataTable(tsql);
                 foreach (DataRow row in data.Rows)
                 {
@@ -333,7 +324,7 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private string createFilePhuLucBcThang(string idBaoCao, string matinh, string nam = "", string thang = "", dbSQLite dbBCThang = null)
+        private string createFilePhuLucBcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, string nam = "", string thang = "")
         {
             if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
             var dbImport = BuildDatabase.getDataImportBCThang(matinh);
@@ -351,7 +342,7 @@ namespace ToolBaoCao.Controllers
                     nam = $"{data.Rows[0][0]}";
                     thang = $"{data.Rows[0][1]}";
                 }
-                else { nam = "0", thang = "0"; }
+                else { nam = "0"; thang = "0"; }
             }
             /* Tạo phụ lục báo cáo */
             dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = 0 WHERE id_bc='{idBC}' AND dtgiao = 0;");
@@ -377,11 +368,11 @@ namespace ToolBaoCao.Controllers
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), "PL02c");
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, long.Parse(nam));
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, nam);
             var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
             var PL03c = createPL02c_03c(dbImport, idBaoCao, matinh, long.Parse(nam), long.Parse(thang), long.Parse(thang), "PL03c");
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
-            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh);
+            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, nam);
             var xlsx = exportPhuLucbcThang(idBaoCao, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.Write)) { xlsx.Write(stream); }
@@ -860,7 +851,7 @@ namespace ToolBaoCao.Controllers
                 }
                 /* Tạo docx */
                 var tmp = createFileBcThangDocx(idBaoCao, idtinh, dbTemp);
-                var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, bcThang["nam1"], bcThang["thang"], dbBcThang) };
+                var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang, bcThang["nam1"], bcThang["thang"]) };
 
                 dbTemp.Close();
                 AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
@@ -1037,9 +1028,10 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long nam)
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, string nam)
         {
-            var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, tuyen_bv, hang_bv").AsEnumerable();
+            var tsql = $"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv";
+            var data = db.getDataTable(tsql).AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
             var phuLuc = new DataTable(nameSheet);
             phuLuc.Columns.Add("Mã"); /* 0 */
@@ -1078,25 +1070,24 @@ namespace ToolBaoCao.Controllers
             phuLuc.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
             string hang = "";
-            var listNam = data.Select(x => x.Field<long>("nam")).Distinct().OrderByDescending(x => x).ToList();
-            string namBC = nam.ToString(); string macsyt = ""; int lastRow = -1;
+            string macsyt = ""; int lastRow = -1;
             foreach (string tuyen in listTuyen)
             {
                 var view = new List<DataRow>();
                 if (tuyen == "*")
                 {
                     view = data.Where(x => x.Field<string>("tuyen_bv") == "")
-                        .OrderByDescending(x => x.Field<long>("nam"))
-                        .ThenBy(x => x.Field<string>("hang_bv"))
+                        .OrderByDescending(x => x.Field<string>("hang_bv"))
                         .ThenBy(x => x.Field<string>("ma_cskcb"))
+                        .ThenBy(x => x.Field<long>("nam"))
                         .ToList();
                 }
                 else
                 {
                     view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
-                        .OrderByDescending(x => x.Field<long>("nam"))
-                        .ThenBy(x => x.Field<string>("hang_bv"))
+                        .OrderByDescending(x => x.Field<string>("hang_bv"))
                         .ThenBy(x => x.Field<string>("ma_cskcb"))
+                        .ThenBy(x => x.Field<long>("nam"))
                         .ToList();
                 }
                 if (view.Count() == 0) { continue; }
@@ -1112,7 +1103,7 @@ namespace ToolBaoCao.Controllers
                 macsyt = "";
                 foreach (DataRow row in view)
                 {
-                    if (namBC != $"{row["nam"]}")
+                    if (nam != $"{row["nam"]}")
                     {
                         if (macsyt != $"{row["ma_cskcb"]}")
                         {
@@ -1336,27 +1327,62 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL04b(dbSQLite db, string idBaoCao, string idTinh)
+        private DataTable createPL04b(dbSQLite db, string idBaoCao, string idTinh, string nam)
         {
             var data = db.getDataTable($"SELECT * FROM thangpl04b WHERE id_bc='{idBaoCao}';").AsEnumerable();
             var phuLuc = new DataTable("PL04b");
             phuLuc.Columns.Add("Mã"); /* 0 */
             phuLuc.Columns.Add("Hạng BV/ Tên CSKCB"); /* 1 */
-            phuLuc.Columns.Add("BQ_XN (đồng)"); /* 2 */
-            phuLuc.Columns.Add("BQ_CĐHA (đồng)"); /* 3 */
-            phuLuc.Columns.Add("BQ_THUOC (đồng)"); /* 4 */
-            phuLuc.Columns.Add("BQ_PTTT (đồng)"); /* 5 */
-            phuLuc.Columns.Add("BQ_VTYT (đồng)"); /* 6 */
-            phuLuc.Columns.Add("BQ_GIUONG (đồng)"); /* 7 */
-            phuLuc.Columns.Add("Ngày thanh toán BQ"); /* 8 */
+
+            phuLuc.Columns.Add("BQ_XN (đồng) tháng này"); /* 2 */
+            phuLuc.Columns.Add("BQ_XN (đồng) tháng năm trước"); /* 3 */
+            phuLuc.Columns.Add("BQ_XN (đồng) tăng giảm"); /* 4 */
+
+            phuLuc.Columns.Add("BQ_CĐHA (đồng) tháng này"); /* 5 */
+            phuLuc.Columns.Add("BQ_CĐHA (đồng) tháng năm trước"); /* 6 */
+            phuLuc.Columns.Add("BQ_CĐHA (đồng) tăng giảm"); /* 7 */
+
+            phuLuc.Columns.Add("BQ_THUOC (đồng) tháng này"); /* 8 */
+            phuLuc.Columns.Add("BQ_THUOC (đồng) tháng năm trước"); /* 9 */
+            phuLuc.Columns.Add("BQ_THUOC (đồng) tăng giảm"); /* 10 */
+
+            phuLuc.Columns.Add("BQ_PTTT (đồng) tháng này"); /* 11 */
+            phuLuc.Columns.Add("BQ_PTTT (đồng) tháng năm trước"); /* 12 */
+            phuLuc.Columns.Add("BQ_PTTT (đồng) tăng giảm"); /* 13 */
+
+            phuLuc.Columns.Add("BQ_VTYT (đồng) tháng này"); /* 14 */
+            phuLuc.Columns.Add("BQ_VTYT (đồng) tháng năm trước"); /* 15 */
+            phuLuc.Columns.Add("BQ_VTYT (đồng) tăng giảm"); /* 16 */
+
+            phuLuc.Columns.Add("BQ_GIUONG (đồng) tháng này"); /* 17 */
+            phuLuc.Columns.Add("BQ_GIUONG (đồng) tháng năm trước"); /* 18 */
+            phuLuc.Columns.Add("BQ_GIUONG (đồng) tăng giảm"); /* 19 */
+
+            phuLuc.Columns.Add("Ngày thanh toán BQ tháng này"); /* 20 */
+            phuLuc.Columns.Add("Ngày thanh toán BQ tháng năm trước"); /* 21 */
+            phuLuc.Columns.Add("Ngày thanh toán BQ tăng giảm"); /* 22 */
 
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
-            string hang = "";
+            string hang = "", macsyt = ""; int lr = 0;
             foreach (string tuyen in listTuyen)
             {
                 var view = new List<DataRow>();
-                if (tuyen == "*") { view = data.Where(x => x.Field<string>("tuyen_bv") == "").OrderBy(x => x.Field<string>("hang_bv")).ToList(); }
-                else { view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen)).OrderBy(x => x.Field<string>("hang_bv")).ToList(); }
+                if (tuyen == "*")
+                {
+                    view = data.Where(x => x.Field<string>("tuyen_bv") == "")
+                        .OrderByDescending(x => x.Field<string>("hang_bv"))
+                        .ThenBy(x => x.Field<string>("ma_cskcb"))
+                        .ThenBy(x => x.Field<long>("nam"))
+                        .ToList();
+                }
+                else
+                {
+                    view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
+                        .OrderByDescending(x => x.Field<string>("hang_bv"))
+                        .ThenBy(x => x.Field<string>("ma_cskcb"))
+                        .ThenBy(x => x.Field<long>("nam"))
+                        .ToList();
+                }
                 if (view.Count() == 0) { continue; }
                 string tenTuyen = "(*)";
                 switch (tuyen)
@@ -1369,15 +1395,45 @@ namespace ToolBaoCao.Controllers
                 phuLuc.Rows.Add("T" + (tuyen == "" ? "0" : tuyen), $"Tuyến {tenTuyen}", "", "", "", "", "", "", "");
                 foreach (DataRow row in view)
                 {
-                    hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
-                    phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
-                        , $"{row["chi_bq_xn"]}"
-                        , $"{row["chi_bq_cdha"]}"
-                        , $"{row["chi_bq_thuoc"]}"
-                        , $"{row["chi_bq_pttt"]}"
-                        , $"{row["chi_bq_vtyt"]}"
-                        , $"{row["chi_bq_giuong"]}"
-                        , $"{row["ngay_ttbq"]}");
+                    if (nam == $"{row["nam"]}")
+                    {
+                        macsyt = $"{row["ma_cskcb"]}";
+                        hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
+                        phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
+                            , $"{row["chi_bq_xn"]}", "0", "0"
+                            , $"{row["chi_bq_cdha"]}", "0", "0"
+                            , $"{row["chi_bq_thuoc"]}", "0", "0"
+                            , $"{row["chi_bq_pttt"]}", "0", "0"
+                            , $"{row["chi_bq_vtyt"]}", "0", "0"
+                            , $"{row["chi_bq_giuong"]}", "0", "0"
+                            , $"{row["ngay_ttbq"]}", "0", "0");
+                    }
+                    else
+                    {
+                        if (macsyt == $"{row["ma_cskcb"]}")
+                        {
+                            lr = phuLuc.Rows.Count - 1;
+                            phuLuc.Rows[lr][3] = $"{row["chi_bq_xn"]}"; phuLuc.Rows[lr][4] = $"{(double.Parse($"{phuLuc.Rows[lr][2]}") - double.Parse($"{phuLuc.Rows[lr][3]}"))}";
+                            phuLuc.Rows[lr][6] = $"{row["chi_bq_cdha"]}"; phuLuc.Rows[lr][7] = $"{(double.Parse($"{phuLuc.Rows[lr][5]}") - double.Parse($"{phuLuc.Rows[lr][6]}"))}";
+                            phuLuc.Rows[lr][9] = $"{row["chi_bq_thuoc"]}"; phuLuc.Rows[lr][10] = $"{(double.Parse($"{phuLuc.Rows[lr][8]}") - double.Parse($"{phuLuc.Rows[lr][9]}"))}";
+                            phuLuc.Rows[lr][12] = $"{row["chi_bq_pttt"]}"; phuLuc.Rows[lr][13] = $"{(double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}"))}";
+                            phuLuc.Rows[lr][15] = $"{row["chi_bq_vtyt"]}"; phuLuc.Rows[lr][16] = $"{(double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}"))}";
+                            phuLuc.Rows[lr][18] = $"{row["chi_bq_giuong"]}"; phuLuc.Rows[lr][19] = $"{(double.Parse($"{phuLuc.Rows[lr][17]}") - double.Parse($"{phuLuc.Rows[lr][18]}"))}";
+                            phuLuc.Rows[lr][21] = $"{row["ngay_ttbq"]}"; phuLuc.Rows[lr][22] = $"{(double.Parse($"{phuLuc.Rows[lr][20]}") - double.Parse($"{phuLuc.Rows[lr][21]}"))}";
+                        }
+                        else
+                        {
+                            hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
+                            phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
+                                , "0", $"{row["chi_bq_xn"]}", $"-{row["chi_bq_xn"]}"
+                                , "0", $"{row["chi_bq_cdha"]}", $"-{row["chi_bq_cdha"]}"
+                                , "0", $"{row["chi_bq_thuoc"]}", $"-{row["chi_bq_thuoc"]}"
+                                , "0", $"{row["chi_bq_pttt"]}", $"-{row["chi_bq_pttt"]}"
+                                , "0", $"{row["chi_bq_vtyt"]}", $"-{row["chi_bq_vtyt"]}"
+                                , "0", $"{row["chi_bq_giuong"]}", $"-{row["chi_bq_giuong"]}"
+                                , "0", $"{row["ngay_ttbq"]}", $"-{row["ngay_ttbq"]}");
+                        }
+                    }
                 }
             }
             return phuLuc;
