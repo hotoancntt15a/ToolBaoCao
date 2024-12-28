@@ -1769,18 +1769,18 @@ namespace ToolBaoCao.Controllers
             if (bcThang["x32"] != "0") { number = double.Parse(bcThang["x32"]); if (number < 1000000) { bcThang["x32"] = "0"; } else { bcThang["x32"] = (number / 1000000).ToString(); } }
 
             /* Tăng giảm so với cùng kỳ năm trước
-             * ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 (x15-x9)
-                ,m13lc23 real not null default 0 /* Lượt ngoại = (x16-x10)
-                ,m13lc33 real not null default 0 /* Lượt nội = (x17-x11)
-                ,m13lc43 real not null default 0 /* Tổng lượt = 5+6 (x18-x12)
-                ,m13lc53 real not null default 0 /* Lượt ngoại = (x19-x13)
-                ,m13lc63 real not null default 0 /* Lượt nội = (x20-x14) */
-            bcThang.Add("m13lc13", $"{(double.Parse(bcThang["x15"]) - double.Parse(bcThang["x9"]))}");
-            bcThang.Add("m13lc23", $"{(double.Parse(bcThang["x16"]) - double.Parse(bcThang["x10"]))}");
-            bcThang.Add("m13lc33", $"{(double.Parse(bcThang["x17"]) - double.Parse(bcThang["x11"]))}");
-            bcThang.Add("m13lc43", $"{(double.Parse(bcThang["x18"]) - double.Parse(bcThang["x12"]))}");
-            bcThang.Add("m13lc53", $"{(double.Parse(bcThang["x19"]) - double.Parse(bcThang["x13"]))}");
-            bcThang.Add("m13lc63", $"{(double.Parse(bcThang["x20"]) - double.Parse(bcThang["x14"]))}");
+             * ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 -(x15-x9)
+                ,m13lc23 real not null default 0 /* Lượt ngoại = -(x16-x10)
+                ,m13lc33 real not null default 0 /* Lượt nội = -(x17-x11)
+                ,m13lc43 real not null default 0 /* Tổng lượt = 5+6 -(x18-x12)
+                ,m13lc53 real not null default 0 /* Lượt ngoại = -(x19-x13)
+                ,m13lc63 real not null default 0 /* Lượt nội = -(x20-x14) */
+            bcThang.Add("m13lc13", $"{(double.Parse(bcThang["x9"]) - double.Parse(bcThang["x15"]))}");
+            bcThang.Add("m13lc23", $"{(double.Parse(bcThang["x10"]) - double.Parse(bcThang["x16"]))}");
+            bcThang.Add("m13lc33", $"{(double.Parse(bcThang["x11"]) - double.Parse(bcThang["x17"]))}");
+            bcThang.Add("m13lc43", $"{(double.Parse(bcThang["x12"]) - double.Parse(bcThang["x18"]))}");
+            bcThang.Add("m13lc53", $"{(double.Parse(bcThang["x13"]) - double.Parse(bcThang["x19"]))}");
+            bcThang.Add("m13lc63", $"{(double.Parse(bcThang["x14"]) - double.Parse(bcThang["x20"]))}");
             /* Tỷ lệ % tăng giảm
                 ,m13lc14 real not null default 0 /* Tổng lượt = 2+3 ((m13lc13/x15)*100)
                 ,m13lc24 real not null default 0 /* Lượt ngoại = (m13lc23/x16)*100/
@@ -1796,18 +1796,18 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("m13lc64", $"{Math.Round((double.Parse(bcThang["m13lc63"]) / double.Parse(bcThang["x20"])) * 100, 2)}");
 
             /* Tăng giảm so với cùng kỳ năm trước
-             *  ,m13cc13 real not null default 0 /* Tổng lượt = 2+3 (x27-x21)
-                ,m13cc23 real not null default 0 /* Chi ngoại trú = (x28-x22)
-                ,m13cc33 real not null default 0 /* Chi nội trú = (x29-x23)
-                ,m13cc43 real not null default 0 /* Tổng lượt = 5+6 (x30-x24)
-                ,m13cc53 real not null default 0 /* Chi ngoại trú = (x31-x25)
-                ,m13cc63 real not null default 0 /* Chi nội trú = (x32-x26) */
-            bcThang.Add("m13cc13", $"{(double.Parse(bcThang["x27"]) - double.Parse(bcThang["x21"]))}");
-            bcThang.Add("m13cc23", $"{(double.Parse(bcThang["x28"]) - double.Parse(bcThang["x22"]))}");
-            bcThang.Add("m13cc33", $"{(double.Parse(bcThang["x29"]) - double.Parse(bcThang["x23"]))}");
-            bcThang.Add("m13cc43", $"{(double.Parse(bcThang["x30"]) - double.Parse(bcThang["x24"]))}");
-            bcThang.Add("m13cc53", $"{(double.Parse(bcThang["x31"]) - double.Parse(bcThang["x25"]))}");
-            bcThang.Add("m13cc63", $"{(double.Parse(bcThang["x32"]) - double.Parse(bcThang["x26"]))}");
+             *  ,m13cc13 real not null default 0 /* Tổng lượt = 2+3 -(x27-x21)
+                ,m13cc23 real not null default 0 /* Chi ngoại trú = -(x28-x22)
+                ,m13cc33 real not null default 0 /* Chi nội trú = -(x29-x23)
+                ,m13cc43 real not null default 0 /* Tổng lượt = 5+6 -(x30-x24)
+                ,m13cc53 real not null default 0 /* Chi ngoại trú = -(x31-x25)
+                ,m13cc63 real not null default 0 /* Chi nội trú = -(x32-x26) */
+            bcThang.Add("m13cc13", $"{(double.Parse(bcThang["x21"]) - double.Parse(bcThang["x27"]))}");
+            bcThang.Add("m13cc23", $"{(double.Parse(bcThang["x22"]) - double.Parse(bcThang["x28"]))}");
+            bcThang.Add("m13cc33", $"{(double.Parse(bcThang["x23"]) - double.Parse(bcThang["x29"]))}");
+            bcThang.Add("m13cc43", $"{(double.Parse(bcThang["x24"]) - double.Parse(bcThang["x30"]))}");
+            bcThang.Add("m13cc53", $"{(double.Parse(bcThang["x25"]) - double.Parse(bcThang["x31"]))}");
+            bcThang.Add("m13cc63", $"{(double.Parse(bcThang["x26"]) - double.Parse(bcThang["x32"]))}");
 
             /* Tỷ lệ % tăng giảm
                 ,m13cc14 real not null default 0 /* Tổng lượt = 2+3 ((m13cc13/x27)*100)
