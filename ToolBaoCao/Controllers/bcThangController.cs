@@ -244,9 +244,9 @@ namespace ToolBaoCao.Controllers
                     ,ROUND(p1.tyle_noitru, 2) AS tyle_noitru ,ROUND(p1.ngay_dtri_bq, 2) AS ngay_dtri_bq
                     ,ROUND(p1.chi_bq_chung) AS chi_bq_chung ,ROUND(p1.chi_bq_ngoai) AS chi_bq_ngoai
                     ,ROUND(p1.chi_bq_noi) AS chi_bq_noi, p2.den_thang as thang, '' as tuyen_bv, '' as hang_bv,'{idUser}' AS userid
-                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_cskcb <> '';";
-                if (thang == "1") { tsql += $" AND nam IN ({nam}, {(int.Parse(nam) - 1)}) AND tu_thang=den_thang AND tu_thang IN (1, 12)"; }
-                else { tsql += $" AND nam = {nam} AND tu_thang=den_thang AND tu_thang IN ({thang}, {(int.Parse(thang) - 1)})"; }
+                    FROM thangb02chitiet p1 INNER JOIN thangb02 p2 ON p1.id2=p2.id WHERE p1.id_bc='{id}' AND p2.id_bc='{id}' AND p1.ma_cskcb <> '' AND p2.tu_thang=p2.den_thang";
+                if (thang == "1") { tsql += $" AND p2.nam IN ({nam}, {(int.Parse(nam) - 1)}) AND p2.tu_thang IN (1, 12)"; }
+                else { tsql += $" AND p2.nam = {nam} AND p2.tu_thang IN ({thang}, {(int.Parse(thang) - 1)})"; }
                 data = dbTemp.getDataTable(tsql);
                 /* Lấy danh sách Ma_CSKCB */
                 var dsCSYT = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}'");
@@ -373,8 +373,8 @@ namespace ToolBaoCao.Controllers
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang));
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, thang);
-            var PL03b = createPL03(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, thang, dmVung);
+            var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
             var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang);
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
@@ -1086,7 +1086,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, string thang)
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, string thang, Dictionary<string, string> dmVung)
         {
             var tsql = $"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv";
             var data = db.getDataTable(tsql).AsEnumerable();
@@ -1127,8 +1127,8 @@ namespace ToolBaoCao.Controllers
             }
             phuLuc.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
-            string hang = "";
-            string macsyt = ""; int lr = -1;
+            string hang = "", macsyt = "", tmp = ""; int lr = -1;
+            var matchIndex = new Dictionary<string, int>();
             foreach (string tuyen in listTuyen)
             {
                 var view = new List<DataRow>();
@@ -1161,45 +1161,61 @@ namespace ToolBaoCao.Controllers
                 macsyt = "";
                 foreach (DataRow row in view)
                 {
-                    if (thang != $"{row["thang"]}")
-                    {
-                        if (macsyt != $"{row["ma_cskcb"]}")
-                        {
-                            hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
-                            phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
-                                , "0", $"{row["tyle_noitru"]}", $"-{row["tyle_noitru"]}"
-                                , "0", $"{row["ngay_dtri_bq"]}", $"-{row["ngay_dtri_bq"]}"
-                                , "0", $"{row["chi_bq_chung"]}", $"-{row["chi_bq_chung"]}"
-                                , "0", $"{row["chi_bq_noi"]}", $"-{row["chi_bq_noi"]}"
-                                , "0", $"{row["chi_bq_ngoai"]}", $"-{row["chi_bq_ngoai"]}");
-                        }
-                        else
-                        {
-                            lr = phuLuc.Rows.Count - 1;
-                            phuLuc.Rows[lr][3] = $"{row["tyle_noitru"]}"; phuLuc.Rows[lr][4] = Math.Round(double.Parse($"{phuLuc.Rows[lr][2]}") - double.Parse($"{phuLuc.Rows[lr][3]}"), 2).ToString();
-                            phuLuc.Rows[lr][6] = $"{row["ngay_dtri_bq"]}"; phuLuc.Rows[lr][7] = Math.Round(double.Parse($"{phuLuc.Rows[lr][5]}") - double.Parse($"{phuLuc.Rows[lr][6]}"), 2).ToString();
-                            phuLuc.Rows[lr][9] = $"{row["chi_bq_chung"]}"; phuLuc.Rows[lr][10] = (double.Parse($"{phuLuc.Rows[lr][8]}") - double.Parse($"{phuLuc.Rows[lr][9]}")).ToString();
-                            phuLuc.Rows[lr][12] = $"{row["chi_bq_noi"]}"; phuLuc.Rows[lr][13] = (double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}")).ToString();
-                            phuLuc.Rows[lr][15] = $"{row["chi_bq_ngoai"]}"; phuLuc.Rows[lr][16] = (double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}")).ToString();
-                        }
-                    }
-                    else
+                    tmp = $"{row["ma_cskcb"]}";
+                    lr = -1;
+                    if (matchIndex.Keys.Contains(tmp) == false) { matchIndex.Add(tmp, phuLuc.Rows.Count); lr = phuLuc.Rows.Count; }
+                    if (lr > -1)
                     {
                         macsyt = $"{row["ma_cskcb"]}";
                         hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
-                        phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
-                            , $"{row["tyle_noitru"]}", "0", $"{row["tyle_noitru"]}"
-                            , $"{row["ngay_dtri_bq"]}", "0", $"{row["ngay_dtri_bq"]}"
-                            , $"{row["chi_bq_chung"]}", "0", $"{row["chi_bq_chung"]}"
-                            , $"{row["chi_bq_noi"]}", "0", $"{row["chi_bq_noi"]}"
-                            , $"{row["chi_bq_ngoai"]}", "0", $"{row["chi_bq_ngoai"]}");
+                        if (thang == $"{row["thang"]}")
+                        {
+                            phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
+                               , $"{row["tyle_noitru"]}", "0", $"{row["tyle_noitru"]}"
+                               , $"{row["ngay_dtri_bq"]}", "0", $"{row["ngay_dtri_bq"]}"
+                               , $"{row["chi_bq_chung"]}", "0", $"{row["chi_bq_chung"]}"
+                               , $"{row["chi_bq_noi"]}", "0", $"{row["chi_bq_noi"]}"
+                               , $"{row["chi_bq_ngoai"]}", "0", $"{row["chi_bq_ngoai"]}");
+                        }
+                        else
+                        {
+                            phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
+                               , "0", $"{row["tyle_noitru"]}", $"-{row["tyle_noitru"]}"
+                               , "0", $"{row["ngay_dtri_bq"]}", $"-{row["ngay_dtri_bq"]}"
+                               , "0", $"{row["chi_bq_chung"]}", $"-{row["chi_bq_chung"]}"
+                               , "0", $"{row["chi_bq_noi"]}", $"-{row["chi_bq_noi"]}"
+                               , "0", $"{row["chi_bq_ngoai"]}", $"-{row["chi_bq_ngoai"]}");
+                        }
+                        continue;
                     }
+                    lr = matchIndex[tmp];
+                    if (thang == $"{row["thang"]}")
+                    {
+                        phuLuc.Rows[lr][2] = $"{row["tyle_noitru"]}";
+                        phuLuc.Rows[lr][5] = $"{row["ngay_dtri_bq"]}";
+                        phuLuc.Rows[lr][8] = $"{row["chi_bq_chung"]}";
+                        phuLuc.Rows[lr][11] = $"{row["chi_bq_noi"]}";
+                        phuLuc.Rows[lr][14] = $"{row["chi_bq_ngoai"]}";
+                    }
+                    else
+                    {
+                        phuLuc.Rows[lr][3] = $"{row["tyle_noitru"]}";
+                        phuLuc.Rows[lr][6] = $"{row["ngay_dtri_bq"]}";
+                        phuLuc.Rows[lr][9] = $"{row["chi_bq_chung"]}";
+                        phuLuc.Rows[lr][12] = $"{row["chi_bq_noi"]}";
+                        phuLuc.Rows[lr][15] = $"{row["chi_bq_ngoai"]}";
+                    }
+                    phuLuc.Rows[lr][4] = $"{Math.Round(double.Parse($"{phuLuc.Rows[lr][2]}") - double.Parse($"{phuLuc.Rows[lr][3]}"), 2)}";
+                    phuLuc.Rows[lr][7] = $"{Math.Round(double.Parse($"{phuLuc.Rows[lr][5]}") - double.Parse($"{phuLuc.Rows[lr][6]}"), 2)}";
+                    phuLuc.Rows[lr][10] = $"{(double.Parse($"{phuLuc.Rows[lr][8]}") - double.Parse($"{phuLuc.Rows[lr][9]}"))}";
+                    phuLuc.Rows[lr][13] = $"{(double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}"))}";
+                    phuLuc.Rows[lr][16] = $"{(double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}"))}";
                 }
             }
             return phuLuc;
         }
 
-        private DataTable createPL03(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long namBC)
+        private DataTable createPL03b(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long namBC)
         {
             var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' AND nam={namBC} ORDER BY tuyen_bv, hang_bv").AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
@@ -1421,14 +1437,15 @@ namespace ToolBaoCao.Controllers
             phuLuc.Columns.Add("Ngày thanh toán BQ tăng giảm"); /* 22 */
 
             var listTuyen = new List<string>() { "*", "T", "H", "X" };
-            string hang = "", macsyt = ""; int lr = 0;
+            string hang = "", macsyt = "", tmp = ""; int lr = 0;
+            var matchIndex = new Dictionary<string, int>();
             foreach (string tuyen in listTuyen)
             {
                 var view = new List<DataRow>();
                 if (tuyen == "*")
                 {
                     view = data.Where(x => x.Field<string>("tuyen_bv") == "")
-                                .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                .OrderBy(x => x.Field<string>("hang_bv"))
                                 .ThenBy(x => x.Field<string>("ma_cskcb"))
                                 .ThenByDescending(x => x.Field<long>("thang"))
                                 .ToList();
@@ -1436,7 +1453,7 @@ namespace ToolBaoCao.Controllers
                 else
                 {
                     view = data.Where(x => x.Field<string>("tuyen_bv").StartsWith(tuyen))
-                                .OrderByDescending(x => x.Field<string>("hang_bv"))
+                                .OrderBy(x => x.Field<string>("hang_bv"))
                                 .ThenBy(x => x.Field<string>("ma_cskcb"))
                                 .ThenByDescending(x => x.Field<long>("thang"))
                                 .ToList();
@@ -1453,45 +1470,65 @@ namespace ToolBaoCao.Controllers
                 phuLuc.Rows.Add("T" + (tuyen == "" ? "0" : tuyen), $"Tuyến {tenTuyen}", "", "", "", "", "", "", "");
                 foreach (DataRow row in view)
                 {
-                    if (thang == $"{row["thang"]}")
+                    tmp = $"{row["ma_cskcb"]}";
+                    lr = -1;
+                    if (matchIndex.Keys.Contains(tmp) == false) { matchIndex.Add(tmp, phuLuc.Rows.Count); lr = phuLuc.Rows.Count; }
+                    if (lr > -1)
                     {
                         macsyt = $"{row["ma_cskcb"]}";
                         hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
-                        phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
-                            , $"{row["chi_bq_xn"]}", "0", $"{row["chi_bq_xn"]}"
-                            , $"{row["chi_bq_cdha"]}", "0", $"{row["chi_bq_cdha"]}"
-                            , $"{row["chi_bq_thuoc"]}", "0", $"{row["chi_bq_thuoc"]}"
-                            , $"{row["chi_bq_pttt"]}", "0", $"{row["chi_bq_pttt"]}"
-                            , $"{row["chi_bq_vtyt"]}", "0", $"{row["chi_bq_vtyt"]}"
-                            , $"{row["chi_bq_giuong"]}", "0", $"{row["chi_bq_giuong"]}"
-                            , $"{row["ngay_ttbq"]}", "0", $"{row["ngay_ttbq"]}");
-                    }
-                    else
-                    {
-                        if (macsyt == $"{row["ma_cskcb"]}")
+                        if (thang == $"{row["thang"]}")
                         {
-                            lr = phuLuc.Rows.Count - 1;
-                            phuLuc.Rows[lr][3] = $"{row["chi_bq_xn"]}"; phuLuc.Rows[lr][4] = $"{(double.Parse($"{phuLuc.Rows[lr][2]}") - double.Parse($"{phuLuc.Rows[lr][3]}"))}";
-                            phuLuc.Rows[lr][6] = $"{row["chi_bq_cdha"]}"; phuLuc.Rows[lr][7] = $"{(double.Parse($"{phuLuc.Rows[lr][5]}") - double.Parse($"{phuLuc.Rows[lr][6]}"))}";
-                            phuLuc.Rows[lr][9] = $"{row["chi_bq_thuoc"]}"; phuLuc.Rows[lr][10] = $"{(double.Parse($"{phuLuc.Rows[lr][8]}") - double.Parse($"{phuLuc.Rows[lr][9]}"))}";
-                            phuLuc.Rows[lr][12] = $"{row["chi_bq_pttt"]}"; phuLuc.Rows[lr][13] = $"{(double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}"))}";
-                            phuLuc.Rows[lr][15] = $"{row["chi_bq_vtyt"]}"; phuLuc.Rows[lr][16] = $"{(double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}"))}";
-                            phuLuc.Rows[lr][18] = $"{row["chi_bq_giuong"]}"; phuLuc.Rows[lr][19] = $"{(double.Parse($"{phuLuc.Rows[lr][17]}") - double.Parse($"{phuLuc.Rows[lr][18]}"))}";
-                            phuLuc.Rows[lr][21] = $"{row["ngay_ttbq"]}"; phuLuc.Rows[lr][22] = $"{Math.Round(double.Parse($"{phuLuc.Rows[lr][20]}") - double.Parse($"{phuLuc.Rows[lr][21]}"), 2)}";
+                            phuLuc.Rows.Add(macsyt, $"{hang}/ {row["ten_cskcb"]}"
+                               , $"{row["chi_bq_xn"]}", "0", $"{row["chi_bq_xn"]}"
+                               , $"{row["chi_bq_cdha"]}", "0", $"{row["chi_bq_cdha"]}"
+                               , $"{row["chi_bq_thuoc"]}", "0", $"{row["chi_bq_thuoc"]}"
+                               , $"{row["chi_bq_pttt"]}", "0", $"{row["chi_bq_pttt"]}"
+                               , $"{row["chi_bq_vtyt"]}", "0", $"{row["chi_bq_vtyt"]}"
+                               , $"{row["chi_bq_giuong"]}", "0", $"{row["chi_bq_giuong"]}"
+                               , $"{row["ngay_ttbq"]}", "0", $"{row["ngay_ttbq"]}");
                         }
                         else
                         {
-                            hang = $"{row["hang_bv"]}".Trim(); if (hang == "") { hang = "*"; }
                             phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}"
-                                , "0", $"{row["chi_bq_xn"]}", $"-{row["chi_bq_xn"]}"
-                                , "0", $"{row["chi_bq_cdha"]}", $"-{row["chi_bq_cdha"]}"
-                                , "0", $"{row["chi_bq_thuoc"]}", $"-{row["chi_bq_thuoc"]}"
-                                , "0", $"{row["chi_bq_pttt"]}", $"-{row["chi_bq_pttt"]}"
-                                , "0", $"{row["chi_bq_vtyt"]}", $"-{row["chi_bq_vtyt"]}"
-                                , "0", $"{row["chi_bq_giuong"]}", $"-{row["chi_bq_giuong"]}"
-                                , "0", $"{row["ngay_ttbq"]}", $"-{row["ngay_ttbq"]}");
+                               , "0", $"{row["chi_bq_xn"]}", $"-{row["chi_bq_xn"]}"
+                               , "0", $"{row["chi_bq_cdha"]}", $"-{row["chi_bq_cdha"]}"
+                               , "0", $"{row["chi_bq_thuoc"]}", $"-{row["chi_bq_thuoc"]}"
+                               , "0", $"{row["chi_bq_pttt"]}", $"-{row["chi_bq_pttt"]}"
+                               , "0", $"{row["chi_bq_vtyt"]}", $"-{row["chi_bq_vtyt"]}"
+                               , "0", $"{row["chi_bq_giuong"]}", $"-{row["chi_bq_giuong"]}"
+                               , "0", $"{row["ngay_ttbq"]}", $"-{row["ngay_ttbq"]}");
                         }
+                        continue;
                     }
+                    lr = matchIndex[tmp];
+                    if (thang == $"{row["thang"]}")
+                    {
+                        phuLuc.Rows[lr][2] = $"{row["chi_bq_xn"]}";
+                        phuLuc.Rows[lr][5] = $"{row["chi_bq_cdha"]}";
+                        phuLuc.Rows[lr][8] = $"{row["chi_bq_thuoc"]}";
+                        phuLuc.Rows[lr][11] = $"{row["chi_bq_pttt"]}";
+                        phuLuc.Rows[lr][14] = $"{row["chi_bq_vtyt"]}";
+                        phuLuc.Rows[lr][17] = $"{row["chi_bq_giuong"]}";
+                        phuLuc.Rows[lr][20] = $"{row["ngay_ttbq"]}";
+                    }
+                    else
+                    {
+                        phuLuc.Rows[lr][3] = $"{row["chi_bq_xn"]}";
+                        phuLuc.Rows[lr][6] = $"{row["chi_bq_cdha"]}";
+                        phuLuc.Rows[lr][9] = $"{row["chi_bq_thuoc"]}";
+                        phuLuc.Rows[lr][12] = $"{row["chi_bq_pttt"]}";
+                        phuLuc.Rows[lr][15] = $"{row["chi_bq_vtyt"]}";
+                        phuLuc.Rows[lr][18] = $"{row["chi_bq_giuong"]}";
+                        phuLuc.Rows[lr][21] = $"{row["ngay_ttbq"]}";
+                    }
+                    phuLuc.Rows[lr][4] = $"{(double.Parse($"{phuLuc.Rows[lr][2]}") - double.Parse($"{phuLuc.Rows[lr][3]}"))}";
+                    phuLuc.Rows[lr][7] = $"{(double.Parse($"{phuLuc.Rows[lr][5]}") - double.Parse($"{phuLuc.Rows[lr][6]}"))}";
+                    phuLuc.Rows[lr][10] = $"{(double.Parse($"{phuLuc.Rows[lr][8]}") - double.Parse($"{phuLuc.Rows[lr][9]}"))}";
+                    phuLuc.Rows[lr][13] = $"{(double.Parse($"{phuLuc.Rows[lr][11]}") - double.Parse($"{phuLuc.Rows[lr][12]}"))}";
+                    phuLuc.Rows[lr][16] = $"{(double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}"))}";
+                    phuLuc.Rows[lr][19] = $"{(double.Parse($"{phuLuc.Rows[lr][17]}") - double.Parse($"{phuLuc.Rows[lr][18]}"))}";
+                    phuLuc.Rows[lr][22] = $"{Math.Round(double.Parse($"{phuLuc.Rows[lr][20]}") - double.Parse($"{phuLuc.Rows[lr][21]}"), 2)}";
                 }
             }
             return phuLuc;
