@@ -876,6 +876,29 @@ namespace ToolBaoCao
                 var cols = dbConnect.getColumns("thangpl03a");
                 if (cols.Any(p => p.ColumnName == "thang") == false) { tsqlCreate.Add("ALTER TABLE thangpl03a ADD COLUMN thang integer not null default 0;"); }
             }
+            if (tables.Contains("thangpl03a2") == false)
+            {
+                /* Lấy dữ liệu từ biểu b02 trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam2) */
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangpl03a2 (id INTEGER primary key AUTOINCREMENT
+                ,id_bc text not null /* liên kết ID table lưu dữ liệu cho báo cáo docx. */
+                ,idtinh text not null /* Mã tỉnh của người dùng */
+                ,ma_tinh text not null default '' /* Mã tỉnh */
+                ,ten_tinh text not null default '' /* Tên tỉnh */
+                ,ma_vung text not null default '' /* Mã vùng 0,1,2,3,4... */
+                ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%  */
+                ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: ngày; */
+                ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng) */
+                ,chi_bq_ngoai real not null default 0 /* Chi bình quân ngoại trú/lượt KCB ngoại trú (đồng); */
+                ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú */
+                ,tong_luot integer not null default 0
+                ,tong_luot_noi integer not null default 0
+                ,tong_luot_ngoai integer not null default 0
+                ,tong_chi real not null default 0
+                ,tong_chi_noi real not null default 0
+                ,tong_chi_ngoai real not null default 0
+                ,userid text not null default '' /* Lưu ID của người dùng */);
+                CREATE INDEX IF NOT EXISTS index_thangpl03a2_id_bc ON thangpl03a2 (id_bc);");
+            }
             if (tables.Contains("thangpl03b") == false)
             {
                 /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */

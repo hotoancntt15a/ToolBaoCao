@@ -224,7 +224,7 @@ namespace ToolBaoCao.Controllers
                     ,tong_luot, tong_luot_noi, tong_luot_ngoai
                     ,tong_chi, tong_chi_noi, tong_chi_ngoai
                     ,'{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang={thang} LIMIT 1);");
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={nam} AND tu_thang=den_thang AND tu_thang={thang} LIMIT 1);");
                 /* Tạo Phục Lục 2b */
                 /* Lấy dữ liệu từ biểu b02 dành cho cả năm (từ tháng 1 đến tháng báo cáo) */
                 dbTemp.Execute($@"INSERT INTO thangpl02b (id_bc, idtinh ,ma_tinh ,ten_tinh ,ma_vung
@@ -268,6 +268,19 @@ namespace ToolBaoCao.Controllers
                     }
                 }
                 dbTemp.Insert("thangpl03a", data);
+                /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam2) */
+                dbTemp.Execute($@"INSERT INTO thangpl03a2 (id_bc, idtinh ,ma_tinh ,ten_tinh ,ma_vung
+                ,tyle_noitru ,ngay_dtri_bq ,chi_bq_chung ,chi_bq_ngoai ,chi_bq_noi
+                ,tong_luot, tong_luot_noi, tong_luot_ngoai
+                ,tong_chi, tong_chi_noi, tong_chi_ngoai
+                ,userid)
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
+                    ,ROUND(tyle_noitru, 2) AS tyle_noitru ,ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq ,ROUND(chi_bq_chung) AS chi_bq_chung ,ROUND(chi_bq_ngoai) AS chi_bq_ngoai ,ROUND(chi_bq_noi) AS chi_bq_noi
+                    ,tong_luot, tong_luot_noi, tong_luot_ngoai
+                    ,tong_chi, tong_chi_noi, tong_chi_ngoai
+                    ,'{idUser}' AS userid
+                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='00' AND nam={(int.Parse(nam) - 1)} AND tu_thang=den_thang AND tu_thang={thang} LIMIT 1);");
+
                 /* Tạo phục lục 03b */
                 /* Cách lập giống như Phụ lục 03 báo cáo tuần, nguồn dữ liệu lấy từ B02 từ tháng 1 đến tháng báo cáo */
                 data = dbTemp.getDataTable($@"SELECT p1.id_bc, '{matinh}' as idtinh, p1.ma_cskcb, p1.ten_cskcb, p1.ma_vung
@@ -423,7 +436,8 @@ namespace ToolBaoCao.Controllers
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang));
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", PL02a, thang, dmVung);
+            data = createPL02(dbBCThang, idBaoCao, matinh, "pl03a2", dmVung);
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", thang, PL02a, data, dmVung);
             var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
             var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang);
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
@@ -889,7 +903,7 @@ namespace ToolBaoCao.Controllers
                 dbBcThang.Insert("bcthangpldocx", data, "repalce");
                 dbBcThang.Close();
 
-                list = new List<string>() { "thangpl01", "thangpl02a", "thangpl02b", "thangpl03a", "thangpl03b", "thangpl04a", "thangpl04b" };
+                list = new List<string>() { "thangpl01", "thangpl02a", "thangpl02b", "thangpl03a", "thangpl03a2", "thangpl03b", "thangpl04a", "thangpl04b" };
                 foreach (var v in list)
                 {
                     data = dbTemp.getDataTable($"SELECT * FROM {v} WHERE id_bc='{idBaoCaoVauleField}';");
@@ -1013,15 +1027,20 @@ namespace ToolBaoCao.Controllers
                     chi1 = (double)pl.Rows[index]["chi1"];
                     chi2 = (double)dr["tong_chi"];
                     pl.Rows[index]["chi2"] = chi2;
-                    pl.Rows[index]["chi3"] = chi1 - chi2;
                 }
                 else
                 {
                     /* Thêm vào phục lục */
                     luot2 = (long)dr["tong_luot"];
                     chi2 = (double)dr["tong_chi"];
-                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, (0 - chi2));
+                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, 0);
                 }
+            }
+            foreach (DataRow dr in pl.Rows)
+            {
+                dr[5] = double.Parse($"{dr[5]}").lamTronTrieuDong(true);
+                dr[6] = double.Parse($"{dr[6]}").lamTronTrieuDong(true);
+                dr[7] = double.Parse($"{dr[5]}") - double.Parse($"{dr[6]}");
             }
             pl.TableName = "PL03c";
             return pl;
@@ -1029,7 +1048,9 @@ namespace ToolBaoCao.Controllers
 
         private DataTable createPL02(dbSQLite db, string idBaoCao, string idTinh, string nameSheet, Dictionary<string, string> dmVung)
         {
-            DataTable pl = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}';");
+            var tsql = $"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}';";
+            DataTable pl = db.getDataTable(tsql);
+            if (pl.Rows.Count == 0) { return new DataTable(nameSheet); }
             /* Bỏ [ma tỉnh] - ở cột tên tỉnh */
             for (int i = 0; i < pl.Rows.Count; i++) { pl.Rows[i]["ten_tinh"] = Regex.Replace($"{pl.Rows[i]["ten_tinh"]}", @"^V?\d+[ -]+", ""); }
             var phuLuc = new DataTable(nameSheet);
@@ -1071,7 +1092,7 @@ namespace ToolBaoCao.Controllers
             /* Dòng trống */
             phuLuc.Rows.Add("", "", "", "", "", "", "", "", "");
             /* Toàn quốc */
-            view = plview.Where(x => x.Field<string>("ma_tinh") == "00").ToList().GetRange(0, 1);
+            view = plview.Where(x => x.Field<string>("ma_tinh") == "00").ToList();
             if (view.Count == 0) { phuLuc.Rows.Add("00", "Toàn quốc", "0", "Toàn quốc", "0", "Toàn quốc", "0", "Toàn quốc", "0", "Toàn quốc", "0"); }
             else
             {
@@ -1142,7 +1163,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, string thang, Dictionary<string, string> dmVung)
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, string thang, DataTable PL02, DataTable PL03a2, Dictionary<string, string> dmVung)
         {
             var tsql = $"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv";
             var data = db.getDataTable(tsql).AsEnumerable();
@@ -1179,6 +1200,30 @@ namespace ToolBaoCao.Controllers
                         , PL02.Rows[IndexPL02][6], "0", "0" /* chi_bq_chung */
                         , PL02.Rows[IndexPL02][8], "0", "0" /* chi_bq_noi */
                         , PL02.Rows[IndexPL02][10], "0", "0" /* chi_bq_ngoai */);
+                }
+                if (PL03a2.Rows.Count > 5)
+                {
+                    int PL03a2Count = PL03a2.Rows.Count; int IndexPL03a2 = 0; int index = 0;
+                    for (int i = 5; i > 2; i--)
+                    {
+                        IndexPL03a2 = PL03a2Count - i;
+                        /* tyle_noitru */
+                        phuLuc.Rows[index][3] = $"{PL03a2.Rows[IndexPL03a2][2]}";
+                        phuLuc.Rows[index][4] = Math.Round(double.Parse($"{phuLuc.Rows[index][2]}") - double.Parse($"{phuLuc.Rows[index][3]}"), 2).ToString();
+                        /* ngay_dtri_bq */
+                        phuLuc.Rows[index][6] = $"{PL03a2.Rows[IndexPL03a2][4]}";
+                        phuLuc.Rows[index][7] = Math.Round(double.Parse($"{phuLuc.Rows[index][5]}") - double.Parse($"{phuLuc.Rows[index][6]}"), 2).ToString();
+                        /* chi_bq_chung */
+                        phuLuc.Rows[index][9] = $"{PL03a2.Rows[IndexPL03a2][6]}";
+                        phuLuc.Rows[index][10] = Math.Round(double.Parse($"{phuLuc.Rows[index][8]}") - double.Parse($"{phuLuc.Rows[index][9]}"), 2).ToString();
+                        /* chi_bq_noi */
+                        phuLuc.Rows[index][12] = $"{PL03a2.Rows[IndexPL03a2][8]}";
+                        phuLuc.Rows[index][13] = Math.Round(double.Parse($"{phuLuc.Rows[index][11]}") - double.Parse($"{phuLuc.Rows[index][12]}"), 2).ToString();
+                        /* chi_bq_ngoai */
+                        phuLuc.Rows[index][15] = $"{PL03a2.Rows[IndexPL03a2][10]}";
+                        phuLuc.Rows[index][16] = Math.Round(double.Parse($"{phuLuc.Rows[index][14]}") - double.Parse($"{phuLuc.Rows[index][15]}"), 2).ToString();
+                        index++;
+                    }
                 }
             }
             phuLuc.Rows.Add("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
