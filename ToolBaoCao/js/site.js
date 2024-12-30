@@ -34,6 +34,16 @@ function formatNumberToVn(num) {
     if (!isNaN(number) && number !== '') { return new Intl.NumberFormat('vi-VN').format(number); }
     return '';
 }
+function delTrTargetID(listID) {
+    if (typeof (listID) != "string") { return; }
+    if (/^[0-9a-z_.,]+$/ig.test(listID) == false) { return; }
+    var ids = listID.split(',');
+    ids.forEach(function (id) {
+        if (/^[a-z0-9._]+$/ig.test(id)) {
+            $('tr[data-id="' + id + '"]').remove();
+        }
+    });
+}
 function setClsNumberTooltip() {
     // Kích hoạt tooltip cho các input có class clsnumber
     $('input[type="text"].clsnumber').each(function () {

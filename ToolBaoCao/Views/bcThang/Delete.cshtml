@@ -15,7 +15,7 @@
         <tbody>
             <tr>
                 <td>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idfrom');"> <i class="fa fa-check-square-o"></i> Đồng ý</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="postform('@idfrom', '', '', function () { delTrTargetID('@Request.getValue("id")'); });"> <i class="fa fa-check-square-o"></i> Đồng ý</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="$(idmsg).modal('hide');"> <i class="fa fa-remove"></i> Huỷ</button>
                 </td>
             </tr>

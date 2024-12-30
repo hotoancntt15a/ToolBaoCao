@@ -356,6 +356,8 @@ namespace ToolBaoCao.Controllers
             data = dbBCThang.getDataTable($"SELECT ma_cskcb FROM thangpl01 WHERE id_bc='{idBC}'");
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
             /* Cập nhật dự toán giao CSKCB */
+            /* - Lấy danh sách mã cấp trên */
+            data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten, macaptren FROM dmcskcb WHERE ma_tinh='{matinh}';");
             var tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
             /* Cập nhật dữ liệu */
             var dbDTGiao = dbBCThang;
@@ -368,7 +370,8 @@ namespace ToolBaoCao.Controllers
                 tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}', tl_sudungdt = ROUND(tien_bhtt/'{r[1]}', 2) WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}';");
             }
             if (tsql.Count > 0) { dbBCThang.Execute(string.Join(Environment.NewLine, tsql)); }
-            var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
+            /* PL01: ĐVT triệu đồng */
+            var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, ROUND(dtgiao, 0) AS dtgiao, ROUND(tien_bhtt, 0) AS tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             PL01.TableName = "PL01";
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
