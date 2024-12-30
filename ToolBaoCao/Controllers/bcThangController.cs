@@ -351,7 +351,6 @@ namespace ToolBaoCao.Controllers
                 else { nam = "0"; thang = "0"; }
             }
             /* Tạo phụ lục báo cáo */
-            dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = 0 WHERE id_bc='{idBC}' AND dtgiao = 0;");
             /* - Lấy danh sách mã cấp trên */
             var dataCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, CASE WHEN macaptren = '' THEN id ELSE macaptren END AS macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
             var matchIndexCSKCB = new Dictionary<string, int>();
@@ -371,6 +370,7 @@ namespace ToolBaoCao.Controllers
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
             var dbDTGiao = dbBCThang;
             if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
+            /* - Lấy dự toán giao hiện tại để cập nhật */
             data = dbDTGiao.getDataTable($"SELECT ma_cskcb, dtgiao FROM thangdtgiao WHERE nam={nam} AND idtinh='{matinh}' AND ma_cskcb IN ('{string.Join("','", listCSKCB)}')");
             var tsql = new List<string>();
             foreach (DataRow r in data.Rows)
@@ -959,17 +959,23 @@ namespace ToolBaoCao.Controllers
                     chi1 = (double)pl.Rows[index]["chi1"];
                     chi2 = (double)dr["tong_chi"];
                     pl.Rows[index]["chi2"] = chi2;
-                    pl.Rows[index]["chi3"] = chi1 - chi2;
                 }
                 else
                 {
                     /* Thêm vào phục lục */
                     luot2 = (long)dr["tong_luot"];
                     chi2 = (double)dr["tong_chi"];
-                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, (0 - chi2));
+                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, 0);
                 }
             }
             pl.TableName = "PL02c";
+            /* Làm tròn triệu đồng */
+            foreach (DataRow dr in pl.Rows)
+            {
+                dr[5] = double.Parse($"{dr[5]}").lamTronTrieuDong(true);
+                dr[6] = double.Parse($"{dr[6]}").lamTronTrieuDong(true);
+                dr[7] = double.Parse($"{dr[5]}") - double.Parse($"{dr[6]}");
+            }
             return pl;
         }
 
@@ -1099,7 +1105,7 @@ namespace ToolBaoCao.Controllers
             else
             {
                 phuLuc.Rows.Add(itemVung.Key,
-                    itemVung.Value, ((double)vung.luotNoi / (double)vung.luot).ToString("0.##"), /* Tỷ lệ nội */
+                    itemVung.Value, ((double)vung.luotNoi * 100 / (double)vung.luot).ToString("0.##"), /* Tỷ lệ nội */
                     itemVung.Value, (vung.ngaydtr / (double)vung.luotNoi).ToString("0.##"), /* ngày điều trị*/
                     itemVung.Value, (vung.chi / (double)vung.luot).ToString("0"), /* chi bình quân */
                     itemVung.Value, (vung.chiNoi / (double)vung.luotNoi).ToString("0"), /* chi bình quân nội */
