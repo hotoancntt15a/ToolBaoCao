@@ -241,14 +241,14 @@ namespace ToolBaoCao
         /// </summary>
         /// <param name="numberUS"></param>
         /// <returns></returns>
-        public static string lamTronTrieuDong(this string numberUS)
+        public static string lamTronTrieuDong(this string numberUS, bool cutDuoi = false)
         {
             if (Regex.IsMatch(numberUS, @"^-?\d+(.\d+)?$") == false) { return numberUS; }
             if (numberUS.Contains(".")) { numberUS = numberUS.Split('.')[0]; }
             double so = double.Parse(numberUS);
-            if (so > 1000000) { so = Math.Round(so / 1000000, 0); return $"{so}000000"; }
-            if (so > 1000) { so = Math.Round(so / 1000, 0); return $"{so}000"; }
-            return so.ToString();
+            if (so >= 1000000) { so = Math.Round(so / 1000000, 0); return cutDuoi ? $"{so}" : $"{so}000000"; }
+            if (so > 1000) { so = Math.Round(so / 1000, 0); return cutDuoi ? $"{so}" : $"{so}000"; }
+            return "0";
         }
 
         /// <summary>
@@ -256,11 +256,11 @@ namespace ToolBaoCao
         /// </summary>
         /// <param name="numberUS"></param>
         /// <returns></returns>
-        public static double lamTronTrieuDong(this double numberUS)
+        public static double lamTronTrieuDong(this double numberUS, bool cutDuoi = false)
         {
-            if (numberUS > 1000000) { numberUS = Math.Round(numberUS / 1000000, 0); return double.Parse($"{numberUS}000000"); }
-            if (numberUS > 1000) { numberUS = Math.Round(numberUS / 1000, 0); return double.Parse($"{numberUS}000"); }
-            return Math.Round(numberUS, 0);
+            if (numberUS >= 1000000) { numberUS = Math.Round(numberUS / 1000000, 0); return cutDuoi ? numberUS : double.Parse($"{numberUS}000000"); }
+            if (numberUS > 1000) { numberUS = Math.Round(numberUS / 1000, 0); return cutDuoi ? numberUS : double.Parse($"{numberUS}000"); }
+            return 0;
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace ToolBaoCao
             if (Regex.IsMatch(numberUS, @"^-?\d+(.\d+)?$") == false) { return numberUS; }
             if (numberUS.Contains(".")) { numberUS = numberUS.Split('.')[0]; }
             double so = double.Parse(numberUS);
-            if (so > 1000) { so = Math.Round(so / 1000, 0); return $"{so}000"; }
+            if (so >= 1000) { so = Math.Round(so / 1000, 0); return $"{so}000"; }
             return so.ToString();
         }
 
@@ -284,7 +284,7 @@ namespace ToolBaoCao
         /// <returns></returns>
         public static double lamTronNghinDong(this double numberUS)
         {
-            if (numberUS > 1000) { numberUS = Math.Round(numberUS / 1000, 0); return double.Parse($"{numberUS}000"); }
+            if (numberUS >= 1000) { numberUS = Math.Round(numberUS / 1000, 0); return double.Parse($"{numberUS}000"); }
             return Math.Round(numberUS, 0);
         }
 

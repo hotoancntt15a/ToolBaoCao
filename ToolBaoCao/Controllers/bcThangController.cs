@@ -336,6 +336,7 @@ namespace ToolBaoCao.Controllers
             var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
             var idBC = idBaoCao.sqliteGetValueField();
             var dmVung = new Dictionary<string, string>();
+            string tmp = "", tmp2 = "";
             var data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBC}' AND ma_tinh LIKE 'V%'");
             foreach (DataRow r in data.Rows) { dmVung.Add($"{r[0]}", $"{r[1]}"); }
             /* Lấy năm tháng báo cáo */
@@ -357,8 +358,18 @@ namespace ToolBaoCao.Controllers
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
             /* Cập nhật dự toán giao CSKCB */
             /* - Lấy danh sách mã cấp trên */
-            data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, ten, macaptren FROM dmcskcb WHERE ma_tinh='{matinh}';");
-            var tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
+            data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
+            var dsMaCapTren = new Dictionary<string, string>();
+            var dsCSKCB = new Dictionary<string, string>();
+            foreach (DataRow r in data.Rows)
+            {
+                tmp = $"{r[0]}";
+                dsCSKCB.Add(tmp, $"{r[1]}");
+                if (tmp == dsCSKCB[tmp]) { dsMaCapTren.Add(tmp, $"{r[2]}"); }
+            }
+            var matchIndex = new Dictionary<string, int>();
+            var lr = 0;
+            tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
             /* Cập nhật dữ liệu */
             var dbDTGiao = dbBCThang;
             if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
@@ -367,12 +378,47 @@ namespace ToolBaoCao.Controllers
             foreach (DataRow r in data.Rows)
             {
                 tmp = $"{r[1]}"; if (tmp == "0") { continue; }
-                tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}', tl_sudungdt = ROUND(tien_bhtt/'{r[1]}', 2) WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}';");
+                tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}' WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}';");
             }
             if (tsql.Count > 0) { dbBCThang.Execute(string.Join(Environment.NewLine, tsql)); }
+
             /* PL01: ĐVT triệu đồng */
-            var PL01 = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, ROUND(dtgiao, 0) AS dtgiao, ROUND(tien_bhtt, 0) AS tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
-            PL01.TableName = "PL01";
+            data = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, ROUND(dtgiao, 0) AS dtgiao, ROUND(tien_bhtt, 0) AS tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
+            var PL01 = new DataTable("PL01");
+            PL01.Columns.Add("ma_cskcb"); /* 0 */
+            PL01.Columns.Add("ten_cskcb"); /* 1 */
+            PL01.Columns.Add("dtgiao"); /* 2 */
+            PL01.Columns.Add("tien_bhtt"); /* 3 */
+            PL01.Columns.Add("tl_sudungdt"); /* 4 */
+            foreach (DataRow r in data.Rows)
+            {
+                lr = -1; tmp = $"{r[0]}";
+                /* Tìm vị trí CSKCB trong PL01, dựa trên MaCapTren */
+                if (dsCSKCB.TryGetValue(tmp, out tmp2))
+                {
+                    if (matchIndex.Keys.Contains(tmp2)) { lr = matchIndex[tmp2]; tmp = tmp2; }
+                    else { r[1] = dsMaCapTren[tmp2]; } /* Lấy tên mã cấp trên */
+                }
+                if (lr > -1)
+                {
+                    /* Tìm thấy */
+                    PL01.Rows[lr][2] = double.Parse($"{r[2]}") + double.Parse($"{PL01.Rows[lr][2]}");
+                    PL01.Rows[lr][3] = double.Parse($"{r[3]}") + double.Parse($"{PL01.Rows[lr][3]}");
+                }
+                else
+                {
+                    PL01.Rows.Add(tmp, r[1], $"{r[2]}", $"{r[3]}", $"{r[4]}");
+                    matchIndex.Add(tmp, PL01.Rows.Count);
+                }
+            }
+            /* Làm tròn triệu đồng */
+            for (lr = 0; lr < PL01.Rows.Count; lr++)
+            {
+                PL01.Rows[lr][2] = $"{PL01.Rows[lr][2]}".lamTronTrieuDong(true);
+                PL01.Rows[lr][3] = $"{PL01.Rows[lr][3]}".lamTronTrieuDong(true);
+                PL01.Rows[lr][4] = Math.Round(double.Parse($"{PL01.Rows[lr][3]}") / double.Parse($"{PL01.Rows[lr][2]}"), 2).ToString();
+            }
+
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang));
