@@ -1964,7 +1964,7 @@ namespace ToolBaoCao.Controllers
             bcThang["timecreate"] = DateTime.Now.toTimestamp().ToString();
             bcThang["userid"] = idUser;
             bcThang["ma_tinh"] = maTinh;
-            var bcThangPL = createBCThangPLDocx(dbConnect, idBaoCao, maTinh, mavung, bcThang["nam1"]);
+            var bcThangPL = createBCThangPLDocx(dbConnect, idBaoCao, maTinh, mavung, bcThang["nam1"], bcThang["thang"]);
             bcThangPL["id"] = idBaoCao;
             dbConnect.Update("bcthangpldocx", bcThangPL, "replace");
             dbConnect.Update("bcthangdocx", bcThang, "replace");
@@ -1972,7 +1972,7 @@ namespace ToolBaoCao.Controllers
             return bcThang;
         }
 
-        private Dictionary<string, string> createBCThangPLDocx(dbSQLite dbConnect, string idBaoCao, string maTinh, string maVung, string namBaoCao)
+        private Dictionary<string, string> createBCThangPLDocx(dbSQLite dbConnect, string idBaoCao, string maTinh, string maVung, string namBaoCao, string thang)
         {
             var bcThangPL = new Dictionary<string, string>() { { "id", idBaoCao } };
 
@@ -2090,6 +2090,7 @@ namespace ToolBaoCao.Controllers
 
             /* ----- Dữ liệu t40 trở lên lọc dữ liệu tù B26 ------- */
             /* Bỏ qua các vùng */
+            if (thang.Length > 1) { tmp += thang; } else { tmp += $"0{thang}"; }
             tsql = $@"SELECT ma_tinh
                 ,ten_tinh
                 ,vitri_chibq
@@ -2124,8 +2125,9 @@ namespace ToolBaoCao.Controllers
                 ,ROUND(chi_dinh_cdha, 2) AS chi_dinh_cdha
                 ,ROUND(chi_dinh_cdha_tang, 2) AS chi_dinh_cdha_tang
                 ,ma_vung
-                FROM thangb26chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%') AND id2 IN (SELECT id FROM thangb26 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND thoigian={namBaoCao} LIMIT 1)";
+                FROM thangb26chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%') AND id2 IN (SELECT id FROM thangb26 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND (thoigian > {tmp}00 AND thoigian < {tmp}33) LIMIT 1);";
             var b26TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
+            AppHelper.saveError($"{tsql} : {b26TQ.Count()}");
             if (b26TQ.Count() > 0)
             {
                 var dataTinhB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault();
