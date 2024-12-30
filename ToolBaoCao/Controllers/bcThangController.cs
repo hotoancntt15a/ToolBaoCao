@@ -336,7 +336,7 @@ namespace ToolBaoCao.Controllers
             var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
             var idBC = idBaoCao.sqliteGetValueField();
             var dmVung = new Dictionary<string, string>();
-            string tmp = "", tmp2 = "";
+            string tmp = ""; int lr = 0;
             var data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBC}' AND ma_tinh LIKE 'V%'");
             foreach (DataRow r in data.Rows) { dmVung.Add($"{r[0]}", $"{r[1]}"); }
             /* Lấy năm tháng báo cáo */
@@ -352,25 +352,23 @@ namespace ToolBaoCao.Controllers
             }
             /* Tạo phụ lục báo cáo */
             dbBCThang.Execute($"UPDATE thangpl01 SET tl_sudungdt = 0 WHERE id_bc='{idBC}' AND dtgiao = 0;");
-            /* Lấy danh sách ID */
+            /* - Lấy danh sách mã cấp trên */
+            var dataCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, CASE WHEN macaptren = '' THEN id ELSE macaptren END AS macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
+            var matchIndexCSKCB = new Dictionary<string, int>();
+            var dsMaCapTren = new Dictionary<string, string>();
+            for (int i = 0; i < dataCSKCB.Rows.Count; i++)
+            {
+                tmp = $"{dataCSKCB.Rows[i][0]}";
+                matchIndexCSKCB.Add(tmp, i);
+                if (tmp == $"{dataCSKCB.Rows[i][1]}") { dsMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][2]}"); }
+            }
+
+            tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
+            /* Cập nhật dự toán giao CSKCB */
+            /* - Lấy danh sách ID */
             var listCSKCB = new List<string>();
             data = dbBCThang.getDataTable($"SELECT ma_cskcb FROM thangpl01 WHERE id_bc='{idBC}'");
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
-            /* Cập nhật dự toán giao CSKCB */
-            /* - Lấy danh sách mã cấp trên */
-            data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
-            var dsMaCapTren = new Dictionary<string, string>();
-            var dsCSKCB = new Dictionary<string, string>();
-            foreach (DataRow r in data.Rows)
-            {
-                tmp = $"{r[0]}";
-                dsCSKCB.Add(tmp, $"{r[1]}");
-                if (tmp == dsCSKCB[tmp]) { dsMaCapTren.Add(tmp, $"{r[2]}"); }
-            }
-            var matchIndex = new Dictionary<string, int>();
-            var lr = 0;
-            tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
-            /* Cập nhật dữ liệu */
             var dbDTGiao = dbBCThang;
             if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
             data = dbDTGiao.getDataTable($"SELECT ma_cskcb, dtgiao FROM thangdtgiao WHERE nam={nam} AND idtinh='{matinh}' AND ma_cskcb IN ('{string.Join("','", listCSKCB)}')");
@@ -381,42 +379,45 @@ namespace ToolBaoCao.Controllers
                 tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}' WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}';");
             }
             if (tsql.Count > 0) { dbBCThang.Execute(string.Join(Environment.NewLine, tsql)); }
-
-            /* PL01: ĐVT triệu đồng */
-            data = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, ROUND(dtgiao, 0) AS dtgiao, ROUND(tien_bhtt, 0) AS tien_bhtt, tl_sudungdt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
-            var PL01 = new DataTable("PL01");
-            PL01.Columns.Add("ma_cskcb"); /* 0 */
-            PL01.Columns.Add("ten_cskcb"); /* 1 */
-            PL01.Columns.Add("dtgiao"); /* 2 */
-            PL01.Columns.Add("tien_bhtt"); /* 3 */
-            PL01.Columns.Add("tl_sudungdt"); /* 4 */
+            data = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, ROUND(dtgiao, 0) AS dtgiao, ROUND(tien_bhtt, 0) AS tien_bhtt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             foreach (DataRow r in data.Rows)
             {
-                lr = -1; tmp = $"{r[0]}";
-                /* Tìm vị trí CSKCB trong PL01, dựa trên MaCapTren */
-                if (dsCSKCB.TryGetValue(tmp, out tmp2))
-                {
-                    if (matchIndex.Keys.Contains(tmp2)) { lr = matchIndex[tmp2]; tmp = tmp2; }
-                    else { r[1] = dsMaCapTren[tmp2]; } /* Lấy tên mã cấp trên */
-                }
-                if (lr > -1)
-                {
-                    /* Tìm thấy */
-                    PL01.Rows[lr][2] = double.Parse($"{r[2]}") + double.Parse($"{PL01.Rows[lr][2]}");
-                    PL01.Rows[lr][3] = double.Parse($"{r[3]}") + double.Parse($"{PL01.Rows[lr][3]}");
-                }
-                else
-                {
-                    PL01.Rows.Add(tmp, r[1], $"{r[2]}", $"{r[3]}", $"{r[4]}");
-                    matchIndex.Add(tmp, PL01.Rows.Count);
-                }
+                tmp = $"{r[0]}"; if (matchIndexCSKCB.Keys.Contains(tmp) == false) { continue; }
+                lr = matchIndexCSKCB[tmp]; tmp = $"{dataCSKCB.Rows[lr][1]}";
+                r[0] = tmp;
+                if (dsMaCapTren.Keys.Contains(tmp)) { r[1] = dsMaCapTren[tmp]; }
             }
-            /* Làm tròn triệu đồng */
-            for (lr = 0; lr < PL01.Rows.Count; lr++)
+            var groupedData = from row in data.AsEnumerable()
+                              group row by new
+                              {
+                                  ma_cskcb = row.Field<string>("ma_cskcb"),
+                                  ten_cskcb = row.Field<string>("ten_cskcb")
+                              }
+                              into grp
+                              select new
+                              {
+                                  ma_cskcb = grp.Key.ma_cskcb,
+                                  ten_cskcb = grp.Key.ten_cskcb,
+                                  sum_dtgiao = grp.Sum(r => r.Field<double>("dtgiao")),
+                                  sum_tien_bhtt = grp.Sum(r => r.Field<double>("tien_bhtt"))
+                              };
+            var PL01 = new DataTable("PL01");
+            PL01.Columns.Add("ma_cskcb");
+            PL01.Columns.Add("ten_cskcb");
+            PL01.Columns.Add("dtgiao");
+            PL01.Columns.Add("tien_bhtt");
+            PL01.Columns.Add("tl_sudungdt");
+            foreach (var grp in groupedData)
             {
-                PL01.Rows[lr][2] = $"{PL01.Rows[lr][2]}".lamTronTrieuDong(true);
-                PL01.Rows[lr][3] = $"{PL01.Rows[lr][3]}".lamTronTrieuDong(true);
-                PL01.Rows[lr][4] = Math.Round(double.Parse($"{PL01.Rows[lr][3]}") / double.Parse($"{PL01.Rows[lr][2]}"), 2).ToString();
+                PL01.Rows.Add(grp.ma_cskcb, grp.ten_cskcb,
+                    grp.sum_dtgiao.lamTronTrieuDong(true).ToString(),
+                    grp.sum_tien_bhtt.lamTronTrieuDong(true).ToString(),
+                    "0");
+            }
+            for (int i = 0; i < PL01.Rows.Count; i++)
+            {
+                tmp = $"{PL01.Rows[i][2]}"; if (tmp == "0") { continue; }
+                PL01.Rows[i][4] = Math.Round(double.Parse($"{PL01.Rows[i][3]}") / double.Parse(tmp), 2).ToString();
             }
 
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
