@@ -2091,6 +2091,7 @@ namespace ToolBaoCao.Controllers
 
             /* ----- Dữ liệu t40 trở lên lọc dữ liệu tù B26 ------- */
             /* Bỏ qua các vùng */
+            tmp = namBaoCao;
             if (thang.Length > 1) { tmp += thang; } else { tmp += $"0{thang}"; }
             tsql = $@"SELECT ma_tinh
                 ,ten_tinh
@@ -2128,7 +2129,6 @@ namespace ToolBaoCao.Controllers
                 ,ma_vung
                 FROM thangb26chitiet WHERE id_bc='{idBaoCao}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%') AND id2 IN (SELECT id FROM thangb26 WHERE id_bc='{idBaoCao}' AND ma_tinh='00' AND (thoigian > {tmp}00 AND thoigian < {tmp}33) LIMIT 1);";
             var b26TQ = dbConnect.getDataTable(tsql).AsEnumerable().ToList();
-            AppHelper.saveError($"{tsql} : {b26TQ.Count()}");
             if (b26TQ.Count() > 0)
             {
                 var dataTinhB26 = b26TQ.Where(r => r.Field<string>("ma_tinh") == maTinh).FirstOrDefault();
