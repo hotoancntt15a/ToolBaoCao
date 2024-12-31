@@ -209,8 +209,8 @@ namespace ToolBaoCao.Controllers
 
                 /* Tạo Phục Lục 1 - Lấy từ nguồn cơ sở luỹ kế - Chỉ lấy mã cấp trên */
                 var tsql = $@"INSERT INTO thangpl01 (id_bc, idtinh, ma_cskcb, ten_cskcb, dtgiao, tien_bhtt, tl_sudungdt, userid)
-                    SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, 0 AS dtgiao, t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
-                    FROM thangb02chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND tu_thang=1 AND den_thang={thang} LIMIT 1);";
+                    SELECT '{id}' AS id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ROUND(dtcsyt_trongnam, 0) AS dtgiao, ROUND(dtcsyt_chikcb, 0) AS t_bhtt, 0 AS tl_sudungdt, '{idUser}' AS userid
+                    FROM thangb01chitiet WHERE id_bc='{id}' AND id2 IN (SELECT id FROM thangb01 WHERE id_bc='{id}' AND ma_tinh='{matinh}' AND nam={nam} AND ma_cskcb <> '' ORDER BY den_thang DESC LIMIT 1);";
                 dbTemp.Execute(tsql);
                 /* Tạo Phục Lục 2a */
                 /* Lấy dữ liệu từ biểu pl02a trong tháng (Từ tháng đến tháng = tháng báo cáo của toàn quốc nam1) */
@@ -383,16 +383,7 @@ namespace ToolBaoCao.Controllers
             foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
             var dbDTGiao = dbBCThang;
             if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
-            /* - Lấy dự toán giao hiện tại để cập nhật */
-            data = dbDTGiao.getDataTable($"SELECT ma_cskcb, dtgiao FROM thangdtgiao WHERE nam={nam} AND idtinh='{matinh}' AND ma_cskcb IN ('{string.Join("','", listCSKCB)}')");
-            var tsql = new List<string>();
-            foreach (DataRow r in data.Rows)
-            {
-                tmp = $"{r[1]}"; if (tmp == "0") { continue; }
-                tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}' WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}';");
-            }
-            if (tsql.Count > 0) { dbBCThang.Execute(string.Join(Environment.NewLine, tsql)); }
-            data = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, ROUND(dtgiao, 0) AS dtgiao, ROUND(tien_bhtt, 0) AS tien_bhtt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
+            data = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             foreach (DataRow r in data.Rows)
             {
                 tmp = $"{r[0]}"; if (matchIndexCSKCB.Keys.Contains(tmp) == false) { continue; }
@@ -477,7 +468,7 @@ namespace ToolBaoCao.Controllers
                     {
                         case "PL01":
                             listColRight = new List<int>() { 2, 3, 4 };
-                            listColWith = new List<int>() { 11, 32, 25, 25, 13 };
+                            listColWith = new List<int>() { 11, 65, 25, 25, 13 };
                             break;
 
                         case "PL02a":
