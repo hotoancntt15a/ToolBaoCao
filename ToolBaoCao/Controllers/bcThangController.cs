@@ -516,8 +516,8 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL04b":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
-                            listColWith = new List<int>() { 9, 57, 14, 14, 14, 14, 14, 14, 14 };
+                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
+                            listColWith = new List<int>() { 9, 57, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
                         default: break;
@@ -575,13 +575,14 @@ namespace ToolBaoCao.Controllers
                                 tmp = $"{r[indexColumn]}";
                                 if (tmp.StartsWith("<b>"))
                                 {
-                                    cell.CellStyle = listColRight.Contains(indexColumn) ? csContextBR : csContextB;
-                                    cell.SetCellValue(tmp.Substring(3));
+                                    tmp = tmp.Substring(3);
+                                    if (listColRight.Contains(indexColumn)) { cell.CellStyle = csContextBR; cell.SetCellValue(tmp.FormatCultureVN()); }
+                                    else { cell.CellStyle = csContextB; cell.SetCellValue(tmp); }
                                 }
                                 else
                                 {
-                                    cell.CellStyle = listColRight.Contains(indexColumn) ? csContextR : csContext;
-                                    cell.SetCellValue(tmp);
+                                    if (listColRight.Contains(indexColumn)) { cell.CellStyle = csContextR; cell.SetCellValue(tmp.FormatCultureVN()); }
+                                    else { cell.CellStyle = csContext; cell.SetCellValue(tmp); }
                                 }
                             }
                         }
