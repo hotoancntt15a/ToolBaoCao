@@ -1816,8 +1816,8 @@ namespace ToolBaoCao.Controllers
             if (item == null) { throw new Exception($"[creatbcThang] Biểu 01 Toàn quốc từ tháng 1 đến {bcThang["thang"]} năm {bcThang["nam1"]} không có dữ liệu của tỉnh {maTinh}"); }
 
             mavung = $"{item["ma_vung"]}";
-            bcThang.Add("x2", $"{item["dtcsyt_trongnam"]}".lamTronTrieuDong());
-            bcThang.Add("x3", $"{item["dtcsyt_chikcb"]}".lamTronTrieuDong());
+            bcThang.Add("x2", $"{item["dtcsyt_trongnam"]}".lamTronTrieuDong(true));
+            bcThang.Add("x3", $"{item["dtcsyt_chikcb"]}".lamTronTrieuDong(true));
             bcThang.Add("x4", $"{item["dtcsyt_tlsudungnam"]}");
 
             /* x5 integer not null default 0 /* xếp bn toàn quốc */
@@ -2174,8 +2174,8 @@ namespace ToolBaoCao.Controllers
             var d = new Dictionary<string, string>();
             string key1 = "{t" + iKey.ToString() + "}", key2 = "{t" + (iKey + 1).ToString() + "}", key3 = "{t" + (iKey + 2).ToString() + "}";
             /* t46 Bình quân cột [x] dòng có mã tỉnh = 10}; */
-            var x = (double)row[field1];
-            d.Add(key1, row[field1].ToString());
+            var x = (double)row[field1]; if (iKey == 61 || iKey == 64) { x = x * 100; }
+            d.Add(key1, Math.Round(x, 0).ToString());
             /* t47 số tương đối t47={nếu cột [x+1] dòng có mã tỉnh=10 là số dương, “tăng “ & cột [x+1] & “%”, không thì “giảm “ & cột [x+1] %}; */
             d.Add(key2, "bằng");
             var x1 = (double)row[field2]; /* s */
@@ -2214,7 +2214,7 @@ namespace ToolBaoCao.Controllers
             if (so2 != 0)
             {
                 so1 = data.Where(r => r.Field<string>("ma_vung") == mavung).Sum(r => r.Field<double>(fieldTongChiVung));
-                d[keys[4]] = (so1 / so2).ToString();
+                d[keys[4]] = Math.Round(so1 / so2, 0).ToString();
             }
             /* t38 = số chênh lệch t38 ={đoạn văn tùy thuộc t33 > hay < t37. Nếu lớn hơn, lấy chuỗi “cao hơn”, không thì “thấp hơn” ghép với trị tuyệt đối của hiệu số }; */
             d.Add(keys[5], "bằng");
