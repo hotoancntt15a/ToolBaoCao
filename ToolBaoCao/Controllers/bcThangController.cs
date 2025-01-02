@@ -1897,9 +1897,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x15", $"{item["tong_luot"]}");
             bcThang.Add("x16", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x17", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x27", $"{item["tong_chi"]}".lamTronTrieuDong(true));
-            bcThang.Add("x28", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong(true));
-            bcThang.Add("x29", $"{item["tong_chi_noi"]}".lamTronTrieuDong(true));
+            bcThang.Add("x27", $"{item["t_bhtt"]}".lamTronTrieuDong(true));
+            bcThang.Add("x28", $"{item["t_bhtt_ngoai"]}".lamTronTrieuDong(true));
+            bcThang.Add("x29", $"{item["t_bhtt_noi"]}".lamTronTrieuDong(true));
 
             /* ,x18 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x19 real not null default 0 /* Lượt ngoại {nam2} luỹ kế
@@ -1913,9 +1913,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x18", $"{item["tong_luot"]}");
             bcThang.Add("x19", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x20", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x30", $"{item["tong_chi"]}".lamTronTrieuDong(true));
-            bcThang.Add("x31", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong(true));
-            bcThang.Add("x32", $"{item["tong_chi_noi"]}".lamTronTrieuDong(true));
+            bcThang.Add("x30", $"{item["t_bhtt"]}".lamTronTrieuDong(true));
+            bcThang.Add("x31", $"{item["t_bhtt_ngoai"]}".lamTronTrieuDong(true));
+            bcThang.Add("x32", $"{item["t_bhtt_noi"]}".lamTronTrieuDong(true));
 
             /* Tăng giảm so với cùng kỳ năm trước
              * ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 -(x15-x9)
