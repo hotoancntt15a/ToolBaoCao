@@ -349,7 +349,7 @@ namespace ToolBaoCao.Controllers
             var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
             var idBC = idBaoCao.sqliteGetValueField();
             var dmVung = new Dictionary<string, string>();
-            string tmp = ""; int lr = 0;
+            string tmp = "";
             var data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBC}' AND ma_tinh LIKE 'V%'");
             foreach (DataRow r in data.Rows) { dmVung.Add($"{r[0]}", $"{r[1]}"); }
             /* Lấy năm tháng báo cáo */
@@ -366,28 +366,45 @@ namespace ToolBaoCao.Controllers
             /* Tạo phụ lục báo cáo */
             /* - Lấy danh sách mã cấp trên */
             var dataCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, CASE WHEN macaptren = '' THEN id ELSE macaptren END AS macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
-            var matchIndexCSKCB = new Dictionary<string, int>();
+            var matchMaCapTren = new Dictionary<string, string>();
             var dsMaCapTren = new Dictionary<string, string>();
             for (int i = 0; i < dataCSKCB.Rows.Count; i++)
             {
                 tmp = $"{dataCSKCB.Rows[i][0]}";
-                matchIndexCSKCB.Add(tmp, i);
+                matchMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][1]}");
                 if (tmp == $"{dataCSKCB.Rows[i][1]}") { dsMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][2]}"); }
             }
+            /* -- */
+            /* Trường hợp không có dữ liệu DTGiao thì lấy từ thangdtgiao */
+            tmp = $"{dbBCThang.getValue($"SELECT SUM(dtgiao) AS X FROM thangpl01 WHERE id_bc='{idBC}'")}";
+            if (tmp == "0")
+            {
+                /* Cập nhật dự toán giao CSKCB */
+                /* - Lấy danh sách ID */
+                var listCSKCB = new List<string>();
+                data = dbBCThang.getDataTable($"SELECT ma_cskcb FROM thangpl01 WHERE id_bc='{idBC}'");
+                foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
+                var dbDTGiao = dbBCThang;
+                tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
+                if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
+                /* - Lấy dự toán giao hiện tại để cập nhật */
+                data = dbDTGiao.getDataTable($"SELECT ma_cskcb, dtgiao FROM thangdtgiao WHERE nam={nam} AND idtinh='{matinh}' AND ma_cskcb IN ('{string.Join("','", listCSKCB)}')");
+                var tsql = new List<string>();
+                foreach (DataRow r in data.Rows)
+                {
+                    tmp = $"{r[1]}"; if (tmp == "0") { continue; }
+                    tsql.Add($"UPDATE thangpl01 SET dtgiao = '{r[1]}' WHERE id_bc='{idBC}' AND ma_cskcb='{r[0]}'; ");
+                }
+                if (tsql.Count > 0) { dbBCThang.Execute(string.Join(Environment.NewLine, tsql)); }
+            }
 
-            tmp = Path.Combine(AppHelper.pathAppData, $"BaoCaoThang{matinh}.db");
             /* Cập nhật dự toán giao CSKCB */
-            /* - Lấy danh sách ID */
-            var listCSKCB = new List<string>();
-            data = dbBCThang.getDataTable($"SELECT ma_cskcb FROM thangpl01 WHERE id_bc='{idBC}'");
-            foreach (DataRow r in data.Rows) { listCSKCB.Add($"{r[0]}"); }
-            var dbDTGiao = dbBCThang;
-            if (dbBCThang.getPathDataFile() != tmp) { dbDTGiao = new dbSQLite(tmp); dbDTGiao.CreateBcThang(); }
             data = dbBCThang.getDataTable($"SELECT ma_cskcb, ten_cskcb, dtgiao, tien_bhtt FROM thangpl01 WHERE id_bc='{idBC}' ORDER BY ma_cskcb;");
             foreach (DataRow r in data.Rows)
             {
-                tmp = $"{r[0]}"; if (matchIndexCSKCB.Keys.Contains(tmp) == false) { continue; }
-                lr = matchIndexCSKCB[tmp]; tmp = $"{dataCSKCB.Rows[lr][1]}";
+                tmp = $"{r[0]}";
+                if (matchMaCapTren.Keys.Contains(tmp) == false) { continue; }
+                tmp = matchMaCapTren[tmp];
                 r[0] = tmp;
                 if (dsMaCapTren.Keys.Contains(tmp)) { r[1] = dsMaCapTren[tmp]; }
             }
@@ -426,11 +443,11 @@ namespace ToolBaoCao.Controllers
 
             var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
-            var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang));
+            var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), matchMaCapTren);
             data = createPL02(dbBCThang, idBaoCao, matinh, "pl03a2", dmVung);
             var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", thang, PL02a, data, dmVung);
             var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
-            var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang);
+            var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang, matchMaCapTren);
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
             var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
             exportPhuLucbcThang(idBaoCao, outFile, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
@@ -482,8 +499,8 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL02c":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
-                            listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
+                            listColRight = new List<int>() { 3, 4, 5, 6, 7, 8 };
+                            listColWith = new List<int>() { 11, 11, 36, 16, 16, 16, 16, 16, 16 };
                             break;
 
                         case "PL03a":
@@ -497,8 +514,8 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL03c":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7 };
-                            listColWith = new List<int>() { 11, 36, 16, 16, 16, 16, 16, 16 };
+                            listColRight = new List<int>() { 3, 4, 5, 6, 7, 8 };
+                            listColWith = new List<int>() { 11, 11, 36, 16, 16, 16, 16, 16, 16 };
                             break;
 
                         case "PL04a":
@@ -932,11 +949,11 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang)
+        private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang, Dictionary<string, string> matchMaCapTren)
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
             /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
-            var pl = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
+            var pl = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
             var dicCSKCB = new Dictionary<string, int>();
             for (int i = 0; i < pl.Rows.Count; i++)
             {
@@ -944,7 +961,7 @@ namespace ToolBaoCao.Controllers
                 pl.Rows[i]["chi2"] = 0;
                 pl.Rows[i]["chi3"] = 0;
             }
-            var dt = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
+            var dt = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
             string tmp = ""; int index = 0;
             long luot1 = 0, luot2 = 0;
             double chi1 = 0, chi2 = 0;
@@ -971,25 +988,32 @@ namespace ToolBaoCao.Controllers
                     /* Thêm vào phục lục */
                     luot2 = (long)dr["tong_luot"];
                     chi2 = (double)dr["tong_chi"];
-                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, 0);
+                    pl.Rows.Add("", dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, 0);
                 }
             }
             pl.TableName = "PL02c";
             /* Làm tròn triệu đồng */
             foreach (DataRow dr in pl.Rows)
             {
-                dr[5] = double.Parse($"{dr[5]}").lamTronTrieuDong(true);
                 dr[6] = double.Parse($"{dr[6]}").lamTronTrieuDong(true);
-                dr[7] = double.Parse($"{dr[5]}") - double.Parse($"{dr[6]}");
+                dr[7] = double.Parse($"{dr[7]}").lamTronTrieuDong(true);
+                dr[8] = double.Parse($"{dr[6]}") - double.Parse($"{dr[7]}");
+                dr["macaptren"] = matchMaCapTren.getValue($"{dr[1]}", $"{dr[1]}");
+            }
+            pl.DefaultView.Sort = "macaptren ASC, ma_cskcb ASC"; pl = pl.DefaultView.ToTable();
+            tmp = "";
+            foreach (DataRow dr in pl.Rows)
+            {
+                if (tmp == $"{dr[0]}") { dr[0] = "-"; } else { tmp = $"{dr[0]}"; }
             }
             return pl;
         }
 
-        private DataTable createPL03c(dbSQLite db, string idBaoCao, string idTinh, string thang)
+        private DataTable createPL03c(dbSQLite db, string idBaoCao, string idTinh, string thang, Dictionary<string, string> matchMaCapTren)
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
             /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
-            var pl = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' AND tu_thang=den_thang AND den_thang={thang});");
+            var pl = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' AND tu_thang=den_thang AND den_thang={thang});");
             var dicCSKCB = new Dictionary<string, int>();
             for (int i = 0; i < pl.Rows.Count; i++)
             {
@@ -998,7 +1022,7 @@ namespace ToolBaoCao.Controllers
                 pl.Rows[i]["chi3"] = 0;
             }
             string thangTruoc = thang == "1" ? "12" : $"{(int.Parse(thang) - 1)}";
-            var dt = db.getDataTable($"SELECT ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' AND tu_thang=den_thang AND den_thang={thangTruoc});");
+            var dt = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND ma_tinh='{idTinh}' AND tu_thang=den_thang AND den_thang={thangTruoc});");
             string tmp = ""; int index = 0;
             long luot1 = 0, luot2 = 0;
             double chi1 = 0, chi2 = 0;
@@ -1025,16 +1049,24 @@ namespace ToolBaoCao.Controllers
                     /* Thêm vào phục lục */
                     luot2 = (long)dr["tong_luot"];
                     chi2 = (double)dr["tong_chi"];
-                    pl.Rows.Add(dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, 0);
+                    pl.Rows.Add("", dr["ma_cskcb"], dr["ten_cskcb"], long.Parse("0"), luot2, (0 - luot2), double.Parse("0"), chi2, 0);
                 }
             }
+            pl.TableName = "PL03c";
+            /* Làm tròn triệu đồng */
             foreach (DataRow dr in pl.Rows)
             {
-                dr[5] = double.Parse($"{dr[5]}").lamTronTrieuDong(true);
                 dr[6] = double.Parse($"{dr[6]}").lamTronTrieuDong(true);
-                dr[7] = double.Parse($"{dr[5]}") - double.Parse($"{dr[6]}");
+                dr[7] = double.Parse($"{dr[7]}").lamTronTrieuDong(true);
+                dr[8] = double.Parse($"{dr[6]}") - double.Parse($"{dr[7]}");
+                dr["macaptren"] = matchMaCapTren.getValue($"{dr[1]}", $"{dr[1]}");
             }
-            pl.TableName = "PL03c";
+            pl.DefaultView.Sort = "macaptren ASC, ma_cskcb ASC"; pl = pl.DefaultView.ToTable();
+            tmp = "";
+            foreach (DataRow dr in pl.Rows)
+            {
+                if (tmp == $"{dr[0]}") { dr[0] = "-"; } else { tmp = $"{dr[0]}"; }
+            }
             return pl;
         }
 
@@ -1771,7 +1803,6 @@ namespace ToolBaoCao.Controllers
             var bcThang = new Dictionary<string, string>() { { "id", idBaoCao }, { "x1", x1 }, { "x33", x33 }, { "x34", x34 }, { "x35", x35 }, { "x36", x36 }, { "x37", x37 }, { "x38", x38 } };
             string tmp = AppHelper.dbSqliteMain.getValue($"SELECT ten FROM dmtinh WHERE id='{maTinh}';").ToString();
             string mavung = "";
-            double number = 0;
             bcThang.Add("tentinh", tmp);
             /* Lấy năm, tháng báo cáo */
             string nam = ""; string thang = "";
@@ -1835,12 +1866,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x9", $"{item["tong_luot"]}");
             bcThang.Add("x10", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x11", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x21", $"{item["tong_chi"]}".lamTronTrieuDong());
-            if (bcThang["x21"] != "0") { number = double.Parse(bcThang["x21"]); if (number < 1000000) { bcThang["x21"] = "0"; } else { bcThang["x21"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x22", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
-            if (bcThang["x22"] != "0") { number = double.Parse(bcThang["x22"]); if (number < 1000000) { bcThang["x22"] = "0"; } else { bcThang["x22"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x23", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
-            if (bcThang["x23"] != "0") { number = double.Parse(bcThang["x23"]); if (number < 1000000) { bcThang["x23"] = "0"; } else { bcThang["x23"] = (number / 1000000).ToString(); } }
+            bcThang.Add("x21", $"{item["t_bhtt"]}".lamTronTrieuDong(true));
+            bcThang.Add("x22", $"{item["t_bhtt_ngoai"]}".lamTronTrieuDong(true));
+            bcThang.Add("x23", $"{item["t_bhtt_noi"]}".lamTronTrieuDong(true));
             /* ,x12 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x13 real not null default 0 /* Lượt ngoại {nam1} luỹ kế
                 ,x14 real not null default 0 /* Lượt nội {nam1} luỹ kế
@@ -1853,12 +1881,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x12", $"{item["tong_luot"]}");
             bcThang.Add("x13", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x14", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x24", $"{item["tong_chi"]}".lamTronTrieuDong());
-            if (bcThang["x24"] != "0") { number = double.Parse(bcThang["x24"]); if (number < 1000000) { bcThang["x24"] = "0"; } else { bcThang["x24"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x25", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
-            if (bcThang["x25"] != "0") { number = double.Parse(bcThang["x25"]); if (number < 1000000) { bcThang["x25"] = "0"; } else { bcThang["x25"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x26", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
-            if (bcThang["x26"] != "0") { number = double.Parse(bcThang["x26"]); if (number < 1000000) { bcThang["x26"] = "0"; } else { bcThang["x26"] = (number / 1000000).ToString(); } }
+            bcThang.Add("x24", $"{item["t_bhtt"]}".lamTronTrieuDong(true));
+            bcThang.Add("x25", $"{item["t_bhtt_ngoai"]}".lamTronTrieuDong(true));
+            bcThang.Add("x26", $"{item["t_bhtt_noi"]}".lamTronTrieuDong(true));
 
             /* ,x15 real not null default 0 /* Tổng lượt = 2+3 (x10+x11)
                 ,x16 real not null default 0 /* Lượt ngoại {nam2}
@@ -1872,12 +1897,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x15", $"{item["tong_luot"]}");
             bcThang.Add("x16", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x17", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x27", $"{item["tong_chi"]}".lamTronTrieuDong());
-            if (bcThang["x27"] != "0") { number = double.Parse(bcThang["x27"]); if (number < 1000000) { bcThang["x27"] = "0"; } else { bcThang["x27"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x28", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
-            if (bcThang["x28"] != "0") { number = double.Parse(bcThang["x28"]); if (number < 1000000) { bcThang["x28"] = "0"; } else { bcThang["x28"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x29", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
-            if (bcThang["x29"] != "0") { number = double.Parse(bcThang["x29"]); if (number < 1000000) { bcThang["x29"] = "0"; } else { bcThang["x29"] = (number / 1000000).ToString(); } }
+            bcThang.Add("x27", $"{item["tong_chi"]}".lamTronTrieuDong(true));
+            bcThang.Add("x28", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong(true));
+            bcThang.Add("x29", $"{item["tong_chi_noi"]}".lamTronTrieuDong(true));
 
             /* ,x18 real not null default 0 /* Tổng lượt = 5+6 (x13+x14) Luỹ kế
                 ,x19 real not null default 0 /* Lượt ngoại {nam2} luỹ kế
@@ -1891,12 +1913,9 @@ namespace ToolBaoCao.Controllers
             bcThang.Add("x18", $"{item["tong_luot"]}");
             bcThang.Add("x19", $"{item["tong_luot_ngoai"]}");
             bcThang.Add("x20", $"{item["tong_luot_noi"]}");
-            bcThang.Add("x30", $"{item["tong_chi"]}".lamTronTrieuDong());
-            if (bcThang["x30"] != "0") { number = double.Parse(bcThang["x30"]); if (number < 1000000) { bcThang["x30"] = "0"; } else { bcThang["x30"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x31", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong());
-            if (bcThang["x31"] != "0") { number = double.Parse(bcThang["x31"]); if (number < 1000000) { bcThang["x31"] = "0"; } else { bcThang["x31"] = (number / 1000000).ToString(); } }
-            bcThang.Add("x32", $"{item["tong_chi_noi"]}".lamTronTrieuDong());
-            if (bcThang["x32"] != "0") { number = double.Parse(bcThang["x32"]); if (number < 1000000) { bcThang["x32"] = "0"; } else { bcThang["x32"] = (number / 1000000).ToString(); } }
+            bcThang.Add("x30", $"{item["tong_chi"]}".lamTronTrieuDong(true));
+            bcThang.Add("x31", $"{item["tong_chi_ngoai"]}".lamTronTrieuDong(true));
+            bcThang.Add("x32", $"{item["tong_chi_noi"]}".lamTronTrieuDong(true));
 
             /* Tăng giảm so với cùng kỳ năm trước
              * ,m13lc13 real not null default 0 /* Tổng lượt = 2+3 -(x15-x9)
