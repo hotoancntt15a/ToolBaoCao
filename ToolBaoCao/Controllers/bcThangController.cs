@@ -2170,16 +2170,16 @@ namespace ToolBaoCao.Controllers
                 foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
 
                 /* t61 Chỉ định xét nghiệm t61={cột AD, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-                tmpD = buildBCThangB26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26);
+                tmpD = buildBCThangB26(61, "chi_dinh_xn", "chi_dinh_xn_tang", dataTinhB26, "người");
                 foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
                 /* t64 =  Chỉ định CĐHA t64={cột AF, dòng có mã tỉnh =10 nhân với 100 để ra số người}; */
-                tmpD = buildBCThangB26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26);
+                tmpD = buildBCThangB26(64, "chi_dinh_cdha", "chi_dinh_cdha_tang", dataTinhB26, "người");
                 foreach (var d in tmpD) { bcThangPL.Add(d.Key, d.Value); }
             }
             return bcThangPL;
         }
 
-        private Dictionary<string, string> buildBCThangB26(int iKey, string field1, string field2, DataRow row)
+        private Dictionary<string, string> buildBCThangB26(int iKey, string field1, string field2, DataRow row, string dvt = "đồng")
         {
             var d = new Dictionary<string, string>();
             string key1 = "{t" + iKey.ToString() + "}", key2 = "{t" + (iKey + 1).ToString() + "}", key3 = "{t" + (iKey + 2).ToString() + "}";
@@ -2193,8 +2193,8 @@ namespace ToolBaoCao.Controllers
             else { if (x1 < 0) { d[key2] = $"giảm {Math.Abs(x1).FormatCultureVN()}%"; } }
             /* t48 số tuyệt đối t48={nếu cột [x+1] là dương, “tăng “ & [cột [x] - (cột [x] / (cột [x+1] +100) *100 )] & “ đồng”, không thì “giảm “ & [cột [x]- (cột [x] / (cột [x+1]+100) *100 )] & “ đồng”} */
             d.Add(key3, "bằng");
-            if (x1 > 0) { d[key3] = "tăng " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " đồng"; }
-            else { if (x1 < 0) { d[key3] = "giảm " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " đồng"; } }
+            if (x1 > 0) { d[key3] = "tăng " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " " + dvt; }
+            else { if (x1 < 0) { d[key3] = "giảm " + Math.Round(Math.Abs(x - (x / (x1 + 100) * 100)), 0).FormatCultureVN() + " " + dvt; } }
             return d;
         }
 

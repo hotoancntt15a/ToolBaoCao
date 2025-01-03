@@ -676,7 +676,7 @@ namespace ToolBaoCao
             CREATE INDEX IF NOT EXISTS bcthangdocx_ma_tinh ON bcthangdocx(ma_tinh);
             CREATE INDEX IF NOT EXISTS index_bcthangdocx_timecreate ON bcthangdocx(timecreate);
             CREATE INDEX IF NOT EXISTS index_bcthangdocx_ngay ON bcthangdocx(ngay1);");
-            tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bcthangpldocx (
+            var tsqlPLdocx = @"CREATE TABLE IF NOT EXISTS bcthangpldocx (
                 id text not null primary key
                 ,t5 real not null default 0
                 ,t6 real not null default 0
@@ -714,7 +714,7 @@ namespace ToolBaoCao
                 ,t38 text not null default ''
                 ,t39 integer not null default 0
                 ,t40 real not null default 0
-                ,t41 real not null default 0
+                ,t41 text not null default 0
                 ,t42 text not null default ''
                 ,t43 real not null default 0
                 ,t44 text not null default ''
@@ -739,7 +739,8 @@ namespace ToolBaoCao
                 ,t63 text not null default ''
                 ,t64 real not null default 0
                 ,t65 text not null default ''
-                ,t66 text not null default '');");
+                ,t66 text not null default '');";
+            tsqlCreate.Add(tsqlPLdocx);
             /** Yêu cầu nhập excel từ người dùng */
             /* PHỤ LỤC 01. TÌNH HÌNH SỬ DỤNG DỰ TOÁN THEO HỢP ĐỒNG (luy kế năm của csyt) */
             tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS thangdtgiao (id text primary key
@@ -753,6 +754,18 @@ namespace ToolBaoCao
                 CREATE INDEX IF NOT EXISTS index_thangdtgiao_idtinh_nam_ma_cskcb ON thangdtgiao (idtinh, nam, ma_cskcb);");
             var tsql = string.Join(Environment.NewLine, tsqlCreate);
             if (tsqlCreate.Count > 0) { dbConnect.Execute(tsql); }
+            /* Sửa lại t41 từ số sang text */
+            var col = dbConnect.getColumns("bcthangpldocx").FirstOrDefault(p => p.ColumnName == "t41");
+            if (col != null)
+            {
+                if (col.DataType != typeof(string))
+                {
+                    dbConnect.Execute("ALTER TABLE bcthangpldocx RENAME TO bcthangpldocx_old;");
+                    dbConnect.Execute(tsqlPLdocx);
+                    dbConnect.Execute("INSERT INTO bcthangpldocx SELECT * FROM bcthangpldocx_old;");
+                    dbConnect.Execute("DROP TABLE bcthangpldocx_old;");
+                }
+            }
         }
 
         public static void CreatePhucLucBcThang(this dbSQLite dbConnect, List<string> tables = null)
