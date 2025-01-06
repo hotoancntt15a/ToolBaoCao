@@ -604,7 +604,7 @@ namespace ToolBaoCao
                 ,x36 text not null default '' /* Công tác khác */
                 ,x37 text not null default '' /* Phương hướng công tác tháng sau */
                 ,x38 text not null default '' /* Khó khăn, vướng mắc, đề xuất (nếu có) */
-
+                ,x39 text not null default ''
                 ,x2 real not null default 0 /* Dự toán giao {nam} */
                 ,x3 real not null default 0 /* Chi KCB toàn tỉnh */
                 ,x4 real not null default 0 /* Tỷ lệ % SD dự toán {nam} */
@@ -766,6 +766,8 @@ namespace ToolBaoCao
                     dbConnect.Execute("DROP TABLE bcthangpldocx_old;");
                 }
             }
+            col = dbConnect.getColumns("bcthangdocx").FirstOrDefault(p => p.ColumnName == "x39");
+            if (col == null) { dbConnect.Execute("ALTER TABLE bcthangdocx ADD COLUMN x39 text not null default '';"); }
         }
 
         public static void CreatePhucLucBcThang(this dbSQLite dbConnect, List<string> tables = null)
