@@ -1,6 +1,4 @@
-﻿using NPOI.POIFS.Crypt.Dsig;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
+﻿using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using SharpCompress.Archives;
 using SharpCompress.Archives.Rar;
@@ -363,7 +361,25 @@ namespace ToolBaoCao.Controllers
                     nam = $"{data.Rows[0][0]}";
                     thang = $"{data.Rows[0][1]}";
                 }
-                else { nam = "0"; thang = "0"; }
+                else
+                {
+                    if (dbBCThang.tableExist("thangb02"))
+                    {
+                        data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb02 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                        if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+                        if (nam == "")
+                        {
+                            data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb01 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+                        }
+                        if (nam == "")
+                        {
+                            data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+                        }
+                    }
+                    else { nam = "0"; thang = "0"; }
+                }
             }
             /* Tạo phụ lục báo cáo */
             /* - Lấy danh sách mã cấp trên */
@@ -795,8 +811,8 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{matinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
                         return View();
                     }
-                    tmp = createFileBcThangDocx(id, matinh, dbBaoCao);
-                    var listFile = new List<string> { tmp, createFilePhuLucBcThang(id, matinh, dbBaoCao) };
+                    tmp = createFilePhuLucBcThang(id, matinh, dbBaoCao);
+                    var listFile = new List<string> { tmp, createFileBcThangDocx(id, matinh, dbBaoCao) };
                     dbBaoCao.Close();
                     AppHelper.zipAchive(fileZip, listFile);
                 }
@@ -1062,7 +1078,8 @@ namespace ToolBaoCao.Controllers
             PL01.Columns.Add("ten_cskcb");
             PL01.Columns.Add("dtgiao");
             PL01.Columns.Add("tien_bhtt");
-            PL01.Columns.Add("tl_sudungdt");
+            PL01.Columns.Add("tyle", typeof(double));
+            PL01.Columns.Add("tyle_sd");
             foreach (var grp in groupedData)
             {
                 PL01.Rows.Add(grp.ma_cskcb, grp.ten_cskcb,
@@ -1073,8 +1090,14 @@ namespace ToolBaoCao.Controllers
             for (int i = 0; i < PL01.Rows.Count; i++)
             {
                 tmp = $"{PL01.Rows[i][2]}"; if (tmp == "0") { continue; }
-                PL01.Rows[i][4] = Math.Round(double.Parse($"{PL01.Rows[i][3]}") * 100 / double.Parse(tmp), 2).ToString() + "%";
+                PL01.Rows[i][4] = Math.Round(double.Parse($"{PL01.Rows[i][3]}") * 100 / double.Parse(tmp), 2);
+                PL01.Rows[i][5] = $"{PL01.Rows[i][4]}%";
             }
+            PL01.DefaultView.Sort = "tyle DESC"; PL01 = PL01.DefaultView.ToTable();
+            PL01.Columns.RemoveAt(4);
+            var lx39 = new List<string>();
+            for (int i = 0; i < (PL01.Rows.Count > 5 ? 5 : PL01.Rows.Count); i++) { lx39.Add($"{PL01.Rows[i][1]}: {PL01.Rows[i][4]}"); }
+            try { dbBCThang.Execute($"UPDATE bcthangdocx SET x39='{string.Join(", ", lx39)}' WHERE id='{idBC}';"); } catch { }
             return PL01;
         }
 
@@ -2355,8 +2378,8 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{idtinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
                         return View();
                     }
-                    var tmp = createFileBcThangDocx(id, idtinh, dbBaoCao);
-                    var listFile = new List<string> { tmp, createFilePhuLucBcThang(id, idtinh, dbBaoCao) };
+                    var tmp = createFilePhuLucBcThang(id, idtinh, dbBaoCao);
+                    var listFile = new List<string> { tmp, createFileBcThangDocx(id, idtinh, dbBaoCao) };
                     string fileZip = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip");
                     if (System.IO.File.Exists(fileZip)) { System.IO.File.Delete(fileZip); }
                     AppHelper.zipAchive(fileZip, listFile);
