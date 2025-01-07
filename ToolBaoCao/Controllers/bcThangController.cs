@@ -835,6 +835,25 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
+        private DataTable sortDataTable(DataTable dt, string field1, string field2)
+        {
+            DataTable sortedTable = dt.Clone();
+            var groups = dt.AsEnumerable().GroupBy(row => row.Field<string>(field1));
+            foreach (var group in groups)
+            {
+                var matchingRow = group.FirstOrDefault(row => row.Field<string>(field2) == row.Field<string>(field1));
+                if (matchingRow != null)
+                {
+                    sortedTable.ImportRow(matchingRow);
+                }
+                foreach (var row in group.Where(row => row.Field<string>(field2) != row.Field<string>(field1)))
+                {
+                    sortedTable.ImportRow(row);
+                }
+            }
+            return sortedTable;
+        }
+
         private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang, Dictionary<string, string> matchMaCapTren)
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
@@ -886,8 +905,7 @@ namespace ToolBaoCao.Controllers
                 dr[8] = double.Parse($"{dr[6]}") - double.Parse($"{dr[7]}");
                 dr["macaptren"] = matchMaCapTren.getValue($"{dr[1]}", $"{dr[1]}");
             }
-            pl.DefaultView.Sort = "macaptren ASC, ma_cskcb ASC"; pl = pl.DefaultView.ToTable();
-            tmp = "";
+            pl = sortDataTable(pl, "macaptren", "ma_cskcb");
             foreach (DataRow dr in pl.Rows)
             {
                 if (tmp == $"{dr[0]}") { dr[0] = "-"; } else { tmp = $"{dr[0]}"; }
@@ -947,7 +965,7 @@ namespace ToolBaoCao.Controllers
                 dr[8] = double.Parse($"{dr[6]}") - double.Parse($"{dr[7]}");
                 dr["macaptren"] = matchMaCapTren.getValue($"{dr[1]}", $"{dr[1]}");
             }
-            pl.DefaultView.Sort = "macaptren ASC, ma_cskcb ASC"; pl = pl.DefaultView.ToTable();
+            pl = sortDataTable(pl, "macaptren", "ma_cskcb");
             tmp = "";
             foreach (DataRow dr in pl.Rows)
             {
