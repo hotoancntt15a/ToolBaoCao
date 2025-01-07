@@ -342,71 +342,6 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private string createFilePhuLucBcThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null, string nam = "", string thang = "")
-        {
-            if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
-            var dbImport = BuildDatabase.getDataImportBCThang(matinh);
-            var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
-            var idBC = idBaoCao.sqliteGetValueField();
-            var dmVung = new Dictionary<string, string>();
-            string tmp = "";
-            var data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBC}' AND ma_tinh LIKE 'V%'");
-            foreach (DataRow r in data.Rows) { dmVung.Add($"{r[0]}", $"{r[1]}"); }
-            /* Lấy năm tháng báo cáo */
-            if (nam == "")
-            {
-                data = dbBCThang.getDataTable($"SELECT nam1, thang FROM bcthangdocx WHERE id = '{idBaoCao}'");
-                if (data.Rows.Count > 0)
-                {
-                    nam = $"{data.Rows[0][0]}";
-                    thang = $"{data.Rows[0][1]}";
-                }
-                else
-                {
-                    if (dbBCThang.tableExist("thangb02"))
-                    {
-                        data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb02 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
-                        if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
-                        if (nam == "")
-                        {
-                            data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb01 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
-                            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
-                        }
-                        if (nam == "")
-                        {
-                            data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
-                            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
-                        }
-                    }
-                    else { nam = "0"; thang = "0"; }
-                }
-            }
-            /* Tạo phụ lục báo cáo */
-            /* - Lấy danh sách mã cấp trên */
-            var dataCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, CASE WHEN macaptren = '' THEN id ELSE macaptren END AS macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
-            var matchMaCapTren = new Dictionary<string, string>();
-            var dsMaCapTren = new Dictionary<string, string>();
-            for (int i = 0; i < dataCSKCB.Rows.Count; i++)
-            {
-                tmp = $"{dataCSKCB.Rows[i][0]}";
-                matchMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][1]}");
-                if (tmp == $"{dataCSKCB.Rows[i][1]}") { dsMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][2]}"); }
-            }
-            /* -- */
-            var PL01 = createPL01(dbBCThang, idBaoCao, matinh, nam, thang, matchMaCapTren, dsMaCapTren);
-            var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
-            var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
-            var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), matchMaCapTren);
-            data = createPL02(dbBCThang, idBaoCao, matinh, "pl03a2", dmVung);
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", thang, PL02a, data, dmVung);
-            var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
-            var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang, matchMaCapTren);
-            var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
-            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
-            exportPhuLucbcThang(idBaoCao, outFile, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
-            return outFile;
-        }
-
         private void exportPhuLucbcThang(string idBC, string outFile, params DataTable[] par)
         {
             if (System.IO.File.Exists(outFile)) { System.IO.File.Delete(outFile); }
@@ -811,8 +746,7 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{matinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
                         return View();
                     }
-                    tmp = createFilePhuLucBcThang(id, matinh, dbBaoCao);
-                    var listFile = new List<string> { tmp, createFileBcThangDocx(id, matinh, dbBaoCao) };
+                    var listFile = createFileBCThang(id, matinh, dbBaoCao);
                     dbBaoCao.Close();
                     AppHelper.zipAchive(fileZip, listFile);
                 }
@@ -886,8 +820,7 @@ namespace ToolBaoCao.Controllers
                     dbImport.Insert(v, data);
                 }
                 /* Tạo docx */
-                var tmp = createFileBcThangDocx(idBaoCao, idtinh, dbTemp);
-                var listFile = new List<string>() { tmp, createFilePhuLucBcThang(idBaoCao, idtinh, dbBcThang, bcThang["nam1"], bcThang["thang"]) };
+                var listFile = createFileBCThang(idBaoCao, idtinh, dbTemp);
 
                 dbTemp.Close();
                 AppHelper.zipAchive(Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{idBaoCao}.zip"), listFile);
@@ -1095,9 +1028,6 @@ namespace ToolBaoCao.Controllers
             }
             PL01.DefaultView.Sort = "tyle DESC"; PL01 = PL01.DefaultView.ToTable();
             PL01.Columns.RemoveAt(4);
-            var lx39 = new List<string>();
-            for (int i = 0; i < (PL01.Rows.Count > 5 ? 5 : PL01.Rows.Count); i++) { lx39.Add($"{PL01.Rows[i][1]}: {PL01.Rows[i][4]}"); }
-            try { dbBCThang.Execute($"UPDATE bcthangdocx SET x39='{string.Join(", ", lx39)}' WHERE id='{idBC}';"); } catch { }
             return PL01;
         }
 
@@ -2268,23 +2198,25 @@ namespace ToolBaoCao.Controllers
             return d;
         }
 
-        private string createFileBcThangDocx(string idBaoCao, string idtinh, dbSQLite db)
+        private List<string> createFileBCThang(string idBaoCao, string matinh, dbSQLite dbBCThang = null)
         {
+            if (dbBCThang == null) { dbBCThang = BuildDatabase.getDataBCThang(matinh); }
+            var rs = new List<string>();
             string pathFileTemplate = Path.Combine(AppHelper.pathAppData, "bcThang.docx");
             if (!System.IO.File.Exists(pathFileTemplate)) { throw new Exception("Không tìm thấy tập tin mẫu báo cáo 'bcThang.docx' trong thư mục App_Data"); }
             var bcThangExport = new Dictionary<string, string>();
-            var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}");
+            var outputPath = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{matinh}");
             if (!Directory.Exists(outputPath)) { Directory.CreateDirectory(outputPath); }
             var outputFile = Path.Combine(outputPath, $"bcThang_{idBaoCao}.docx");
 
-            string valReplace = "";
-            var data = db.getDataTable($"SELECT * FROM bcthangdocx WHERE id='{idBaoCao}'");
+            string valReplace = "", tmp = "";
+            var data = dbBCThang.getDataTable($"SELECT * FROM bcthangdocx WHERE id='{idBaoCao}'");
             if (data.Rows.Count > 0)
             {
                 DataRow r = data.Rows[0];
                 foreach (DataColumn c in data.Columns) { bcThangExport.Add("{" + c.ColumnName + "}", $"{r[c.ColumnName]}"); }
             }
-            data = db.getDataTable($"SELECT * FROM bcthangpldocx WHERE id='{idBaoCao}';");
+            data = dbBCThang.getDataTable($"SELECT * FROM bcthangpldocx WHERE id='{idBaoCao}';");
             if (data.Rows.Count > 0)
             {
                 DataRow r = data.Rows[0];
@@ -2294,6 +2226,74 @@ namespace ToolBaoCao.Controllers
                     if (bcThangExport.ContainsKey(valReplace) == false) { bcThangExport.Add(valReplace, $"{r[c.ColumnName]}"); }
                 }
             }
+            rs.Add(outputFile);
+
+            var dbImport = dbBCThang.getPathDataFile().StartsWith(AppHelper.pathTemp) ? dbBCThang : BuildDatabase.getDataImportBCThang(matinh);
+            var outFile = Path.Combine(AppHelper.pathApp, "App_Data", "bcThang", $"tinh{matinh}", $"bcThang_{idBaoCao}_pl.xlsx");
+            var idBC = idBaoCao.sqliteGetValueField();
+            var dmVung = new Dictionary<string, string>();
+            data = dbBCThang.getDataTable($"SELECT DISTINCT ma_tinh, ten_tinh FROM thangpl04a WHERE id_bc='{idBC}' AND ma_tinh LIKE 'V%'");
+            foreach (DataRow r in data.Rows) { dmVung.Add($"{r[0]}", $"{r[1]}"); }
+            /* Lấy năm tháng báo cáo */
+            string nam = bcThangExport["{nam1}"]; string thang = bcThangExport["{thang}"];
+            if (nam == "")
+            {
+                data = dbBCThang.getDataTable($"SELECT nam1, thang FROM bcthangdocx WHERE id = '{idBaoCao}'");
+                if (data.Rows.Count > 0)
+                {
+                    nam = $"{data.Rows[0][0]}";
+                    thang = $"{data.Rows[0][1]}";
+                }
+                else
+                {
+                    if (dbBCThang.tableExist("thangb02"))
+                    {
+                        data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb02 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                        if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+                        if (nam == "")
+                        {
+                            data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb01 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+                        }
+                        if (nam == "")
+                        {
+                            data = dbBCThang.getDataTable($"SELECT den_thang, nam FROM thangb04 WHERE id_bc='{idBaoCao}' ORDER BY nam DESC, den_thang DESC LIMIT 1;");
+                            if (data.Rows.Count > 0) { nam = $"{data.Rows[0][1]}"; thang = $"{data.Rows[0][0]}"; }
+                        }
+                    }
+                    else { nam = "0"; thang = "0"; }
+                }
+            }
+            /* Tạo phụ lục báo cáo */
+            /* - Lấy danh sách mã cấp trên */
+            var dataCSKCB = AppHelper.dbSqliteMain.getDataTable($"SELECT id, CASE WHEN macaptren = '' THEN id ELSE macaptren END AS macaptren, ten FROM dmcskcb WHERE ma_tinh='{matinh}';");
+            var matchMaCapTren = new Dictionary<string, string>();
+            var dsMaCapTren = new Dictionary<string, string>();
+            for (int i = 0; i < dataCSKCB.Rows.Count; i++)
+            {
+                tmp = $"{dataCSKCB.Rows[i][0]}";
+                matchMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][1]}");
+                if (tmp == $"{dataCSKCB.Rows[i][1]}") { dsMaCapTren.Add(tmp, $"{dataCSKCB.Rows[i][2]}"); }
+            }
+            /* -- */
+            var PL01 = createPL01(dbBCThang, idBaoCao, matinh, nam, thang, matchMaCapTren, dsMaCapTren);
+            var PL02a = createPL02(dbBCThang, idBaoCao, matinh, "PL02a", dmVung);
+            var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
+            var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), matchMaCapTren);
+            data = createPL02(dbBCThang, idBaoCao, matinh, "pl03a2", dmVung);
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", thang, PL02a, data, dmVung);
+            var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
+            var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang, matchMaCapTren);
+            var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
+            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
+            exportPhuLucbcThang(idBaoCao, outFile, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
+            rs.Add(outFile);
+
+            var lx39 = new List<string>();
+            for (int i = 0; i < (PL01.Rows.Count > 5 ? 5 : PL01.Rows.Count); i++) { lx39.Add($"{PL01.Rows[i][1]}: {PL01.Rows[i][4]}"); }
+            try { dbBCThang.Execute($"UPDATE bcthangdocx SET x39='{string.Join(", ", lx39)}' WHERE id='{idBC}';"); } catch { }
+            bcThangExport["{x39}"] = string.Join(", ", lx39);
+            /* Export bcthang.docx */
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {
                 var document = new NPOI.XWPF.UserModel.XWPFDocument(fileStream);
@@ -2301,7 +2301,7 @@ namespace ToolBaoCao.Controllers
                 {
                     foreach (var run in paragraph.Runs)
                     {
-                        var tmp = run.ToString();
+                        tmp = run.ToString();
                         MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
                         foreach (System.Text.RegularExpressions.Match match in matches)
                         {
@@ -2326,7 +2326,7 @@ namespace ToolBaoCao.Controllers
                             {
                                 foreach (var run in paragraph.Runs)
                                 {
-                                    var tmp = run.ToString();
+                                    tmp = run.ToString();
                                     MatchCollection matches = Regex.Matches(tmp, "{[a-z0-9_]+}", RegexOptions.IgnoreCase);
                                     foreach (System.Text.RegularExpressions.Match match in matches)
                                     {
@@ -2343,7 +2343,7 @@ namespace ToolBaoCao.Controllers
                 if (System.IO.File.Exists(outputFile)) { System.IO.File.Delete(outputFile); }
                 using (var stream = new FileStream(outputFile, FileMode.Create, FileAccess.Write)) { document.Write(stream); }
             }
-            return outputFile;
+            return rs;
         }
 
         public ActionResult Update()
@@ -2378,8 +2378,7 @@ namespace ToolBaoCao.Controllers
                         ViewBag.Error = $"Báo cáo tuần có ID '{id}' thuộc tỉnh có mã '{idtinh}' không tồn tại hoặc đã bị xoá khỏi hệ thống";
                         return View();
                     }
-                    var tmp = createFilePhuLucBcThang(id, idtinh, dbBaoCao);
-                    var listFile = new List<string> { tmp, createFileBcThangDocx(id, idtinh, dbBaoCao) };
+                    var listFile = createFileBCThang(id, idtinh, dbBaoCao);
                     string fileZip = Path.Combine(AppHelper.pathAppData, "bcThang", $"tinh{idtinh}", $"bcThang_{id}.zip");
                     if (System.IO.File.Exists(fileZip)) { System.IO.File.Delete(fileZip); }
                     AppHelper.zipAchive(fileZip, listFile);
