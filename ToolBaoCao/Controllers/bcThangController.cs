@@ -392,13 +392,13 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL03a":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-                            listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+                            listColRight = new List<int>() { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+                            listColWith = new List<int>() { 9, 9, 57, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
                         case "PL03b":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6 };
-                            listColWith = new List<int>() { 9, 57, 13, 13, 14, 14, 14 };
+                            listColRight = new List<int>() { 1, 3, 4, 5, 6, 7 };
+                            listColWith = new List<int>() { 9, 9, 57, 13, 13, 14, 14, 14 };
                             break;
 
                         case "PL03c":
@@ -412,8 +412,8 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL04b":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
-                            listColWith = new List<int>() { 9, 57, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+                            listColRight = new List<int>() { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
+                            listColWith = new List<int>() { 9, 9, 57, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
                         default: break;
@@ -854,6 +854,28 @@ namespace ToolBaoCao.Controllers
             return sortedTable;
         }
 
+        private DataTable addMaCapTren(DataTable dt, Dictionary<string, string> matchMaCapTren, int ColMaCSKCBIndex = 0)
+        {
+            DataTable rs = new DataTable(dt.TableName);
+            rs.Columns.Add("MaCapTren");
+            foreach (DataColumn c in dt.Columns) { rs.Columns.Add(c.ColumnName, c.DataType); }
+            foreach (DataRow r in dt.Rows)
+            {
+                var objR = new List<object>() { matchMaCapTren.getValue($"{r[ColMaCSKCBIndex]}", $"{r[ColMaCSKCBIndex]}") };
+                for (int i = 0; dt.Columns.Count > i; i++) { objR.Add(r[i]); }
+                rs.Rows.Add(objR.ToArray());
+            }
+            /*
+            string tmp = "";
+            foreach (DataRow r in dt.Rows)
+            {
+                if (tmp == $"{r[0]}") { r[0] = "-"; }
+                else { tmp = $"{r[0]}"; }
+            }
+            */
+            return rs;
+        }
+
         private DataTable createPL02c(dbSQLite db, string idBaoCao, string idTinh, long namBC, long tuThang, long denThang, Dictionary<string, string> matchMaCapTren)
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
@@ -1166,7 +1188,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, string thang, DataTable PL02, DataTable PL03a2, Dictionary<string, string> dmVung)
+        private DataTable createPL03a(dbSQLite db, string idBaoCao, string nameSheet, string thang, DataTable PL02, DataTable PL03a2, Dictionary<string, string> dmVung, Dictionary<string, string> matchMaCapTren)
         {
             var tsql = $"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' ORDER BY tuyen_bv, hang_bv";
             var data = db.getDataTable(tsql).AsEnumerable();
@@ -1316,10 +1338,10 @@ namespace ToolBaoCao.Controllers
                     phuLuc.Rows[lr][16] = $"{(double.Parse($"{phuLuc.Rows[lr][14]}") - double.Parse($"{phuLuc.Rows[lr][15]}"))}";
                 }
             }
-            return phuLuc;
+            return addMaCapTren(phuLuc, matchMaCapTren);
         }
 
-        private DataTable createPL03b(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long namBC)
+        private DataTable createPL03b(dbSQLite db, string idBaoCao, string nameSheet, DataTable PL02, long namBC, Dictionary<string, string> matchMaCapTren)
         {
             var data = db.getDataTable($"SELECT * FROM thang{nameSheet.ToLower()} WHERE id_bc='{idBaoCao}' AND nam={namBC} ORDER BY tuyen_bv, hang_bv").AsEnumerable();
             if (data.Count() == 0) { throw new Exception($"Dữ liệu PL03a không có dữ liệu ID_BC: {idBaoCao}"); }
@@ -1371,7 +1393,7 @@ namespace ToolBaoCao.Controllers
                     phuLuc.Rows.Add($"{row["ma_cskcb"]}", $"{hang}/ {row["ten_cskcb"]}", $"{row["tyle_noitru"]}", $"{row["ngay_dtri_bq"]}", $"{row["chi_bq_chung"]}", $"{row["chi_bq_noi"]}", $"{row["chi_bq_ngoai"]}");
                 }
             }
-            return phuLuc;
+            return addMaCapTren(phuLuc, matchMaCapTren);
         }
 
         private DataTable createPL04a(dbSQLite db, string idBaoCao, string idTinh, Dictionary<string, string> dmVung)
@@ -1505,7 +1527,7 @@ namespace ToolBaoCao.Controllers
             return phuLuc;
         }
 
-        private DataTable createPL04b(dbSQLite db, string idBaoCao, string idTinh, string thang)
+        private DataTable createPL04b(dbSQLite db, string idBaoCao, string idTinh, string thang, Dictionary<string, string> matchMaCapTren)
         {
             var data = db.getDataTable($"SELECT * FROM thangpl04b WHERE id_bc='{idBaoCao}';").AsEnumerable();
             var phuLuc = new DataTable("PL04b");
@@ -1635,7 +1657,7 @@ namespace ToolBaoCao.Controllers
                     phuLuc.Rows[lr][22] = $"{Math.Round(double.Parse($"{phuLuc.Rows[lr][20]}") - double.Parse($"{phuLuc.Rows[lr][21]}"), 2)}";
                 }
             }
-            return phuLuc;
+            return addMaCapTren(phuLuc, matchMaCapTren);
         }
 
         private List<DataRow> getPhuLuc03(List<DataRow> rTuyen, string tuyen, DataTable phuLuc03)
@@ -2299,11 +2321,11 @@ namespace ToolBaoCao.Controllers
             var PL02b = createPL02(dbBCThang, idBaoCao, matinh, "PL02b", dmVung);
             var PL02c = createPL02c(dbImport, idBaoCao, matinh, long.Parse(nam), 1, long.Parse(thang), matchMaCapTren);
             data = createPL02(dbBCThang, idBaoCao, matinh, "pl03a2", dmVung);
-            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", thang, PL02a, data, dmVung);
-            var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam));
+            var PL03a = createPL03a(dbBCThang, idBaoCao, "PL03a", thang, PL02a, data, dmVung, matchMaCapTren);
+            var PL03b = createPL03b(dbBCThang, idBaoCao, "PL03b", PL02b, long.Parse(nam), matchMaCapTren);
             var PL03c = createPL03c(dbImport, idBaoCao, matinh, thang, matchMaCapTren);
             var PL04a = createPL04a(dbBCThang, idBaoCao, matinh, dmVung);
-            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang);
+            var PL04b = createPL04b(dbBCThang, idBaoCao, matinh, thang, matchMaCapTren);
             exportPhuLucbcThang(idBaoCao, outFile, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             rs.Add(outFile);
 
