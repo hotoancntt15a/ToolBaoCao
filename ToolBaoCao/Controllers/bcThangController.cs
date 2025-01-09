@@ -332,6 +332,19 @@ namespace ToolBaoCao.Controllers
                 dbTemp.Insert("thangpl04b", data);
                 if (thang == "1") { dbTemp.Execute($"UPDATE thangpl04b thang = 0 WHERE id_bc='{id}' AND thang=12"); }
                 dbTemp.Close();
+                /* Tìm các báo cáo trước để cập nhật x1, x33-x38 */
+                var rsData = new Dictionary<string, string>() { { "x1", "" }, { "x33", "" }, { "x34", "" }, { "x35", "" }, { "x36", "" }, { "x37", "" }, { "x38", "" } };
+                var dbBCThang = BuildDatabase.getDataBCThang(matinh);
+                data = dbBCThang.getDataTable("SELECT x1, x33, x34, x35, x36, x37, x38 FROM bcthangdocx ORDER BY nam1 DESC, thang DESC LIMIT 5");
+                if (data.Rows.Count > 0)
+                {
+                    foreach (DataRow row in data.Rows)
+                    {
+                        tmp = ""; for (int i = 0; i < data.Columns.Count; i++) { rsData[data.Columns[i].ColumnName] = $"{row[i]}"; tmp += $"{row[i]}"; }
+                        if (tmp != "") { break; }
+                    }
+                }
+                ViewBag.rsdata = rsData;
             }
             catch (Exception ex)
             {
@@ -2329,10 +2342,16 @@ namespace ToolBaoCao.Controllers
             exportPhuLucbcThang(idBaoCao, outFile, PL01, PL02a, PL02b, PL02c, PL03a, PL03b, PL03c, PL04a, PL04b);
             rs.Add(outFile);
 
+            /* Cập nhật lại x39 */
             var lx39 = new List<string>();
             for (int i = 0; i < (PL01.Rows.Count > 5 ? 5 : PL01.Rows.Count); i++) { lx39.Add($"{PL01.Rows[i][1]}: {PL01.Rows[i][4]}"); }
             try { dbBCThang.Execute($"UPDATE bcthangdocx SET x39='{string.Join(", ", lx39)}' WHERE id='{idBC}';"); } catch { }
             bcThangExport["{x39}"] = string.Join(", ", lx39);
+            /* Kiểm tra x1, x33 - x38 */
+            if (bcThangExport["{x1}"] + bcThangExport["{x33}"] + bcThangExport["{x34}"] + bcThangExport["{x35}"] + bcThangExport["{x36}"] + bcThangExport["{x37}"] + bcThangExport["{x38}"] == "")
+            {
+                /* Tìm thông tin từ các báo cáo tháng trước có không để điền vào */
+            }
             /* Export bcthang.docx */
             using (var fileStream = new FileStream(pathFileTemplate, FileMode.Open, FileAccess.Read))
             {

@@ -23,6 +23,7 @@
     }
     var idform = "frmbuoc3" + DateTime.Now.toTimestamp().ToString();
     var id = ViewBag.id as string;
+    var rsdata = ViewBag.rsdata == null ? new Dictionary<string, string>() : ViewBag.rsdata as Dictionary<string, string>;
 }
 <br />
 <h4 class="font-weight-bold">BƯỚC 2: BỔ SUNG THÔNG TIN BÁO CÁO THÁNG CÓ ID '@id'</h4>
@@ -47,43 +48,43 @@
                 <tr>
                     <td colspan="2">
                         @Html.Label("x1", "Công tác ký hợp đồng KCB BHYT (x1):")
-                        <br /><textarea name="x1" class="form-control"></textarea>
+                        <br /><textarea name="x1" class="form-control">@rsdata.getValue("x1")</textarea>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         @Html.Label("x33", "Công tác kiểm soát chi KCB BHYT (x33):")
-                        <br /><textarea name="x33" class="form-control"></textarea>
+                        <br /><textarea name="x33" class="form-control">@rsdata.getValue("x33")</textarea>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         @Html.Label("x34", "Công tác đấu thầu thuốc (x34):")
-                        <br /><textarea name="x34" class="form-control"></textarea>
+                        <br /><textarea name="x34" class="form-control">@rsdata.getValue("x34")</textarea>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         @Html.Label("x35", "Công tác quyết toán chi KCB BHYT (x35):")
-                        <br /><textarea name="x35" class="form-control"></textarea>
+                        <br /><textarea name="x35" class="form-control">@rsdata.getValue("x35")</textarea>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         @Html.Label("x36", "Công tác khác (x36):")
-                        <br /><textarea name="x36" class="form-control"></textarea>
+                        <br /><textarea name="x36" class="form-control">@rsdata.getValue("x36")</textarea>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         @Html.Label("x37", "Phương hướng công tác tháng sau (x37):")
-                        <br /><textarea name="x37" class="form-control"></textarea>
+                        <br /><textarea name="x37" class="form-control">@rsdata.getValue("x37")</textarea>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         @Html.Label("x38", "Khó khăn, vướng mắc, đề xuất (nếu có) (x38):")
-                        <br /><textarea name="x38" class="form-control"></textarea>
+                        <br /><textarea name="x38" class="form-control">@rsdata.getValue("x38")</textarea>
                     </td>
                 </tr>
                 <tr>
