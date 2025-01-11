@@ -1,0 +1,30 @@
+﻿@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    <br />
+    <button type="button" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "DMCSKCB", new { area = "Admin", layout="null"})')"><i class="fa fa-refresh"></i> Tạo lại</button>
+    return;
+}
+@{
+    var idform = "frmbuoc2" + DateTime.Now.toTimestamp().ToString();
+    var id = ViewBag.id as string;
+    var dirSave = new System.IO.DirectoryInfo(ViewBag.forlderSave as string);
+}
+<br />
+<h4 class="font-weight-bold">KẾT QUẢ</h4>
+@if (ViewBag.files != null)
+{
+    var list = ViewBag.files as List<string>;
+    <div class="alert alert-info">Danh sách tập tin đẩy lên thành công</div>
+    <ul>
+        @foreach (var f in list)
+        {
+            <li>@f</li>
+        }
+    </ul>
+}
+<div class="alert alert-info">@ViewBag.Message</div>
+<button type="button" class="btn btn-primary btn-sm" onclick="showgeturl('@Url.Action("Buoc1", "DMCSKCB", new { area = "Admin", layout="null" })')"><i class="fa fa-refresh"></i> Tạo mới</button>

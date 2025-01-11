@@ -1,0 +1,33 @@
+﻿@if (ViewBag.Error != null)
+{
+    <div class="alert alert-warning">@Html.Raw(ViewBag.Error)</div>
+    return;
+}
+@{
+    if (Request.getValue("layout") == "null") { Layout = null; }
+    var idformbuoc1 = "frmbuoc1" + DateTime.Now.toTimestamp().ToString();
+}
+<br />
+<h4 class="font-weight-bold">ĐẨY DỮ LIỆU</h4>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="upload-area" id="uploadfile" data-urlpost="/Admin/DMCSKCB/Buoc2?layout=null">
+                    <p class="text-center">Kéo và thả tập tin Excel 2007 trở lên (Type of file: Microsoft Excel Worksheet) vào khu vực này hoặc nhấp để chọn file</p>
+                </div>
+                <div id="fileDetails" class="mt-4">
+                    <h5>Danh sách tập tin đã chọn:</h5>
+                    <ul id="fileList" class="list-group"></ul>
+                </div>
+                <button id="uploadButton" class="btn btn-primary mt-3" disabled><i class="fa fa-plus"></i> Đẩy lên máy chủ</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="alert alert-danger">
+    <i class="fa fa-warning"></i> Vui lòng sử dụng mẫu sau <a href="/Tai?object=h5gu%2FtonTgKhkmF694%2Fuj44lL508fuVuUAsmW3ySnb8%3D"><i class="fa fa-download"></i> dữ liệu mẫu</a>
+</div>
+<script>
+    $(document).ready(function () { drapDropFiles(".xlsx"); });
+</script>

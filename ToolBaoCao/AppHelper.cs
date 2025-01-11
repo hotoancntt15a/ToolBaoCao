@@ -221,9 +221,10 @@ namespace ToolBaoCao
         /// </summary>
         /// <param name="numberUS"></param>
         /// <returns></returns>
-        public static bool isNumberUSDouble(this string numberUS)
+        public static bool isNumberUSDouble(this string numberUS, bool soDuong = true)
         {
-            return Regex.IsMatch(numberUS, @"^\d+(.\d+)?$");
+            var tmp = soDuong ? @"^\d+(.\d+)?$" : @"^-?\d+(.\d+)?$";
+            return Regex.IsMatch(numberUS, tmp);
         }
 
         /// <summary>
@@ -231,9 +232,10 @@ namespace ToolBaoCao
         /// </summary>
         /// <param name="numberUS"></param>
         /// <returns></returns>
-        public static bool isNumberUSInt(this string numberUS)
+        public static bool isNumberUSInt(this string numberUS, bool soDuong = true)
         {
-            return Regex.IsMatch(numberUS, @"^\d+$");
+            var tmp = soDuong ? @"^\d+$" : @"^-?\d+$";
+            return Regex.IsMatch(numberUS, tmp);
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
@@ -12,6 +13,96 @@ namespace ToolBaoCao.Areas.Admin.Controllers
 
         public ActionResult Index()
         {
+            return View();
+        }
+
+        public ActionResult Buoc1()
+        {
+            if ($"{Session["idtinh"]}" == "") { ViewBag.Error = "Bạn chưa cấp Mã tỉnh làm việc"; return View(); }
+            return View();
+        }
+
+        public ActionResult Buoc2()
+        {
+            var timeStart = DateTime.Now;
+            var idUser = $"{Session["iduser"]}";
+            if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin dữ liệu nào đẩy lên"; return View(); }
+            var timeUp = timeStart.toTimestamp().ToString();
+            var fileName = $"dmcskcb_{timeUp}.xlsx";
+            var tmp = "";
+            try
+            {
+                /* Xoá hết các File có trong thư mục */
+                if (Request.Files.Count == 0) { throw new Exception("Không có tập tin nào được đẩy lên"); }
+                var lsFile = new List<string>();
+                var ext = Path.GetExtension(Request.Files[0].FileName).ToLower();
+                if (ext == ".xlsx")
+                {
+                    lsFile.Add($"{Request.Files[0].FileName} ({Request.Files[0].ContentLength.getFileSize()})");
+                    ViewBag.files = lsFile;
+                    /* Cập nhật dự toán được giao trong năm của csyt */
+                    ViewBag.mode = "update";
+                    string file = Path.Combine(AppHelper.pathTemp, fileName);
+                    Request.Files[0].SaveAs(file);
+                    var xlsx = zModules.NPOIExcel.XLSX.getDataFromExcel(new FileInfo(file));
+                    if (xlsx.Rows.Count == 0) { throw new Exception("Không có dữ liệu để cập nhật."); }
+                    /* Xoá các dòng không phải dữ liệu */
+                    for (int i = (xlsx.Rows.Count > 5 ? 5 : xlsx.Rows.Count); i > -1; i--)
+                    {
+                        tmp = $"{xlsx.Rows[i][0]}".Trim();
+                        if (tmp.isNumberUSInt(true) == false) { xlsx.Rows.RemoveAt(i); }
+                    }
+                    if (xlsx.Columns.Count < 33) { throw new Exception("Dữ liệu không đúng định dạng (33 cột)."); }
+                    xlsx.Columns[0].ColumnName = "ma_tinh";
+                    xlsx.Columns[1].ColumnName = "id";
+                    xlsx.Columns[2].ColumnName = "ten";
+                    xlsx.Columns[3].ColumnName = "tuyencmkt";
+                    xlsx.Columns[4].ColumnName = "hangbv";
+                    xlsx.Columns[5].ColumnName = "loaibv";
+                    xlsx.Columns[6].ColumnName = "tenhuyen";
+                    xlsx.Columns[7].ColumnName = "donvi";
+                    xlsx.Columns[8].ColumnName = "madinhdanh";
+                    xlsx.Columns[9].ColumnName = "macaptren";
+                    xlsx.Columns[10].ColumnName = "diachi";
+                    xlsx.Columns[11].ColumnName = "ttduyet";
+                    xlsx.Columns[12].ColumnName = "hieuluc";
+                    xlsx.Columns[13].ColumnName = "tuchu";
+                    xlsx.Columns[14].ColumnName = "trangthai";
+                    xlsx.Columns[15].ColumnName = "hangdv";
+                    xlsx.Columns[16].ColumnName = "hangthuoc";
+                    xlsx.Columns[17].ColumnName = "dangkykcb";
+                    xlsx.Columns[18].ColumnName = "hinhthuctochuc";
+                    xlsx.Columns[19].ColumnName = "hinhthucthanhtoan";
+                    xlsx.Columns[20].ColumnName = "ngaycapma";
+                    xlsx.Columns[21].ColumnName = "kcb";
+                    xlsx.Columns[22].ColumnName = "ngayngunghd";
+                    xlsx.Columns[23].ColumnName = "kt7";
+                    xlsx.Columns[24].ColumnName = "kcn";
+                    xlsx.Columns[25].ColumnName = "knl";
+                    xlsx.Columns[26].ColumnName = "cpdtt43";
+                    xlsx.Columns[27].ColumnName = "slthedacap";
+                    xlsx.Columns[28].ColumnName = "donvichuquan";
+                    xlsx.Columns[29].ColumnName = "mota";
+                    /* ma_huyen	userid */
+                    xlsx.Columns[30].ColumnName = "loaichuyenkhoa";
+                    xlsx.Columns[31].ColumnName = "ngaykyhopdong";
+                    xlsx.Columns[32].ColumnName = "ngayhethieuluc";
+                    /* Kiểm tra dữ liệu */
+                    DataRow r = xlsx.Rows[0];
+                    var pattern = @"[0-9A-Z]+";
+                    if (Regex.IsMatch($"{r["id"]}".Trim(), pattern) == false) { throw new Exception($"Cột mã không đúng định dạng {r["id"]}"); }
+                    if (Regex.IsMatch($"{r["madinhdanh"]}".Trim(), pattern) == false) { throw new Exception($"Cột mã không đúng định dạng {r["id"]}"); }
+
+                    /* Cập nhật dữ liệu */
+                    xlsx.Columns.Add("userid");
+                    foreach (DataRow rw in xlsx.Rows) { rw["userid"] = idUser; }
+                    AppHelper.dbSqliteMain.Insert("dmcskcb", xlsx, "replace");
+                    ViewBag.Message = $"Đã cập nhật DMCSKCB ({timeStart.getTimeRun()})";
+                    try { System.IO.File.Delete(file); } catch { }
+                    return View();
+                }
+            }
+            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
             return View();
         }
 

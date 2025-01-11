@@ -16,47 +16,39 @@
     <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#tabHome"> <i class="fa fa-list"></i> Danh sách</a> </li>
     <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#tabImport"> <i class="fa fa-file"></i> Nhập từ Excel</a> </li>
 </ul>
-<!-- Tab panes -->
-<div class="tab-content">
-    <div id="tabHome" class="tab-pane active">
-        <!-- DataTales Admins -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Danh sách tỉnh <button type="button" onclick="showgeturl('@Url.Action("Update", "DMCSKCB", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</button>  <button type="button" onclick="window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</button></h6>
-            </div>
-            <div class="card-body">
-                <form id="@idFromTruyVan" name="@idFromTruyVan" method="post" action="/Admin/DMCSKCB/TruyVan?layout=null" target="_blank">
-                    <table class="table table-hover table-sm">
-                        <tbody>
-                            <tr><td>Mã <input type="text" name="idobject" value="" maxlength="50" /> Tên <input type="text" name="ten" value="" maxlength="255" /></td></tr>
-                            <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="@Session["idtinh"]" maxlength="50" /> Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
-                            <tr><td>Tên huyện <input type="text" name="tenhuyen" value="" maxlength="255" /></td></tr>
-                            <tr>
-                                <td>
-                                    <button type="button" onclick="postform('@idFromTruyVan', '', 'dscskcbview');" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </form>
-                <div id="dscskcbview"></div>
-            </div>
-        </div>
-        <div class="alert alert-warning">
-            <table class="table table-hover">
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            Danh sách tỉnh
+            <button type="button" onclick="showgeturl('@Url.Action("Update", "DMCSKCB", new { area = "Admin", layout = "null"})')" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Thêm mới</button>
+            <button type="button" onclick="window.location.reload();" class="btn btn-primary btn-sm"> <i class="fa fa-sync"></i> Làm mới</button>
+            <button type="button" onclick="showgeturl('/Admin/DMCSKCB/Buoc1?layout=null');" class="btn btn-primary btn-sm"> <i class="fa fa-plus"></i> Nhập từ Excel</button>
+        </h6>
+    </div>
+    <div class="card-body">
+        <form id="@idFromTruyVan" name="@idFromTruyVan" method="post" action="/Admin/DMCSKCB/TruyVan?layout=null" target="_blank">
+            <table class="table table-hover table-sm">
                 <tbody>
+                    <tr><td>Mã <input type="text" name="idobject" value="" maxlength="50" /> Tên <input type="text" name="ten" value="" maxlength="255" /></td></tr>
+                    <tr><td>Mã tỉnh <input type="text" name="ma_tinh" value="@Session["idtinh"]" maxlength="50" /> Mã cấp trên <input type="text" name="macaptren" value="" maxlength="50" /></td></tr>
+                    <tr><td>Tên huyện <input type="text" name="tenhuyen" value="" maxlength="255" /></td></tr>
                     <tr>
-                        <td>Nhấn vào mã tỉnh để thay đổi thông tin</td>
+                        <td>
+                            <button type="button" onclick="postform('@idFromTruyVan', '', 'dscskcbview');" class="btn btn-primary btn-sm"> <i class="fa fa-search"></i> Truy vấn</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </form>
+        <div id="dscskcbview"></div>
     </div>
-    <!-- Hiển thị các tiền trước nếu còn đang làm dỡ -->
-    <div id="tabImport" class="tab-pane fade"></div>
 </div>
-<script>
-    $(document).ready(function () {
-        showgeturl('@Url.Action("Buoc1", "DMCSKCB", new { area = "", layout = "null" })&idtarget=tabImport', 'tabImport');
-    });
-</script>
+<div class="alert alert-warning">
+    <table class="table table-hover">
+        <tbody>
+            <tr>
+                <td>Nhấn vào mã tỉnh để thay đổi thông tin</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
