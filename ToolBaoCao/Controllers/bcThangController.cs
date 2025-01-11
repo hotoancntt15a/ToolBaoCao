@@ -390,12 +390,12 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL02a":
-                            listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
+                            listColRight = new List<int>() { 2, 4, 6, 8, 10 };
                             listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
                         case "PL02b":
-                            listColRight = new List<int>() { 0, 2, 4, 6, 8, 10 };
+                            listColRight = new List<int>() { 2, 4, 6, 8, 10 };
                             listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
@@ -405,12 +405,12 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL03a":
-                            listColRight = new List<int>() { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+                            listColRight = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
                             listColWith = new List<int>() { 9, 9, 57, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
                         case "PL03b":
-                            listColRight = new List<int>() { 1, 3, 4, 5, 6, 7 };
+                            listColRight = new List<int>() { 3, 4, 5, 6, 7 };
                             listColWith = new List<int>() { 9, 9, 57, 13, 13, 14, 14, 14 };
                             break;
 
@@ -420,12 +420,12 @@ namespace ToolBaoCao.Controllers
                             break;
 
                         case "PL04a":
-                            listColRight = new List<int>() { 0, 2, 3, 4, 5, 6, 7, 8 };
+                            listColRight = new List<int>() { 2, 3, 4, 5, 6, 7, 8 };
                             listColWith = new List<int>() { 9, 18, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
                         case "PL04b":
-                            listColRight = new List<int>() { 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
+                            listColRight = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
                             listColWith = new List<int>() { 9, 9, 57, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
                             break;
 
