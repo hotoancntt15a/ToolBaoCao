@@ -18,6 +18,31 @@ namespace zModules.NPOIExcel
         private static List<System.Type> typeDateTime = new List<System.Type>() { Type.GetType("System.DateTime") };
         private static Dictionary<string, ICellStyle> cellStyleCache = new Dictionary<string, ICellStyle>();
 
+        public static string GetValueAsString(this ICell cell, string formatDateTime = "yyyy-MM-dd H:mm:ss")
+        {
+            if (cell == null) { return ""; }
+            switch (cell.CellType)
+            {
+                case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell)) { return cell.DateCellValue?.ToString(formatDateTime); }
+                    return cell.NumericCellValue.ToString().Replace(",", ".");
+
+                case CellType.Formula:
+                    // Lấy giá trị tính toán của công thức nếu cần
+                    switch (cell.CachedFormulaResultType)
+                    {
+                        case CellType.Numeric:
+                            if (DateUtil.IsCellDateFormatted(cell)) { return cell.DateCellValue?.ToString(formatDateTime); }
+                            return cell.NumericCellValue.ToString().Replace(",", ".");
+
+                        case CellType.Error: return FormulaError.ForInt(cell.ErrorCellValue).String;
+                        default: return $"{cell}";
+                    }
+                default: return $"{cell}";
+            }
+        }
+
         public static ICellStyle CreateCellStyleThin(this XSSFWorkbook hw, bool fontBold = false, bool wrapText = false, bool title = false, bool getCache = true, HorizontalAlignment alignment = HorizontalAlignment.Left)
         {
             if (getCache == false)

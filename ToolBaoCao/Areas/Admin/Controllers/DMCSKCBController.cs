@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -29,7 +31,7 @@ namespace ToolBaoCao.Areas.Admin.Controllers
             if (Request.Files.Count == 0) { ViewBag.Error = "Không có tập tin dữ liệu nào đẩy lên"; return View(); }
             var timeUp = timeStart.toTimestamp().ToString();
             var fileName = $"dmcskcb_{timeUp}.xlsx";
-            var tmp = "";
+            var tmp = ""; IWorkbook workbook = null;
             try
             {
                 /* Xoá hết các File có trong thư mục */
@@ -42,67 +44,68 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     ViewBag.files = lsFile;
                     /* Cập nhật dự toán được giao trong năm của csyt */
                     ViewBag.mode = "update";
-                    string file = Path.Combine(AppHelper.pathTemp, fileName);
-                    Request.Files[0].SaveAs(file);
-                    var xlsx = zModules.NPOIExcel.XLSX.getDataFromExcel(new FileInfo(file));
-                    if (xlsx.Rows.Count == 0) { throw new Exception("Không có dữ liệu để cập nhật."); }
-                    /* Xoá các dòng không phải dữ liệu */
-                    for (int i = (xlsx.Rows.Count > 5 ? 5 : xlsx.Rows.Count); i > -1; i--)
-                    {
-                        tmp = $"{xlsx.Rows[i][0]}".Trim();
-                        if (tmp.isNumberUSInt(true) == false) { xlsx.Rows.RemoveAt(i); }
-                    }
-                    if (xlsx.Columns.Count < 33) { throw new Exception("Dữ liệu không đúng định dạng (33 cột)."); }
-                    xlsx.Columns[0].ColumnName = "ma_tinh";
-                    xlsx.Columns[1].ColumnName = "id";
-                    xlsx.Columns[2].ColumnName = "ten";
-                    xlsx.Columns[3].ColumnName = "tuyencmkt";
-                    xlsx.Columns[4].ColumnName = "hangbv";
-                    xlsx.Columns[5].ColumnName = "loaibv";
-                    xlsx.Columns[6].ColumnName = "tenhuyen";
-                    xlsx.Columns[7].ColumnName = "donvi";
-                    xlsx.Columns[8].ColumnName = "madinhdanh";
-                    xlsx.Columns[9].ColumnName = "macaptren";
-                    xlsx.Columns[10].ColumnName = "diachi";
-                    xlsx.Columns[11].ColumnName = "ttduyet";
-                    xlsx.Columns[12].ColumnName = "hieuluc";
-                    xlsx.Columns[13].ColumnName = "tuchu";
-                    xlsx.Columns[14].ColumnName = "trangthai";
-                    xlsx.Columns[15].ColumnName = "hangdv";
-                    xlsx.Columns[16].ColumnName = "hangthuoc";
-                    xlsx.Columns[17].ColumnName = "dangkykcb";
-                    xlsx.Columns[18].ColumnName = "hinhthuctochuc";
-                    xlsx.Columns[19].ColumnName = "hinhthucthanhtoan";
-                    xlsx.Columns[20].ColumnName = "ngaycapma";
-                    xlsx.Columns[21].ColumnName = "kcb";
-                    xlsx.Columns[22].ColumnName = "ngayngunghd";
-                    xlsx.Columns[23].ColumnName = "kt7";
-                    xlsx.Columns[24].ColumnName = "kcn";
-                    xlsx.Columns[25].ColumnName = "knl";
-                    xlsx.Columns[26].ColumnName = "cpdtt43";
-                    xlsx.Columns[27].ColumnName = "slthedacap";
-                    xlsx.Columns[28].ColumnName = "donvichuquan";
-                    xlsx.Columns[29].ColumnName = "mota";
+                    workbook = new XSSFWorkbook(Request.Files[0].InputStream);
+                    var sheet = workbook.GetSheetAt(0);
+                    if (sheet.LastRowNum < 5) { throw new Exception("Excel Không có dữ liệu để cập nhật."); }
+                    var data = new DataTable();
+                    data.Columns[0].ColumnName = "ma_tinh";
+                    data.Columns[1].ColumnName = "id";
+                    data.Columns[2].ColumnName = "ten";
+                    data.Columns[3].ColumnName = "tuyencmkt";
+                    data.Columns[4].ColumnName = "hangbv";
+                    data.Columns[5].ColumnName = "loaibv";
+                    data.Columns[6].ColumnName = "tenhuyen";
+                    data.Columns[7].ColumnName = "donvi";
+                    data.Columns[8].ColumnName = "madinhdanh";
+                    data.Columns[9].ColumnName = "macaptren";
+                    data.Columns[10].ColumnName = "diachi";
+                    data.Columns[11].ColumnName = "ttduyet";
+                    data.Columns[12].ColumnName = "hieuluc";
+                    data.Columns[13].ColumnName = "tuchu";
+                    data.Columns[14].ColumnName = "trangthai";
+                    data.Columns[15].ColumnName = "hangdv";
+                    data.Columns[16].ColumnName = "hangthuoc";
+                    data.Columns[17].ColumnName = "dangkykcb";
+                    data.Columns[18].ColumnName = "hinhthuctochuc";
+                    data.Columns[19].ColumnName = "hinhthucthanhtoan";
+                    data.Columns[20].ColumnName = "ngaycapma";
+                    data.Columns[21].ColumnName = "kcb";
+                    data.Columns[22].ColumnName = "ngayngunghd";
+                    data.Columns[23].ColumnName = "kt7";
+                    data.Columns[24].ColumnName = "kcn";
+                    data.Columns[25].ColumnName = "knl";
+                    data.Columns[26].ColumnName = "cpdtt43";
+                    data.Columns[27].ColumnName = "slthedacap";
+                    data.Columns[28].ColumnName = "donvichuquan";
+                    data.Columns[29].ColumnName = "mota";
                     /* ma_huyen	userid */
-                    xlsx.Columns[30].ColumnName = "loaichuyenkhoa";
-                    xlsx.Columns[31].ColumnName = "ngaykyhopdong";
-                    xlsx.Columns[32].ColumnName = "ngayhethieuluc";
+                    data.Columns[30].ColumnName = "loaichuyenkhoa";
+                    data.Columns[31].ColumnName = "ngaykyhopdong";
+                    data.Columns[32].ColumnName = "ngayhethieuluc";
+                    data.Columns[33].ColumnName = "userid";
                     /* Kiểm tra dữ liệu */
-                    DataRow r = xlsx.Rows[0];
+                    IRow row = null;
                     var pattern = @"[0-9A-Z]+";
-                    if (Regex.IsMatch($"{r["id"]}".Trim(), pattern) == false) { throw new Exception($"Cột mã không đúng định dạng {r["id"]}"); }
-                    if (Regex.IsMatch($"{r["madinhdanh"]}".Trim(), pattern) == false) { throw new Exception($"Cột mã không đúng định dạng {r["id"]}"); }
-
-                    /* Cập nhật dữ liệu */
-                    xlsx.Columns.Add("userid");
-                    foreach (DataRow rw in xlsx.Rows) { rw["userid"] = idUser; }
-                    AppHelper.dbSqliteMain.Insert("dmcskcb", xlsx, "replace");
+                    for (int i = 0; i < sheet.LastRowNum; i++)
+                    {
+                        row = sheet.GetRow(i); if (row == null) { continue; }
+                        /* Cột mã tỉnh */
+                        tmp = row.GetCell(0).GetValueAsString();
+                        if (tmp.isNumberUSInt(true) == false) { continue; }
+                        var dr = data.NewRow();
+                        dr[0] = tmp;
+                        for (int j = 1; j < 33; j++) { dr[j] = row.GetCell(j).GetValueAsString(); }
+                        if (Regex.IsMatch($"{dr["id"]}".Trim(), pattern) == false) { continue; }
+                        if (Regex.IsMatch($"{dr["madinhdanh"]}".Trim(), pattern) == false) { continue; }
+                        data.Rows.Add(dr);
+                    }
+                    if (data.Rows.Count == 0) { throw new Exception("Không có dữ liệu để cập nhật."); }
+                    AppHelper.dbSqliteMain.Insert("dmcskcb", data, "replace");
                     ViewBag.Message = $"Đã cập nhật DMCSKCB ({timeStart.getTimeRun()})";
-                    try { System.IO.File.Delete(file); } catch { }
-                    return View();
                 }
             }
-            catch (Exception ex) { ViewBag.Error = ex.getLineHTML(); }
+            catch (Exception ex) { ViewBag.Error = "TryCatch: " + ex.getLineHTML(); }
+            if (workbook != null) { workbook.Close(); workbook.Dispose(); }
             return View();
         }
 
