@@ -45,9 +45,10 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     /* Cập nhật dự toán được giao trong năm của csyt */
                     ViewBag.mode = "update";
                     workbook = new XSSFWorkbook(Request.Files[0].InputStream);
-                    var sheet = workbook.GetSheetAt(0);
+                    ISheet sheet = workbook.GetSheetAt(0);
                     if (sheet.LastRowNum < 5) { throw new Exception("Excel Không có dữ liệu để cập nhật."); }
                     var data = new DataTable();
+                    for (int i = 0; i < 34; i++) { data.Columns.Add($"c{i}"); }
                     data.Columns[0].ColumnName = "ma_tinh";
                     data.Columns[1].ColumnName = "id";
                     data.Columns[2].ColumnName = "ten";
@@ -89,14 +90,14 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     for (int i = 0; i < sheet.LastRowNum; i++)
                     {
                         row = sheet.GetRow(i); if (row == null) { continue; }
-                        /* Cột mã tỉnh */
+                        /* Cột thứ tự */
                         tmp = row.GetCell(0).GetValueAsString();
                         if (tmp.isNumberUSInt(true) == false) { continue; }
                         var dr = data.NewRow();
-                        dr[0] = tmp;
                         for (int j = 1; j < 33; j++) { dr[j] = row.GetCell(j).GetValueAsString(); }
                         if (Regex.IsMatch($"{dr["id"]}".Trim(), pattern) == false) { continue; }
                         if (Regex.IsMatch($"{dr["madinhdanh"]}".Trim(), pattern) == false) { continue; }
+                        dr[0] = $"{dr["id"]}".Substring(0, 2);
                         data.Rows.Add(dr);
                     }
                     if (data.Rows.Count == 0) { throw new Exception("Không có dữ liệu để cập nhật."); }
