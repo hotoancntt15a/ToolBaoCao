@@ -893,7 +893,7 @@ namespace ToolBaoCao.Controllers
         {
             /* So sánh lượt KCB và chi KCB năm nay với năm trước */
             /* Cột A- B02	Cột B-B02	 Cột D-B02-10-2024; từ tháng 1 đến tháng báo cáo	  Cột D-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước - năm nay	 Cột R-B02-10-2024; từ tháng 1 đến tháng báo cáo	 Cột R-B02-10-2023; từ tháng 1 đến tháng báo cáo	năm trước- năm nay */
-            var pl = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
+            var pl = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot as luot1, 0 as luot2, 0 as luot3, tong_chi as chi1, tong_chi as chi2, tong_chi as chi3 FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
             var dicCSKCB = new Dictionary<string, int>();
             for (int i = 0; i < pl.Rows.Count; i++)
             {
@@ -901,7 +901,7 @@ namespace ToolBaoCao.Controllers
                 pl.Rows[i]["chi2"] = 0;
                 pl.Rows[i]["chi3"] = 0;
             }
-            var dt = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={namBC} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
+            var dt = db.getDataTable($"SELECT '' as macaptren, ma_cskcb, ten_cskcb, tong_luot, tong_chi FROM thangb02chitiet WHERE id_bc='{idBaoCao}' AND id2 IN (SELECT id FROM thangb02 WHERE id_bc='{idBaoCao}' AND nam={(namBC - 1)} AND ma_tinh='{idTinh}' AND tu_thang={tuThang} AND den_thang={denThang});");
             string tmp = ""; int index = 0;
             long luot1 = 0, luot2 = 0;
             double chi1 = 0, chi2 = 0;
