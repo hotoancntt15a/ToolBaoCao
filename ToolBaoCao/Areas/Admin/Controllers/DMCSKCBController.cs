@@ -47,49 +47,14 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     workbook = new XSSFWorkbook(Request.Files[0].InputStream);
                     ISheet sheet = workbook.GetSheetAt(0);
                     if (sheet.LastRowNum < 5) { throw new Exception("Excel Không có dữ liệu để cập nhật."); }
-                    var data = new DataTable();
-                    for (int i = 0; i < 34; i++) { data.Columns.Add($"c{i}"); }
-                    data.Columns[0].ColumnName = "ma_tinh";
-                    data.Columns[1].ColumnName = "id";
-                    data.Columns[2].ColumnName = "ten";
-                    data.Columns[3].ColumnName = "tuyencmkt";
-                    data.Columns[4].ColumnName = "hangbv";
-                    data.Columns[5].ColumnName = "loaibv";
-                    data.Columns[6].ColumnName = "tenhuyen";
-                    data.Columns[7].ColumnName = "donvi";
-                    data.Columns[8].ColumnName = "madinhdanh";
-                    data.Columns[9].ColumnName = "macaptren";
-                    data.Columns[10].ColumnName = "diachi";
-                    data.Columns[11].ColumnName = "ttduyet";
-                    data.Columns[12].ColumnName = "hieuluc";
-                    data.Columns[13].ColumnName = "tuchu";
-                    data.Columns[14].ColumnName = "trangthai";
-                    data.Columns[15].ColumnName = "hangdv";
-                    data.Columns[16].ColumnName = "hangthuoc";
-                    data.Columns[17].ColumnName = "dangkykcb";
-                    data.Columns[18].ColumnName = "hinhthuctochuc";
-                    data.Columns[19].ColumnName = "hinhthucthanhtoan";
-                    data.Columns[20].ColumnName = "ngaycapma";
-                    data.Columns[21].ColumnName = "kcb";
-                    data.Columns[22].ColumnName = "ngayngunghd";
-                    data.Columns[23].ColumnName = "kt7";
-                    data.Columns[24].ColumnName = "kcn";
-                    data.Columns[25].ColumnName = "knl";
-                    data.Columns[26].ColumnName = "cpdtt43";
-                    data.Columns[27].ColumnName = "slthedacap";
-                    data.Columns[28].ColumnName = "donvichuquan";
-                    data.Columns[29].ColumnName = "mota";
-                    /* ma_huyen	userid */
-                    data.Columns[30].ColumnName = "loaichuyenkhoa";
-                    data.Columns[31].ColumnName = "ngaykyhopdong";
-                    data.Columns[32].ColumnName = "ngayhethieuluc";
-                    data.Columns[33].ColumnName = "userid";
+                    var cols = new List<string>() { "ma_tinh", "id", "ten", "tuyencmkt", "hangbv", "loaibv", "tenhuyen", "donvi", "madinhdanh", "macaptren", "diachi", "ttduyet", "hieuluc", "tuchu", "trangthai", "hangdv", "hangthuoc", "dangkykcb", "hinhthuctochuc", "hinhthucthanhtoan", "ngaycapma", "kcb", "ngayngunghd", "kt7", "kcn", "knl", "cpdtt43", "slthedacap", "donvichuquan", "mota", "loaichuyenkhoa", "ngaykyhopdong", "ngayhethieuluc", "userid" };
+                    var data = new DataTable("dmcskcb");
+                    foreach (var col in cols) { data.Columns.Add(col); }
                     /* Kiểm tra dữ liệu */
-                    IRow row = null;
                     var pattern = @"[0-9A-Z]+";
                     for (int i = 0; i < sheet.LastRowNum; i++)
                     {
-                        row = sheet.GetRow(i); if (row == null) { continue; }
+                        var row = sheet.GetRow(i); if (row == null) { continue; }
                         /* Cột thứ tự */
                         tmp = row.GetCell(0).GetValueAsString();
                         if (tmp.isNumberUSInt(true) == false) { continue; }
@@ -105,8 +70,8 @@ namespace ToolBaoCao.Areas.Admin.Controllers
                     ViewBag.Message = $"Đã cập nhật DMCSKCB ({timeStart.getTimeRun()})";
                 }
             }
-            catch (Exception ex) { ViewBag.Error = "TryCatch: " + ex.getLineHTML(); }
-            if (workbook != null) { workbook.Close(); workbook.Dispose(); }
+            catch (Exception ex) { ViewBag.Error = ex.getErrorSave(); }
+            if (workbook != null) { try { workbook.Close(); workbook.Dispose(); } catch { } }
             return View();
         }
 
