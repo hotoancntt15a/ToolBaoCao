@@ -233,7 +233,7 @@ namespace ToolBaoCao
                         {
                             if (!string.IsNullOrEmpty(sql))
                             {
-                                sql = sql.Replace("N'", "'");
+                                sql = Regex.Replace(sql, @"(\(\s?N'|,\s?N')", "'");
                                 SQLiteCommand command = new SQLiteCommand(sql, connection);
                                 command.CommandTimeout = CommandTimeout;
                                 command.ExecuteNonQuery();
@@ -246,7 +246,7 @@ namespace ToolBaoCao
                         {
                             if (!string.IsNullOrEmpty(sql))
                             {
-                                sql = sql.Replace("N'", "'");
+                                sql = Regex.Replace(sql, @"(\(\s?N'|,\s?N')", "'");
                                 SQLiteCommand command = new SQLiteCommand(sql, connection);
                                 command.CommandTimeout = CommandTimeout;
                                 command.ExecuteNonQuery();
@@ -259,7 +259,7 @@ namespace ToolBaoCao
                         sql += line + Environment.NewLine;
                         if (sql.Length > chunkSize)
                         {
-                            sql = sql.Replace("N'", "'");
+                            sql = Regex.Replace(sql, @"(\(\s?N'|,\s?N')", "'");
                             SQLiteCommand command = new SQLiteCommand(sql, connection);
                             command.CommandTimeout = CommandTimeout;
                             command.ExecuteNonQuery();
@@ -269,7 +269,7 @@ namespace ToolBaoCao
                     }
                     if (!string.IsNullOrEmpty(sql))
                     {
-                        sql = sql.Replace("N'", "'");
+                        sql = Regex.Replace(sql, @"(\(\s?N'|,\s?N')", "'");
                         SQLiteCommand command = new SQLiteCommand(sql, connection);
                         command.CommandTimeout = CommandTimeout;
                         command.ExecuteNonQuery();
