@@ -16,6 +16,7 @@ namespace ToolBaoCao
             base.OnActionExecuting(filterContext);
         }
     }
+
     public class MvcApplication : System.Web.HttpApplication
     {
         protected void Application_Start()
@@ -31,7 +32,7 @@ namespace ToolBaoCao
                 var db = BuildDatabase.getDBUserOnline();
                 db.Execute("DELETE FROM useronline;");
             }
-            catch { }           
+            catch { }
         }
 
         protected void Application_Error()
@@ -59,8 +60,16 @@ namespace ToolBaoCao
             }
             catch (Exception ex)
             {
-                HttpContext.Current.Session["ErrorMessage"] = ex.Message;
-                Response.Redirect($"~/Error");
+                if (HttpContext.Current == null) { ex.saveError("Application_Error: "); }
+                else
+                {
+                    if (HttpContext.Current.Session == null) { ex.saveError("Application_Error: "); }
+                    else
+                    {
+                        HttpContext.Current.Session["ErrorMessage"] = ex.Message;
+                        Response.Redirect($"~/Error");
+                    }
+                }
             }
             finally { Server.ClearError(); }
         }

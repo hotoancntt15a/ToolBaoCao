@@ -811,7 +811,12 @@ namespace ToolBaoCao
 
         public static string chuThuongDauChuoi(this string inputString) => inputString.First().ToString().ToLower() + inputString.Substring(1);
 
-        public static void saveError(this Exception ex, string message = "") => saveError($"{ex.Message} {message} {ex.StackTrace}");
+        public static void saveError(this Exception ex, string message = "")
+        {
+            var msg = ex.StackTrace.Split('\n').Where(p => Regex.IsMatch(p, @":line \d+")).ToList();
+            var s2 = string.Join(" <br /> ", msg).Replace(pathCodeProject, "");
+            saveError($"{message} {ex.Message} {s2}");
+        }
 
         public static void saveError(string message, string pathSave = "")
         {
