@@ -1227,7 +1227,7 @@ namespace ToolBaoCao.Controllers
             /* X8={Sort cột G (TYLE_NOITRU) cao xuống thấp và lấy thứ tự}; */
             var sortedRows = b02TQ.OrderByDescending(row => row.Field<double>("tyle_noitru")).ToList();
             int position = sortedRows.FindIndex(row => row.Field<string>("ma_tinh") == maTinh) + 1;
-            bctuan.Add("X8", position.ToString());
+            bctuan.Add("{X8}", position.ToString());
             /* X9 ={tính toán: total cột F (TONG_LUOT_NOI) chia cho Total cột D (TONG_LUOT) của các tỉnh có MA_VUNG=mã vùng của tỉnh báo cáo}; */
             bctuan.Add("{X9}", "0");
             so2 = b02TQ.Where(row => row.Field<string>("ma_vung") == mavung).Sum(row => row.Field<long>("tong_luot"));
