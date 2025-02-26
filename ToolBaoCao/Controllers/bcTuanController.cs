@@ -1199,7 +1199,10 @@ namespace ToolBaoCao.Controllers
             string timeCreate = $"{data.Rows[0]["timeup"]}";
             tmp = $"{data.Rows[0]["thoigian"]}";
             var ngayTime = new DateTime(int.Parse(tmp.Substring(0, 4)), int.Parse(tmp.Substring(4, 2)), int.Parse(tmp.Substring(6)));
-
+            /* Tổng lượt KCB lũy kế từ đầu năm là: {X75}, trong đó nội trú là: {X76}, ngoại trú là {X77}. */
+            bctuan.Add("x75", $"{dataTinhB02["tong_luot"]}");
+            bctuan.Add("x76", $"{dataTinhB02["tong_luot_noi"]}");
+            bctuan.Add("x77", $"{dataTinhB02["tong_luot_ngoai"]}");
             /* X1 = {cột R (T-BHTT) bảng B02_TOANQUOC } */
             bctuan.Add("{X1}", dataTinhB02["t_bhtt"].ToString());
             /* X2 = {“ Quyết định số: Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */

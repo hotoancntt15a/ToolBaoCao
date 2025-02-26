@@ -258,7 +258,10 @@ namespace ToolBaoCao
             if (tables == null) { tables = dbConnect.getAllTables(); }
             var tsqlCreate = new List<string>();
             /* BaoCaoTuanDocx */
-            tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS bctuandocx (
+            string table = "bctuandocx";
+            if (tables.Contains(table) == false)
+            {
+                tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS " + table + @" (
                     id text not null primary key /* Mã hóa rút gọn và gợi nhớ cho mỗi lần lập BC tuần Dùng trình bày danh sách báo cáo đã lập để tiện cho chọn và xử lý thao tác: Khóa và mở khóa báo cáo/ xóa báo cáo/ xem/in lại */
                     ,x1 real not null default 0 /* Tổng tiền các CSKCB đã đề nghị bảo hiểm thanh toán (T_BHTT): X1={cột R (T-BHTT) bảng B02_TOANQUOC }. Làm tròn đến triệu đồng */
                     ,x2 text not null default '' /* Số của Quyết định giao dự toán: X2={“ Nếu không tìm thấy dòng nào của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán thì “TW chưa giao dự toán, tạm lấy theo dự toán năm trước”, nếu thấy thì  lấy số ký hiệu các dòng QĐ của năm 2024 ở bảng hệ thống lưu thông tin quyết định giao dự toán} */
@@ -334,13 +337,28 @@ namespace ToolBaoCao
                     ,x72 real not null default 0 /* Ngoại trú X72={cột T T_BHTT_NGOAI bảng B02_TOANQUOC } */
                     ,x73 text not null default '' /* Tên tỉnh/thành phố lập BC Lấy biến hệ thống khởi tạo khi User đăng nhập */
                     ,x74 text not null default '' /* THOI_GIAN_BC Chuỗi ký tự ngày lập BC. mặc định từ ô C3 biểu B26 khi khởi tạo 1 báo cáo	Có ô cho nhập, sửa */
+                    /* Tổng lượt KCB lũy kế từ đầu năm là: {X75}, trong đó nội trú là: {X76}, ngoại trú là {X77}. */
+                    ,x75 real not null default 0
+                    ,x76 real not null default 0
+                    ,x77 real not null default 0
                     ,userid text not null default '' /* Lưu ID của người dùng */
                     ,ma_tinh text not null default '' /* Lưu mã tỉnh làm báo cáo */
                     ,ngay integer not null default 0 /* Ngày làm báo cáo dạng timestamp */
                     ,timecreate integer not null default 0 /* Thời điểm tạo báo cáo */);");
-            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS bctuandocx_ma_tinh ON bctuandocx(ma_tinh);");
-            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_bctuandocx_timecreate ON bctuandocx(timecreate);");
-            tsqlCreate.Add("CREATE INDEX IF NOT EXISTS index_bctuandocx_ngay ON bctuandocx(ngay);");
+                tsqlCreate.Add($"CREATE INDEX IF NOT EXISTS {table}_ma_tinh ON {table}(ma_tinh);");
+                tsqlCreate.Add($"CREATE INDEX IF NOT EXISTS index_{table}_timecreate ON {table}(timecreate);");
+                tsqlCreate.Add($"CREATE INDEX IF NOT EXISTS index_{table}_ngay ON {table}(ngay);");
+            }
+            else
+            {
+                /* Tổng lượt KCB lũy kế từ đầu năm là: {X75}, trong đó nội trú là: {X76}, ngoại trú là {X77}. */
+                if (dbConnect.getColumns(table).Any(p => p.ColumnName == "x75") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE {table} ADD COLUMN x75 real not null default 0;");
+                    tsqlCreate.Add($"ALTER TABLE {table} ADD COLUMN x76 real not null default 0;");
+                    tsqlCreate.Add($"ALTER TABLE {table} ADD COLUMN x77 real not null default 0;");
+                }
+            }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
 
