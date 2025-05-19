@@ -188,6 +188,7 @@ namespace ToolBaoCao
                   ,idhuyen text not null default ''
                   ,namqd integer not null default 0
                   ,PRIMARY KEY (namqd,idtinh,idhuyen));");
+            dbConnect.Execute(@"CREATE TABLE IF NOT EXISTS dmvung (id text NOT NULL PRIMARY KEY, ten text not null);");
             /* Tạo bảng quản lý các tiến trình */
         }
 
@@ -453,7 +454,7 @@ namespace ToolBaoCao
                 ,ten_tinh text not null default ''
                 ,ma_cskcb text not null default ''
                 ,ten_cskcb text not null default ''
-                ,ma_vung text not null default ''
+                ,ma_khu_vuc text not null default ''
                 ,tong_luot integer not null default 0
                 ,tong_luot_ngoai integer not null default 0
                 ,tong_luot_noi integer not null default 0
@@ -471,8 +472,16 @@ namespace ToolBaoCao
                 ,t_bhtt real not null default 0
                 ,t_bhtt_noi real not null default 0
                 ,t_bhtt_ngoai real not null default 0
+                ,ma_vung text not null default ''
                 ,id_bc text not null default '');
                  CREATE INDEX IF NOT EXISTS index_b02chitiet_id_bc ON b02chitiet (id_bc);");
+            }
+            else
+            {
+                if (dbConnect.getColumns("b02chitiet").Any(p => p.ColumnName == "ma_khu_vuc") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE b02chitiet ADD COLUMN ma_khu_vuc text not null default '';");
+                }
             }
 
             /* B04. Thống kê chi bình quân (Tháng) */
@@ -503,6 +512,7 @@ namespace ToolBaoCao
                 ,ten_tinh text not null default ''
                 ,ma_cskcb text not null default ''
                 ,ten_cskcb text not null default ''
+                ,ma_khu_vuc text not null default ''
                 ,chi_bq_luotkcb real not null default 0
                 ,bq_xn real not null default 0
                 ,bq_cdha real not null default 0
@@ -514,6 +524,13 @@ namespace ToolBaoCao
                 ,ma_vung text not null default ''
                 ,id_bc text not null default '');
                  CREATE INDEX IF NOT EXISTS index_b04chitiet_id_bc ON b04chitiet (id_bc);");
+            }
+            else
+            {
+                if (dbConnect.getColumns("b04chitiet").Any(p => p.ColumnName == "ma_khu_vuc") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE b04chitiet ADD COLUMN ma_khu_vuc text not null default '';");
+                }
             }
 
             /* B26. Thống kê gia tăng chi phí KCB BHYT theo NĐ75 (theo ngày nhận) */

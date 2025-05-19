@@ -182,12 +182,14 @@ namespace ToolBaoCao.Controllers
                     }
                 }
             }
+            var dbImport = BuildDatabase.getDataImportBCTuan(matinh);
+            string tenvung = $"{dbImport.getValue($"SELECT ten_tinh FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}' AND ma_tinh LIKE 'v%' AND ma_vung IN (SELECT ma_vung FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}' AND ma_tinh='{matinh}')")}";
             /* Tạo phụ lục báo cáo */
             var pl = dbBcTuan.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}';");
-            var phuluc01 = createPhuLuc01(pl, matinh, bcTuan);
+            var phuluc01 = createPhuLuc01(pl, matinh, bcTuan, tenvung);
 
             pl = dbBcTuan.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}';");
-            var phuluc02 = createPhuLuc02(pl, matinh);
+            var phuluc02 = createPhuLuc02(pl, matinh, tenvung);
 
             pl = dbBcTuan.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}';");
             var phuluc03 = createPhuLuc03(pl, matinh, phuluc01);
@@ -338,7 +340,7 @@ namespace ToolBaoCao.Controllers
                  */
                 /*
                  * - Đọc thông số biểu
-                 * Biểu B04: ma_tinh ma_loai_kcb tu_thang den_thang nam loai_bv kieubv loaick hang_bv tuyen cs + userID
+                 * Biểu B04: ma_tinh tu_thang den_thang nam ma_loai_kcb loai_bv hang_bv tuyen kieubv loaick cs + userID
                  * Biểu B26: ma_tinh	loai_kcb	thoi_gian	loai_bv	kieubv	loaick	hang_bv	tuyen	loai_so_sanh	cs
                  */
                 switch (bieu)
@@ -394,27 +396,7 @@ namespace ToolBaoCao.Controllers
                 if (cs) { allColumns.RemoveAt(1); allColumns.RemoveAt(1); } /* Loại bỏ ma_tinh, ten_tinh */
                 else { allColumns.RemoveAt(3); allColumns.RemoveAt(3); } /* Loại bỏ ma_cskcb, ten_cskcb */
                 var fieldNumbers = new List<int>();
-                /* indexRegex + 1 do thêm cột {@id2} ID vào đằng trước */
-                switch (bieu)
-                {
-                    /* Kiểm tra tổng số lượt KCB */
-                    case "b02":
-                        fieldCount = 20; indexRegex = 3 + 1; pattern = "^[0-9]+$";
-                        fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-                        break;
-                    /* Kiểm tra ngày TTBQ */
-                    case "b04":
-                        fieldCount = 11; indexRegex = 9 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
-                        fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
-                        break;
-                    /* Kiểm tra BQ chung trong kỳ */
-                    case "b26":
-                        fieldCount = 34; indexRegex = 7 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
-                        fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
-                        break;
-
-                    default: fieldCount = 11; break;
-                }
+                fieldCount = 0;
                 /* Bỏ qua dòng tiêu đề */
                 indexRow++;
                 var tsqlVaues = new List<string>();
@@ -431,8 +413,67 @@ namespace ToolBaoCao.Controllers
                     /* if ((int)row.LastCellNum < fieldCount) { continue; } */
                     /* Cột đầu tiên không phải là matinh dạng số */
                     string ma = row.GetCell(indexColumn).GetValueAsString().Trim();
-
                     if (Regex.IsMatch(ma, @"^([A-Z]+)?\d+([A-Z]+)?$") == false) { continue; }
+                    if (fieldCount == 0)
+                    {
+                        /* indexRegex + 1 do thêm cột {@id2} ID vào đằng trước */
+                        switch (bieu)
+                        {
+                            /* Kiểm tra tổng số lượt KCB */
+                            case "b02":
+                                /* Biểu 04 có sự thay đổi thêm Cột (1+1) mã khu vực; tổng 21 cột */
+                                tmp = sheet.GetRow(indexRow)?.GetCell(11).GetValueAsString().Trim();
+                                if (tmp != "")
+                                {
+                                    fieldCount = 21; indexRegex = 4 + 1; pattern = "^[0-9]+$";
+                                    fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 };
+                                    if (allColumns[allColumns.Count - 1] == "ma_khu_vuc")
+                                    {
+                                        /* Thay đổi Vị trí cột ma_khu_vuc */
+                                        allColumns.Insert(1, allColumns[allColumns.Count - 1]);
+                                        allColumns.RemoveAt(allColumns.Count - 1);
+                                        AppHelper.saveError(string.Join(",", allColumns));
+                                    }
+                                }
+                                else
+                                {
+                                    allColumns.Remove("ma_khu_vuc");
+                                    fieldCount = 20; indexRegex = 3 + 1; pattern = "^[0-9]+$";
+                                    fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+                                }
+                                break;
+                            /* Kiểm tra ngày TTBQ; biểu mới thêm mã khu vực */
+                            case "b04":
+                                /* Biểu 04 có sự thay đổi thêm Cột (1+1) mã khu vực; tổng 12 cột */
+                                tmp = sheet.GetRow(indexRow)?.GetCell(11).GetValueAsString().Trim();
+                                if (tmp != "")
+                                {
+                                    fieldCount = 12; indexRegex = 10 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                                    fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+                                    if (allColumns[allColumns.Count - 1] == "ma_khu_vuc")
+                                    {
+                                        /* Thay đổi Vị trí cột ma_khu_vuc */
+                                        allColumns.Insert(1, allColumns[allColumns.Count - 1]);
+                                        allColumns.RemoveAt(allColumns.Count - 1);
+                                        AppHelper.saveError(string.Join(",", allColumns));
+                                    }
+                                }
+                                else
+                                {
+                                    allColumns.Remove("ma_khu_vuc");
+                                    fieldCount = 11; indexRegex = 9 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                                    fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
+                                }
+                                break;
+                            /* Kiểm tra BQ chung trong kỳ */
+                            case "b26":
+                                fieldCount = 34; indexRegex = 7 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
+                                fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 };
+                                break;
+
+                            default: fieldCount = 0; break;
+                        }
+                    }
                     /* Xây dựng tsql VALUES */
                     listValue = new List<string>() { "0", ma.sqliteGetValueField() };
                     for (jIndex = indexColumn + 1; jIndex < (indexColumn + fieldCount); jIndex++)
@@ -540,6 +581,7 @@ namespace ToolBaoCao.Controllers
             ViewBag.id = idBaoCao;
             var iduser = $"{Session["iduser"]}";
             /* Đường dẫn lưu */
+            var soSanhVung = Request.getValue("sosanhvung");
             var folderSave = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{idtinh}");
             if (Directory.Exists(folderSave) == false) { Directory.CreateDirectory(folderSave); }
             ViewBag.forlderSave = folderSave;
@@ -562,14 +604,18 @@ namespace ToolBaoCao.Controllers
                 string idBaoCaoVauleField = idBaoCao.sqliteGetValueField();
                 var dbBCTuan = BuildDatabase.getDataBCTuan(idtinh);
                 var dbImport = BuildDatabase.getDataImportBCTuan(idtinh);
+                var data = new DataTable();
+                var tsql = $"SELECT ten_tinh FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}' AND ma_tinh LIKE 'v%' AND ma_vung IN (SELECT ma_vung FROM b04chitiet WHERE id_bc='{idBaoCaoVauleField}' AND ma_tinh='{idtinh}')";
+                string tenvung = $"{dbTemp.getValue(tsql)}";
+                AppHelper.saveError(tsql);
                 /* Tạo phụ lục báo cáo */
                 var pl = dbTemp.getDataTable($"SELECT * FROM pl01 WHERE id_bc='{idBaoCaoVauleField}'");
                 if (pl.Rows.Count == 0) { ViewBag.Error = $"Báo cáo có ID '{idBaoCao}' không tồn tại hoặc bị xoá trong hệ thống"; return View(); }
-                var phuluc01 = createPhuLuc01(pl, idtinh, bctuan);
+                var phuluc01 = createPhuLuc01(pl, idtinh, bctuan, tenvung);
                 pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl01", pl);
 
                 pl = dbTemp.getDataTable($"SELECT * FROM pl02 WHERE id_bc='{idBaoCaoVauleField}'");
-                var phuluc02 = createPhuLuc02(pl, idtinh);
+                var phuluc02 = createPhuLuc02(pl, idtinh, tenvung);
                 pl.Columns.RemoveAt(0); dbBCTuan.Insert("pl02", pl);
 
                 pl = dbTemp.getDataTable($"SELECT * FROM pl03 WHERE id_bc='{idBaoCaoVauleField}'");
@@ -595,7 +641,7 @@ namespace ToolBaoCao.Controllers
                 dbBCTuan.Close();
 
                 /* Di chuyển dữ liệu import */
-                var data = dbTemp.getDataTable($"SELECT * FROM b02 WHERE id_bc='{idBaoCaoVauleField}';");
+                data = dbTemp.getDataTable($"SELECT * FROM b02 WHERE id_bc='{idBaoCaoVauleField}';");
                 data.Columns.RemoveAt(0); dbImport.Insert("b02", data);
                 data = dbTemp.getDataTable($"SELECT * FROM b04 WHERE id_bc='{idBaoCaoVauleField}';");
                 data.Columns.RemoveAt(0); dbImport.Insert("b04", data);
@@ -628,8 +674,9 @@ namespace ToolBaoCao.Controllers
             return View();
         }
 
-        private DataTable createPhuLuc01(DataTable pl1, string idtinh, Dictionary<string, string> bctuan)
+        private DataTable createPhuLuc01(DataTable pl1, string idtinh, Dictionary<string, string> bctuan, string tenvung)
         {
+            if(tenvung == "") { tenvung = "Vùng"; }
             var tmp = "";
             var phuluc01 = new DataTable("PhuLuc01");
             phuluc01.Columns.Add("Mã Tỉnh");
@@ -748,11 +795,11 @@ namespace ToolBaoCao.Controllers
             var row00 = phuluc01.Rows[phuluc01.Rows.Count - 1];
             /* Xây dựng Vùng */
             phuluc01.Rows.Add($"V{(mavung.Length == 1 ? $"0{mavung}" : mavung)}",
-                    "Vùng", $"{Math.Round(double.Parse(bctuan["{X9}"]), 2)}",
-                    "Vùng", $"{Math.Round(double.Parse(bctuan["{X16}"]), 2)}",
-                    "Vùng", bctuan["{X23}"],
-                    "Vùng", bctuan["{X37}"], /* Ngoại trú */
-                    "Vùng", bctuan["{X30}"]); /* Nội trú */
+                    tenvung, $"{Math.Round(double.Parse(bctuan["{X9}"]), 2)}",
+                    tenvung, $"{Math.Round(double.Parse(bctuan["{X16}"]), 2)}",
+                    tenvung, bctuan["{X23}"],
+                    tenvung, bctuan["{X37}"], /* Ngoại trú */
+                    tenvung, bctuan["{X30}"]); /* Nội trú */
             var rowV = phuluc01.Rows[phuluc01.Rows.Count - 1];
             /* Chỉ lấy dòng Tỉnh đã chọn */
             view = pl1.AsEnumerable().Where(x => x.Field<string>("ma_tinh") == idtinh).ToList().GetRange(0, 1);
@@ -788,8 +835,9 @@ namespace ToolBaoCao.Controllers
             return phuluc01;
         }
 
-        private DataTable createPhuLuc02(DataTable pl2, string idtinh)
+        private DataTable createPhuLuc02(DataTable pl2, string idtinh, string tenvung)
         {
+            if(tenvung == "") { tenvung = "Vùng"; }
             /* Bỏ [ma tỉnh] - ở cột tên tỉnh */
             for (int i = 0; i < pl2.Rows.Count; i++) { pl2.Rows[i]["ten_tinh"] = Regex.Replace($"{pl2.Rows[i]["ten_tinh"]}", @"^V?\d+[ -]+", ""); }
             var phuluc02 = new DataTable("PhuLuc02");
@@ -865,10 +913,10 @@ namespace ToolBaoCao.Controllers
                     ngay_ttbq = x.Field<double>("ngay_ttbq"),
                 })
                 .FirstOrDefault();
-            if (vung == null) { phuluc02.Rows.Add($"V{mavung}", "Vùng", "0", "0", "0", "0", "0", "0", "0"); }
+            if (vung == null) { phuluc02.Rows.Add($"V{mavung}", tenvung, "0", "0", "0", "0", "0", "0", "0"); }
             else
             {
-                phuluc02.Rows.Add(vung.matinh, "Vùng",
+                phuluc02.Rows.Add(vung.matinh, tenvung,
                     $"{vung.chi_bq_xn}",
                     $"{vung.chi_bq_cdha}",
                     $"{vung.chi_bq_thuoc}",

@@ -33,6 +33,7 @@
     @using (Html.BeginForm("Buoc3", "bcTuan", new { area = "", layout = "null", idobject = id, idtarget = idtarget }, FormMethod.Post, new { id = idform }))
     {
         <input type="hidden" name="mode" value="taive" />
+        <label for="sosanhvung"><input type="checkbox" name="sosanhvung" id="sosanhvung" value="1" /> Tự tính so sánh vùng</label>
         <table class="table table-hover table-sm">
             <tbody>
                 <tr>

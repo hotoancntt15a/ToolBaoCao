@@ -95,12 +95,12 @@ namespace ToolBaoCao
             string fileExecute = Path.Combine(pathApp, "7z.exe");
             if (System.IO.File.Exists(fileExecute) == false)
             {
-                if (File.Exists(zip7z)) { zipExtract(zip7z, pathApp); }
+                if (System.IO.File.Exists(zip7z)) { zipExtract(zip7z, pathApp); }
                 throw new Exception("Chương trình giải nén hệ thống không tồn tại (7z.exe)");
             }
             if (System.IO.File.Exists(Path.Combine(pathApp, "7z.dll")) == false)
             {
-                if (File.Exists(zip7z)) { zipExtract(zip7z, pathApp); }
+                if (System.IO.File.Exists(zip7z)) { zipExtract(zip7z, pathApp); }
                 throw new Exception("Thư viện chương trình giải nén hệ thống không tồn tại (7z.dll)");
             }
 
@@ -125,8 +125,9 @@ namespace ToolBaoCao
                     string pathSave = Path.Combine(pathApp, "error.log");
                     if (args.Data != null)
                     {
-                        try { File.AppendAllText(pathSave, $"{Environment.NewLine}{DateTime.Now:dd/MM/yyyy HH:mm:ss} {args.Data}", Encoding.Unicode); } catch { }
-                    };
+                        try { System.IO.File.AppendAllText(pathSave, $"{Environment.NewLine}{DateTime.Now:dd/MM/yyyy HH:mm:ss} {args.Data}", Encoding.Unicode); } catch { }
+                    }
+                    ;
                 };
                 process.BeginErrorReadLine();
                 /* process.WaitForExit(); */ /* Chờ đến khi quá trình giải nén kết thúc */
@@ -164,7 +165,7 @@ namespace ToolBaoCao
             if (nhom == "0") { nhom = "1"; }
             /* mặc định nhóm người dùng */
             string fileCahce = Path.Combine(pathCache, $"menuleft_dmnhom_wmenu_{nhom}.tpl");
-            if (File.Exists(fileCahce)) { return File.ReadAllText(fileCahce); }
+            if (System.IO.File.Exists(fileCahce)) { return System.IO.File.ReadAllText(fileCahce); }
             /* Lấy idmenu Father */
             var idFather = $"{dbSqliteMain.getValue($"SELECT idwmenu FROM dmnhom WHERE id={nhom}")}";
             if (Regex.IsMatch(idFather, @"^\d+$") == false)
@@ -177,7 +178,7 @@ namespace ToolBaoCao
                 return "<li class=\"nav-item\"> <hr class=\"sidebar-divider d-none d-md-block\" /> </li><li class=\"nav-item\"> <div class=\"sidebar-heading\"> Không có dữ liệu menu </div> </li>";
             }
             var tpl = getMenuLeft2(long.Parse(idFather), dataMenu);
-            if (tpl != "") { tpl = $"<!-- {nhom} -->" + tpl; File.WriteAllText(fileCahce, tpl); }
+            if (tpl != "") { tpl = $"<!-- {nhom} -->" + tpl; System.IO.File.WriteAllText(fileCahce, tpl); }
             return tpl;
         }
 
@@ -488,7 +489,7 @@ namespace ToolBaoCao
             var files = Directory.GetFiles(pathCache, $"*{likeName}*.*");
             foreach (var file in files)
             {
-                if (File.Exists(file)) { try { File.Delete(file); } catch { } }
+                if (System.IO.File.Exists(file)) { try { System.IO.File.Delete(file); } catch { } }
             }
         }
 
@@ -501,14 +502,14 @@ namespace ToolBaoCao
                 var files = Directory.GetFiles(pathFolder, $"{nameFileStart}*.*");
                 foreach (var file in files)
                 {
-                    if (File.Exists(file)) { try { File.Delete(file); } catch { } }
+                    if (System.IO.File.Exists(file)) { try { System.IO.File.Delete(file); } catch { } }
                 }
             }
             else
             {
                 foreach (string file in Directory.GetFiles(pathFolder))
                 {
-                    try { File.Delete(file); } catch { }
+                    try { System.IO.File.Delete(file); } catch { }
                 }
             }
             if (deleteSubFolder)
@@ -602,15 +603,17 @@ namespace ToolBaoCao
             return false;
         }
 
-        public static string setLogin(string userName, string passWord, bool remember = false)
+        public static string setLogin(string userName, string passWord, bool remember = false, bool api = false)
         {
             if (userName == "") { return "Tên đăng nhập để trống"; }
             if (passWord == "") { return "Mật khẩu để trống"; }
+            var items = new DataTable();
+            var ipAddress = "AppHiaToolsClient";
+            var browserInfo = "AppHiaToolsClient";
             string tsql = $"SELECT * FROM taikhoan WHERE iduser = @iduser AND mat_khau='{passWord.GetMd5Hash()}'";
-            var http = HttpContext.Current;
             try
             {
-                var items = dbSqliteMain.getDataTable(tsql, new KeyValuePair<string, string>("@iduser", userName));
+                items = dbSqliteMain.getDataTable(tsql, new KeyValuePair<string, string>("@iduser", userName));
                 if (items.Rows.Count == 0)
                 {
                     /* Không có tài khoản nào thì tạo tài khoản mặc định */
@@ -622,33 +625,43 @@ namespace ToolBaoCao
                     }
                     return $"Tài khoản '{userName}' không tồn tại hoặc mật khẩu không đúng";
                 }
-                if (http == null) { return keyMSG.HttpConnetNull; }
-                http.Session.Clear();
-                http.Request.Cookies.Clear();
-
-                http.Session[keyMSG.SessionIPAddress] = http.GetUserIpAddress();
-                http.Session[keyMSG.SessionBrowserInfo] = http.GetUserBrowser();
-
-                http.Session.Add("app.isLogin", "1");
-                foreach (DataColumn c in items.Columns) { http.Session.Add(c.ColumnName, $"{items.Rows[0][c.ColumnName]}"); }
-                /* IDUSER|PASS|DATETIME */
-                if (remember)
-                {
-                    HttpCookie c1 = new HttpCookie("idobject", $"{userName}|{passWord}|{DateTime.Now}".MD5Encrypt());
-                    c1.Expires = DateTime.Now.AddMonths(1);
-                    http.Response.Cookies.Add(c1);
-                }
                 try
                 {
                     var item = new Dictionary<string, string>() { { "iduser", userName }, { "timelogin", DateTime.Now.toTimestamp().ToString() } };
                     dbSqliteMain.Update("logintime", item, "repalce");
                 }
                 catch { }
+                if (api == false)
+                {
+                    var http = HttpContext.Current;
+                    if (http == null) { return keyMSG.HttpConnetNull; }
+                    http.Session.Clear();
+                    http.Request.Cookies.Clear();
+
+                    ipAddress = http.GetUserIpAddress();
+                    browserInfo = http.GetUserBrowser();
+                    http.Session[keyMSG.SessionIPAddress] = ipAddress;
+                    http.Session[keyMSG.SessionBrowserInfo] = browserInfo;
+
+                    http.Session.Add("app.isLogin", "1");
+                    foreach (DataColumn c in items.Columns) { http.Session.Add(c.ColumnName, $"{items.Rows[0][c.ColumnName]}"); }
+                    /* IDUSER|PASS|DATETIME */
+                    if (remember)
+                    {
+                        HttpCookie c1 = new HttpCookie("idobject", $"{userName}|{passWord}|{DateTime.Now}".MD5Encrypt());
+                        c1.Expires = DateTime.Now.AddMonths(1);
+                        http.Response.Cookies.Add(c1);
+                    }
+                }
             }
             catch (Exception ex) { return $"Lỗi: {ex.Message}<br />Chi tiết: {ex.StackTrace}"; }
             var db = BuildDatabase.getDBUserOnline();
-            var tmp = $"{http.Session["ten_hien_thi"]}".sqliteGetValueField();
-            db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip, ten_hien_thi, local) VALUES ('{http.Session["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{http.Session[keyMSG.SessionIPAddress]}', '{tmp}', '{http.Session[keyMSG.SessionBrowserInfo]}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{http.Session["iduser"]}' AND ip='{http.Session[keyMSG.SessionIPAddress]}';");
+            if (items.Rows.Count > 0)
+            {
+                var row = items.Rows[0];
+                var tmp = $"{row["ten_hien_thi"]}".sqliteGetValueField();
+                db.Execute($"INSERT OR IGNORE INTO useronline (userid, time1, time2, ip, ten_hien_thi, local) VALUES ('{row["iduser"]}',{DateTime.Now.toTimestamp()},{DateTime.Now.toTimestamp()},'{ipAddress}', '{tmp}', '{browserInfo}'); UPDATE useronline SET time2={DateTime.Now.toTimestamp()} WHERE userid='{row["iduser"]}' AND ip='{ipAddress}';");
+            }
             return "";
         }
 
@@ -821,7 +834,7 @@ namespace ToolBaoCao
         public static void saveError(string message, string pathSave = "")
         {
             if (pathSave == "") { pathSave = Path.Combine(pathApp, "error.log"); }
-            try { File.AppendAllText(pathSave, $"{Environment.NewLine}{DateTime.Now:dd/MM/yyyy HH:mm:ss} {message}", Encoding.Unicode); } catch { }
+            try { System.IO.File.AppendAllText(pathSave, $"{Environment.NewLine}{DateTime.Now:dd/MM/yyyy HH:mm:ss} {message}", Encoding.Unicode); } catch { }
         }
 
         public static string getLineHTML(this Exception ex, string description = "")
