@@ -79,8 +79,24 @@ namespace ToolBaoCao.Controllers
                 if (bieus.Contains("b26_00") == false) { list.Add("Thiếu biểu B26 toàn quốc;"); }
                 if (bieus.Contains($"b26_{matinh}") == false) { list.Add($"Thiếu biểu B26 của Tỉnh có mã {matinh};"); }
                 if (list.Count > 0) { throw new Exception(string.Join("<br />", list)); }
+                var tablePL03 = new DataTable();
+                /* Lấy mã vùng */
+                var mavung = $"{dbTemp.getValue($"SELECT ma_vung FROM pl02 WHERE ma_tinh='{matinh}'")}";
+                /* Xác định số tỉnh trong khu vực */
+                string ma_khu_vuc = $"{dbTemp.getValue($"SELECT ma_khu_vuc FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh='{matinh}' LIMIT 1")}".Trim();
+                if (ma_khu_vuc == "" || ma_khu_vuc == "0") { ma_khu_vuc = "--"; }
+                var data = dbTemp.getDataTable($"SELECT DISTINCT ma_tinh FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '' AND ma_khu_vuc='{ma_khu_vuc}';");
+                int soTinh = data.Rows.Count;
+                if (soTinh > 1)
+                {
+                    data = dbTemp.getDataTable($"SELECT DISTINCT ma_vung FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '' AND ma_khu_vuc='{ma_khu_vuc}';");
+                    if (data.Rows.Count > 1)
+                    {
+                        throw new Exception($"Hệ thống chưa hỗ trợ: Có {soTinh} tỉnh trước gộp trong khu vực {ma_khu_vuc}, Có {data.Rows.Count} mã vùng khác nhau;");
+                    }
+                }
                 /* Tạo Phục Lục 1 */
-                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung
+                dbTemp.Execute($@"INSERT INTO pl01 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, ma_khu_vuc, tyle_noitru, ngay_dtri_bq, chi_bq_chung, chi_bq_ngoai, chi_bq_noi, userid) SELECT id_bc, '{matinh}' AS idtinh, ma_tinh, ten_tinh, ma_vung, ma_khu_vuc
                     , ROUND(tyle_noitru, 2) AS tyle_noitru
                     , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     , ROUND(chi_bq_chung) AS chi_bq_chung
@@ -89,8 +105,8 @@ namespace ToolBaoCao.Controllers
                     , '{idUser}' AS userid
                     FROM b02chitiet WHERE id_bc='{id}' AND ma_tinh <> '' AND ma_tinh NOT LIKE 'V%';");
                 /* Tạo Phục Lục 2*/
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
-                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung
+                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, ma_khu_vuc, chi_bq_xn, chi_bq_cdha, chi_bq_thuoc, chi_bq_pttt, chi_bq_vtyt, chi_bq_giuong, ngay_ttbq, userid)
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, ma_vung, ma_khu_vuc
                     , ROUND(bq_xn) AS chi_bq_xn
                     , ROUND(bq_cdha) AS chi_bq_cdha
                     , ROUND(bq_thuoc) AS chi_bq_thuoc
@@ -100,10 +116,10 @@ namespace ToolBaoCao.Controllers
                     , ROUND(ngay_ttbq, 2) AS ngay_ttbq
                     , '{idUser}' AS userid
                     FROM b04chitiet WHERE id_bc='{id}' AND (ma_tinh <> '' AND ma_tinh NOT LIKE 'V%');");
+
                 /* Thêm cột vùng */
-                var mavung = $"{dbTemp.getValue($"SELECT ma_vung FROM pl02 WHERE ma_tinh='{matinh}'")}";
-                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung , chi_bq_xn , chi_bq_cdha , chi_bq_thuoc , chi_bq_pttt , chi_bq_vtyt , chi_bq_giuong , ngay_ttbq , userid)
-                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, '' AS ma_vung
+                dbTemp.Execute($@"INSERT INTO pl02 (id_bc, idtinh, ma_tinh, ten_tinh, ma_vung, ma_khu_vuc, chi_bq_xn , chi_bq_cdha , chi_bq_thuoc , chi_bq_pttt , chi_bq_vtyt , chi_bq_giuong , ngay_ttbq , userid)
+                    SELECT id_bc, '{matinh}' as idtinh, ma_tinh, ten_tinh, '' AS ma_vung, ma_khu_vuc
                     , ROUND(bq_xn) AS chi_bq_xn
                     , ROUND(bq_cdha) AS chi_bq_cdha
                     , ROUND(bq_thuoc) AS chi_bq_thuoc
@@ -114,7 +130,7 @@ namespace ToolBaoCao.Controllers
                     , '{idUser}' AS userid
                     FROM b04chitiet WHERE id_bc='{id}' AND ma_tinh LIKE 'V%' AND ma_vung='{mavung}';");
                 /* Tạo Phục Lục 3 */
-                var tablePL03 = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung
+                tablePL03 = dbTemp.getDataTable($@"SELECT id_bc, '{matinh}' AS idtinh, ma_cskcb, ten_cskcb, ma_vung, ma_khu_vuc
                     , ROUND(tyle_noitru, 2) AS tyle_noitru
                     , ROUND(ngay_dtri_bq, 2) AS ngay_dtri_bq
                     , ROUND(chi_bq_chung) AS chi_bq_chung
@@ -124,7 +140,7 @@ namespace ToolBaoCao.Controllers
                         FROM b02chitiet WHERE id_bc='{id}' AND ma_cskcb <> ''");
                 /* Lấy danh sách Ma_CSKCB */
                 var listIDCSKCB = string.Join(",", tablePL03.AsEnumerable().Select(x => x.Field<string>("ma_cskcb")).ToList()).Replace("'", "");
-                var data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}' AND id IN ('{listIDCSKCB.Replace(",", "','")}')");
+                data = AppHelper.dbSqliteMain.getDataTable($"SELECT id, tuyencmkt, hangdv FROM dmcskcb WHERE ma_tinh ='{matinh}' AND id IN ('{listIDCSKCB.Replace(",", "','")}')");
                 tablePL03.Columns.Add("tuyen_bv");
                 tablePL03.Columns.Add("hang_bv");
                 var dsCSKCB = data.AsEnumerable().Select(x => new
@@ -145,6 +161,7 @@ namespace ToolBaoCao.Controllers
                     }
                 }
                 dbTemp.Insert("pl03", tablePL03);
+
                 /* Đọc dữ liệu DuToanGiao dự theo thoigian của b26_00 */
                 var namDuToan = $"{dbTemp.getValue($"SELECT thoigian FROM b26 WHERE id_bc = '{id}' AND ma_tinh <> '' LIMIT 1")}";
                 namDuToan = namDuToan.Substring(0, 4);
@@ -444,7 +461,6 @@ namespace ToolBaoCao.Controllers
                                     fieldCount = 20; indexRegex = 3 + 1; pattern = "^[0-9]+$";
                                     fieldNumbers = new List<int>() { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
                                 }
-                                AppHelper.saveError($"{bieu}-{fieldCount}-Index{headerRowIndex}-{tmp}: {string.Join(",", allColumns)}");
                                 break;
                             /* Kiểm tra ngày TTBQ; biểu mới thêm mã khu vực */
                             case "b04":
@@ -467,7 +483,6 @@ namespace ToolBaoCao.Controllers
                                     fieldCount = 11; indexRegex = 9 + 1; pattern = "^[0-9]+[.,][0-9]+$|^[0-9]+$";
                                     fieldNumbers = new List<int>() { 3, 4, 5, 6, 7, 8, 9, 10 };
                                 }
-                                AppHelper.saveError($"{bieu}-{fieldCount}-Index{headerRowIndex}-{tmp}: {string.Join(",", allColumns)}");
                                 break;
                             /* Kiểm tra BQ chung trong kỳ */
                             case "b26":
@@ -585,7 +600,6 @@ namespace ToolBaoCao.Controllers
             ViewBag.id = idBaoCao;
             var iduser = $"{Session["iduser"]}";
             /* Đường dẫn lưu */
-            var soSanhVung = Request.getValue("sosanhvung");
             var folderSave = Path.Combine(AppHelper.pathApp, "App_Data", "bctuan", $"tinh{idtinh}");
             if (Directory.Exists(folderSave) == false) { Directory.CreateDirectory(folderSave); }
             ViewBag.forlderSave = folderSave;

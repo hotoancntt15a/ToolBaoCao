@@ -818,6 +818,7 @@
     <Content Include="App_Data\plthangTemplate.xlsx" />
     <Content Include="Areas\Admin\Views\DMCSKCB\Buoc1.cshtml" />
     <Content Include="Areas\Admin\Views\DMCSKCB\Buoc2.cshtml" />
+    <Content Include="App_Data\bcTuanKV.docx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

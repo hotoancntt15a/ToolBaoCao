@@ -383,6 +383,7 @@ namespace ToolBaoCao
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
                 ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
                 ,ma_vung text not null default '' /* Mã vùng 0,1,2,3,4... cột C , B02 */
+                ,ma_khu_vuc text not null default ''
                 ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú, B02 */
                 ,ngay_dtri_bq real not null default 0 /*	Ngày điều trị BQ, vd 6,42, DVT: ngày; Lấy từ cột H: NGAY ĐT_BQ, B02 */
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT ( đồng)	Cột I, B02 */
@@ -390,6 +391,13 @@ namespace ToolBaoCao
                 ,chi_bq_noi real not null default 0 /* Như trên nhưng với nội trú	Cột K, B02 */
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_pl01_id_bc ON pl01 (id_bc);");
+            }
+            else
+            {
+                if (dbConnect.getColumns("pl01").Any(p => p.ColumnName == "ma_khu_vuc") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE pl01 ADD COLUMN ma_khu_vuc text not null default '';");
+                }
             }
             if (tables.Contains("pl02") == false)
             {
@@ -399,6 +407,7 @@ namespace ToolBaoCao
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
                 ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
                 ,ma_vung text not null default '' /* Mã vùng */
+                ,ma_khu_vuc text not null default ''
                 ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
                 ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
                 ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
@@ -409,6 +418,13 @@ namespace ToolBaoCao
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_pl02_id_bc ON pl02 (id_bc);");
             }
+            else
+            {
+                if (dbConnect.getColumns("pl02").Any(p => p.ColumnName == "ma_khu_vuc") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE pl02 ADD COLUMN ma_khu_vuc text not null default '';");
+                }
+            }
             if (tables.Contains("pl03") == false)
             {
                 tsqlCreate.Add(@"CREATE TABLE IF NOT EXISTS pl03 (id INTEGER primary key AUTOINCREMENT
@@ -417,6 +433,7 @@ namespace ToolBaoCao
                 ,ma_cskcb text not null /* Mã cơ sơ KCB, có chứa cả mã toàn quốc:00, mã vùng V1, mã tỉnh 10 và mã CSKCB ví dụ 10061; Ngoài 3 dòng đầu lấy từ bảng lưu thông tin Sheet 1; Các dòng còn lại lấy từ các cột A Excel B02 */
                 ,ten_cskcb text not null default '' /* Tên cskcb, ghép hạng BV vào đầu chuỗi tên CSKCB	Côt B */
                 ,ma_vung text not null default '' /* Mã vùng */
+                ,ma_khu_vuc text not null default ''
                 ,tyle_noitru real not null default 0 /* Tỷ lệ nội trú, ví dụ 19,49%	Lấy từ cột G: TL_Nội trú */
                 ,ngay_dtri_bq real not null default 0 /* Ngày điều trị BQ, vd 6,42, DVT: NGÀY; Lấy từ cột H: NGAY ĐT_BQ */
                 ,chi_bq_chung real not null default 0 /* Chi bình quan chung lượt KCB ĐVT đồng; Cột I B02 */
@@ -426,6 +443,13 @@ namespace ToolBaoCao
                 ,hang_bv text not null default ''
                 ,userid text not null default '' /* Lưu ID của người dùng */);
                  CREATE INDEX IF NOT EXISTS index_pl03_id_bc ON pl03 (id_bc);");
+            }
+            else
+            {
+                if (dbConnect.getColumns("pl03").Any(p => p.ColumnName == "ma_khu_vuc") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE pl03 ADD COLUMN ma_khu_vuc text not null default '';");
+                }
             }
             if (tsqlCreate.Count > 0) { dbConnect.Execute(string.Join(Environment.NewLine, tsqlCreate)); }
         }
