@@ -57,12 +57,20 @@ namespace ToolBaoCao
                     dia_chi text NOT NULL DEFAULT '',
                     hinh_dai_dien text NOT NULL DEFAULT '',
                     idtinh text NOT NULL DEFAULT '',
+                    ma_khu_vuc text NOT NULL DEFAULT '',
                     ghi_chu text NOT NULL DEFAULT '',
                     vitrilamviec text NOT NULL DEFAULT '',
                     nhom INTEGER NOT NULL DEFAULT - 1,
                     locked INTEGER NOT NULL DEFAULT 0,
                     time_create double NOT NULL DEFAULT 0,
                     time_last_login double NOT NULL DEFAULT 0);");
+            }
+            else
+            {
+                if (connect.getColumns("taikhoan").Any(p => p.ColumnName == "ma_khu_vuc") == false)
+                {
+                    tsqlCreate.Add($"ALTER TABLE taikhoan ADD COLUMN ma_khu_vuc text not null default '';");
+                }
             }
             if (tables.Contains("logintime"))
             {
