@@ -56,21 +56,13 @@ namespace ToolBaoCao
                     dien_thoai text NOT NULL DEFAULT '',
                     dia_chi text NOT NULL DEFAULT '',
                     hinh_dai_dien text NOT NULL DEFAULT '',
-                    idtinh text NOT NULL DEFAULT '',
-                    ma_khu_vuc text NOT NULL DEFAULT '',
+                    idtinh text NOT NULL DEFAULT ''
                     ghi_chu text NOT NULL DEFAULT '',
                     vitrilamviec text NOT NULL DEFAULT '',
                     nhom INTEGER NOT NULL DEFAULT - 1,
                     locked INTEGER NOT NULL DEFAULT 0,
                     time_create double NOT NULL DEFAULT 0,
                     time_last_login double NOT NULL DEFAULT 0);");
-            }
-            else
-            {
-                if (connect.getColumns("taikhoan").Any(p => p.ColumnName == "ma_khu_vuc") == false)
-                {
-                    tsqlCreate.Add($"ALTER TABLE taikhoan ADD COLUMN ma_khu_vuc text not null default '';");
-                }
             }
             if (tables.Contains("logintime"))
             {
@@ -407,7 +399,7 @@ namespace ToolBaoCao
                 ,ma_tinh text not null default '' /* Mã tỉnh Cột A, B02 */
                 ,ten_tinh text not null default '' /* Tên tỉnh Cột B, B02 */
                 ,ma_vung text not null default '' /* Mã vùng */
-                ,ma_khu_vuc text not null default ''
+                ,ma_khu_vuc text not null default '0'
                 ,chi_bq_xn real not null default 0 /* chi BQ Xét nghiệm; đơn vị tính : đồng	Lấy từ B04 . Cột D */
                 ,chi_bq_cdha real not null default 0 /* chi BQ Chẩn đoán hình ảnh; Lấy từ B04. Cột E */
                 ,chi_bq_thuoc real not null default 0 /* chi BQ thuốc; Lấy từ B04. Cột F */
@@ -422,7 +414,7 @@ namespace ToolBaoCao
             {
                 if (dbConnect.getColumns("pl02").Any(p => p.ColumnName == "ma_khu_vuc") == false)
                 {
-                    tsqlCreate.Add($"ALTER TABLE pl02 ADD COLUMN ma_khu_vuc text not null default '';");
+                    tsqlCreate.Add($"ALTER TABLE pl02 ADD COLUMN ma_khu_vuc text not null default '0';");
                 }
             }
             if (tables.Contains("pl03") == false)
