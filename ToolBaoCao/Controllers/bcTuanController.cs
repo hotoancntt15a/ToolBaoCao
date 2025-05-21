@@ -948,7 +948,9 @@ namespace ToolBaoCao.Controllers
             }
             DataRow rowVung = phuluc02.Rows[phuluc02.Rows.Count - 1];
             /* Tỉnh */
-            phuluc02.Rows.Add($"{rowTinh[0]}", $"{rowTinh[1]}", $"{rowTinh[2]}", $"{rowTinh[3]}", $"{rowTinh[4]}", $"{rowTinh[5]}", $"{rowTinh[6]}", $"{rowTinh[7]}", $"{rowTinh[8]}");
+            row = phuluc02.NewRow();
+            row.ItemArray = phuluc02.Rows[0].ItemArray.Clone() as object[];
+            phuluc02.Rows.Add(row);
             /* Chênh so toàn quốc */
             phuluc02.Rows.Add("", "Chênh so toàn quốc",
                 $"{double.Parse($"{rowTinh[2]}") - double.Parse($"{row00[2]}")}",
