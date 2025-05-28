@@ -69,7 +69,7 @@ namespace ToolBaoCao.Controllers
                 {
                     if (Path.GetExtension(Request.Files[i].FileName).ToLower() != ".xlsx") { continue; }
                     list.Add($"{Request.Files[i].FileName} ({Request.Files[i].ContentLength.getFileSize()})");
-                    bieus.Add(readExcelbcTuan(dbTemp, Request.Files[i], Session, id, folderTemp, timeStart));
+                    bieus.Add(readExcelbcTuan(dbTemp, Request.Files[i], Session, id, folderTemp, timeStart, bieus));
                 }
                 ViewBag.files = list;
                 list = new List<string>();
@@ -298,7 +298,7 @@ namespace ToolBaoCao.Controllers
             return workbook;
         }
 
-        private string readExcelbcTuan(dbSQLite dbConnect, HttpPostedFileBase inputFile, HttpSessionStateBase Session, string idBaoCao, string folderTemp, DateTime timeStart)
+        private string readExcelbcTuan(dbSQLite dbConnect, HttpPostedFileBase inputFile, HttpSessionStateBase Session, string idBaoCao, string folderTemp, DateTime timeStart, List<string> bieuAdded)
         {
             string messageError = "";
             var timeUp = timeStart.toTimestamp().ToString();
@@ -387,6 +387,11 @@ namespace ToolBaoCao.Controllers
                 /* Kiểm tra có đúng dữ liệu không */
                 if (Regex.IsMatch(listValue[indexRegex], pattern) == false) { throw new Exception($"dữ liệu không đúng cấu trúc (năm, thời gian): {listValue[indexRegex]}"); }
                 matinhImport = listValue[0];
+                if (matinhImport == "0" || matinhImport == "00")
+                {
+                    /* Biểu toàn quốc tồn tại rồi bỏ qua */
+                    if (bieuAdded.Contains($"{bieu}_{matinhImport}")) { return ""; }
+                }
                 /* Lấy danh sách cột, bỏ cột ID */
                 var allColumns = dbConnect.getColumns(bieu).Select(p => p.ColumnName).ToList();
                 allColumns.RemoveAt(0);
